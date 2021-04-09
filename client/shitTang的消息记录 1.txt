@@ -1,0 +1,4 @@
+shitTang：
+看到在She程序中消息的最后打印出52。我们可以把这量中作为记录,来看看我们总共在屏幕上打印出多少个字符10.4.4我用的 Python是什么版本的)会变量 version表示 Python的版本,可以用来在第入的确定你的Pton是否为最新版本。有些程序员机数喜欢在程序启动时打印一些信息。例如,你可能想把 Python的版本信息放到程序的“关于”窗口中,如>>>import sys>>> print(sys. version)31.2(x312:79149,Mar212013,00:41:52)[NsCv150032常用的Pyt
+shitTang：你脑子是不有点问题啊！
+welcome,shitTang!
