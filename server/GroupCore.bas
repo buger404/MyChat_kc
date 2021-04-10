@@ -1,7 +1,7 @@
 Attribute VB_Name = "GroupCore"
 Public Type Messages
     id As Integer
-    name As String
+    Name As String
     Content As String
     time As Date
 End Type
@@ -9,22 +9,19 @@ Public Type Group
     id As Integer
     leader As Integer
     isJoin As Boolean
-    name As String
-<<<<<<< HEAD
-    msg() As Messages
-=======
+    Name As String
     Msg() As Messages
->>>>>>> 3b07fd90bb91919c2b4047f89cff85163e999376
+    unreadTick As Integer
 End Type
-Public userId As Integer
+Public userId As Integer, userName As String
 Public groups() As Group
 
-Public Sub AddGroup(id As Integer, leader As Integer, isJoin As Boolean, name As String)
+Public Sub AddGroup(id As Integer, leader As Integer, isJoin As Boolean, Name As String)
     ReDim Preserve groups(UBound(groups) + 1)
     With groups(UBound(groups))
         .id = id
         .isJoin = isJoin
-        .name = name
+        .Name = Name
         .leader = leader
         ReDim .Msg(0)
     End With
@@ -40,16 +37,18 @@ Public Sub DeleteGroup(id As Integer)
         End If
     Next
 End Sub
-Public Sub AddMessage(id As Integer, memberid As Integer, name As String, Content As String)
+Public Sub AddMessage(id As Integer, memberid As Integer, Name As String, Content As String)
     For i = 1 To UBound(groups)
         If groups(i).id = id Then
             ReDim Preserve groups(i).Msg(UBound(groups(i).Msg) + 1)
             With groups(i).Msg(UBound(groups(i).Msg))
                 .Content = Content
                 .id = memberid
-                .name = name
+                .Name = Name
                 .time = Now
             End With
+            groups(i).unreadTick = groups(i).unreadTick + 1
+            If groups(i).unreadTick > 100 Then groups(i).unreadTick = 100
             Exit For
         End If
     Next
