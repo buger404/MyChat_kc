@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "mswinsck.ocx"
+Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "MSWINSCK.OCX"
 Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
 Begin VB.Form Client 
    Appearance      =   0  'Flat
@@ -272,6 +272,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+Dim grpId As Integer
 Dim i As Single, p As Single, q As Single, dr As Single
 Dim MainPage As MainPage, IPPage As IPPage
 Public LBtnColor As Long, RBtnColor As Long
@@ -301,9 +302,7 @@ Public Sub Command4_Click()
     Picture1.Cls
 End Sub
 
-Public Sub Command8_Click()
 
-End Sub
 
 Private Sub logBtn_Click()
     'If Dir("id_info.txt") <> "" Then Kill ("id_info.txt")
@@ -319,7 +318,7 @@ Private Sub logBtn_Click()
     If S(0) = "404" Then MsgBox "ip地址有误，请检查ip地址", 16, "ip地址错误": End
     Me.Caption = S(0)
     
-    If Dir("id_info.txt") <> "" Then Kill "id_info.txt"
+    'If Dir("id_info.txt") <> "" Then Kill "id_info.txt"
     If Dir("face.png") <> "" Then Kill "face.png"
     
     Winsock1.RemotePort = 2001
@@ -425,6 +424,9 @@ Private Sub Form_Load()
     Loop Until Winsock1.RemoteHost <> ""
     
     If Winsock1.RemoteHost <> "" Then logBtn_Click
+
+    Call AddGroup(0, -1, True, "公共 ")
+    grpId = 0
     
     '精准控制坐标
     Text5.Move 0, 60, Me.ScaleWidth, Me.ScaleHeight - 60 - 120
@@ -557,10 +559,15 @@ Public Sub SendMsg()
     If Text2.Text = "" Then
         VBA.Beep
     Else
-        Winsock1.SendData "msg;" + "groupid;" + Me.Caption + ";id;" + Base64EncodeString(Text2.Text) + ";"
+        'Winsock1.SendData "msg;" + Str(grpId) + ";" + Me.Caption + ";id;" + Base64EncodeString(Text2.Text) + ";"
+        Winsock1.SendData Text2.Text
         Text2.Text = ""
     End If
 End Sub
+Public Sub JoinGrp()
+
+End Sub
+
 Public Sub Command3_Click()
     Text1.Text = ""
 End Sub
@@ -594,14 +601,14 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
     Dim strSplit
     Dim MsgType As String
     Dim grpId As String
-    Dim Name As String
+    Dim name As String
     Dim MsgContent As String
     Winsock1.GetData strdata
     
     strSplit = Split(strdata, ";")
     MsgType = strSplit(0)
-    Name = strSplit(2)
+    name = strSplit(2)
     MsgContent = strSplit(4)
     MsgContent = Base64DecodeString(MsgContent)
-    Text1.Text = Name + ":" + MsgContent + vbCrLf + Text1.Text
+    Text1.Text = name + ":" + MsgContent + vbCrLf + Text1.Text
 End Sub

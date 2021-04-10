@@ -10,7 +10,11 @@ Public Type Group
     leader As Integer
     isJoin As Boolean
     name As String
+<<<<<<< HEAD
+    msg() As Messages
+=======
     Msg() As Messages
+>>>>>>> 3b07fd90bb91919c2b4047f89cff85163e999376
 End Type
 Public userId As Integer
 Public groups() As Group
