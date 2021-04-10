@@ -365,16 +365,19 @@ End Sub
 Private Sub Form_Load()
     ReDim groups(0)
     '测试用
-    AddGroup 1, 1, True, "测试讨论组1"
+    AddGroup 1, 1, True, "大厅"
     AddGroup 2, 1, False, "未加入测试"
     AddGroup 3, 1, True, "测试讨论组2"
     AddGroup 4, 1, True, "testtest"
     AddGroup 5, 1, True, "hash"
-    AddMessage 1, 1, "测试组员", "我发送了一条消息啦啦啦啦啦啦！"
+    AddMessage 1, 1, "测试组员", "这是一条超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长但是就是不换行的消息"
     AddMessage 1, 2, "测试组员", "我还能换行" & vbCrLf & "乌拉乌拉"
     AddMessage 1, -1, "系统消息", "您被禁言，才怪。"
     AddMessage 1, -2, "老师", "不要乱发消息"
-    userId = -2
+    For i = 1 To 20
+        AddMessage 1, -2, "老师", "身为老师要以身作则带头刷屏，而且要刷那种很长很长的屏，不仅如此，我还要..."
+    Next
+    userId = -2: userName = "老师"
     
     Call InitEmeraldFramework
     Set Shadow = New aShadow
@@ -391,10 +394,16 @@ Private Sub Form_Load()
     
     pypid = Shell("python """ & App.path & "\" & "server.py"" -o " & lis.LocalIP, 6)
     
+<<<<<<< HEAD
     Call AddGroup(0, -2, True, "公共")
     grpExistId = 0
     
 
+=======
+    grpExistId = 0
+    
+    
+>>>>>>> 53e2e550e623ad8f9cb82be9bf2b880d4cb697f9
     Text3.Visible = False: Text4.Visible = True
     Command5.Enabled = False
     State = False
@@ -491,8 +500,12 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
     grpId = strSplit(1)
     MsgContent = strSplit(4)
     MsgContent = Base64DecodeString(MsgContent)
+<<<<<<< HEAD
     Call AddMessage(Int(grpId), id, Name, MsgContent)
     'Text3.Text = Name + ":" + MsgContent + "   #" + Str(id) + "#" + Str(grpId) + "#" + vbCrLf + Text3.Text
+=======
+    Text3.Text = Name + ":" + MsgContent + "   #" + Str(id) + "#" + Str(grpId) + "#" + vbCrLf + Text3.Text
+>>>>>>> 53e2e550e623ad8f9cb82be9bf2b880d4cb697f9
     Case "picmsg"
     Case "addgroup"
     Case "okgroup"
