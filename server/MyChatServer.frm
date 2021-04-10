@@ -201,7 +201,6 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Dim State As Boolean, pop As Single
-Dim grpExistId As Integer
 Dim pypid
 Dim g As String, q As Single, m As Single
 Dim MainPage As MainPage, IPPage As IPPage
@@ -271,7 +270,8 @@ Private Sub Form_KeyPress(KeyAscii As Integer)
     If TextHandle <> 0 Then WaitChr = WaitChr & Chr(KeyAscii)
 End Sub
 '===============================================================================================================
-Public Sub Command2_Click()
+
+Public Sub SendMsg()
 
     If Text4.Text = "" Then VBA.Beep: Exit Sub
     
@@ -279,7 +279,8 @@ Public Sub Command2_Click()
     S = 1
     Do While (S <= Winsock.UBound)
         If Winsock(S).State = 7 Then
-            Winsock(S).SendData "msg;" + "groupid;" + "主机" + ";id;" + Base64EncodeString(Text4.Text) + ";"
+            Call AddMessage(0, userId, "老师", Text4.Text)
+            Winsock(S).SendData "msg;" + "0;" + "老师;" + Str(userId) + ";" + Base64EncodeString(Text4.Text) + ";"
             DoEvents
         End If
         S = S + 1
@@ -393,9 +394,16 @@ Private Sub Form_Load()
     
     pypid = Shell("python """ & App.path & "\" & "server.py"" -o " & lis.LocalIP, 6)
     
+<<<<<<< HEAD
+    Call AddGroup(0, -2, True, "公共")
+    grpExistId = 0
+    
+
+=======
     grpExistId = 0
     
     
+>>>>>>> 53e2e550e623ad8f9cb82be9bf2b880d4cb697f9
     Text3.Visible = False: Text4.Visible = True
     Command5.Enabled = False
     State = False
@@ -492,7 +500,12 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
     grpId = strSplit(1)
     MsgContent = strSplit(4)
     MsgContent = Base64DecodeString(MsgContent)
+<<<<<<< HEAD
+    Call AddMessage(Int(grpId), id, Name, MsgContent)
+    'Text3.Text = Name + ":" + MsgContent + "   #" + Str(id) + "#" + Str(grpId) + "#" + vbCrLf + Text3.Text
+=======
     Text3.Text = Name + ":" + MsgContent + "   #" + Str(id) + "#" + Str(grpId) + "#" + vbCrLf + Text3.Text
+>>>>>>> 53e2e550e623ad8f9cb82be9bf2b880d4cb697f9
     Case "picmsg"
     Case "addgroup"
     Case "okgroup"

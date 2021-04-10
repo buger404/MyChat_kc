@@ -574,13 +574,10 @@ Public Sub SendMsg()
     If Text2.Text = "" Then
         VBA.Beep
     Else
-        'Winsock1.SendData "msg;" + Str(grpId) + ";" + Me.Caption + ";id;" + Base64EncodeString(Text2.Text) + ";"
-        Winsock1.SendData Text2.Text
+        Winsock1.SendData "msg;" + Str(grpId) + ";" + Me.Caption + ";id;" + Base64EncodeString(Text2.Text) + ";"
+        'Winsock1.SendData Text2.Text
         Text2.Text = ""
     End If
-End Sub
-Public Sub JoinGrp()
-
 End Sub
 
 Public Sub Command3_Click()
