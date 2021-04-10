@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "mswinsck.ocx"
+Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "MSWINSCK.OCX"
 Begin VB.Form Server 
    Appearance      =   0  'Flat
    BackColor       =   &H80000005&
@@ -200,6 +200,7 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Dim State As Boolean, pop As Single
+Dim grpExistId As Integer
 Dim pypid
 Dim g As String, q As Single, m As Single
 Dim MainPage As MainPage, IPPage As IPPage
@@ -277,7 +278,7 @@ Public Sub Command2_Click()
     S = 1
     Do While (S <= Winsock.UBound)
         If Winsock(S).State = 7 Then
-            Winsock(S).SendData "服务器：" + "：" + Text4.Text
+            Winsock(S).SendData "msg;" + "groupid;" + "主机" + ";id;" + Base64EncodeString(Text4.Text) + ";"
             DoEvents
         End If
         S = S + 1
@@ -345,6 +346,8 @@ Public Sub Audio_Click()
     Kill "audio.pcm"
 End Sub
 
+
+
 Public Sub OCR_Click()
     ShellEx "python """ & App.path & "\" & "server.py"" -t "
     If Dir("OCR_text.txt") = "" Then Shell "python """ & App.path & "\" & "server.py"" -t "
@@ -369,16 +372,15 @@ Private Sub Form_Load()
             .Transparency = 20
         End If
     End With
-    'Open "server_info.txt" For Input As #1
-    'Text1.Text = StrConv(InputB(FileLen(strfile), txtf), vbUnicode)
-    'Close #1
+    
     Text3.Visible = False: Text4.Visible = False
     Me.Show
-    'Do While IPPage.FinalIP = ""
-    '    ECore.Display: DoEvents
-    'Loop
     
     pypid = Shell("python """ & App.path & "\" & "server.py"" -o " & lis.LocalIP, 6)
+    
+    Call AddGroup(0, -2, True, "公共")
+    grpExistId = 0
+    
     
     Text3.Visible = True: Text4.Visible = True
     Command5.Enabled = False
@@ -415,6 +417,8 @@ Private Sub lis_ConnectionRequest(ByVal requestID As Long)
         Winsock(m).Accept requestID
     End If
     
+    Call SetJoinState(0, True)
+    
     Me.Caption = lis.LocalIP & " - " & "已连接" & pop & "人"
     
     m = m + 1
@@ -446,10 +450,10 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
     
     Dim strSplit
     Dim id As Integer
-    Dim msgType As String
+    Dim MsgType As String
     Dim grpId As String
     Dim name As String
-    Dim msgContent As String
+    Dim MsgContent As String
     Dim strData As String
     Winsock(index).GetData strData
     
@@ -465,10 +469,23 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
     
     strSplit = Split(strData, ";")
     id = index
-    msgType = strSplit(0)
-    name = strSplit(2)
-    msgContent = strSplit(4)
-    msgContent = Base64DecodeString(msgContent)
+    MsgType = strSplit(0)
+
     
-    Text3.Text = strData & "   #" & index & "#" & vbCrLf & Text3.Text
+    Select Case MsgType
+    Case "msg"
+    name = strSplit(2)
+    grpId = strSplit(1)
+    MsgContent = strSplit(4)
+    MsgContent = Base64DecodeString(MsgContent)
+    Text3.Text = name + ":" + MsgContent + "   #" + Str(id) + "#" + Str(grpId) + "#" + vbCrLf + Text3.Text
+    Case "picmsg"
+    Case "addgroup"
+    Case "okgroup"
+    Case "creategroup"
+    
+    Dim grpCreateName As String
+    
+    End Select
+    
 End Sub

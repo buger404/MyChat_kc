@@ -9,16 +9,18 @@ Public Type Group
     id As Integer
     leader As Integer
     isJoin As Boolean
+    name As String
     msg() As Messages
 End Type
 Public userId As Integer
 Public groups() As Group
 
-Public Sub AddGroup(id As Integer, leader As Integer, isJoin As Boolean)
+Public Sub AddGroup(id As Integer, leader As Integer, isJoin As Boolean, name As String)
     ReDim Preserve groups(UBound(groups) + 1)
     With groups(UBound(groups))
         .id = id
         .isJoin = isJoin
+        .name = name
         .leader = leader
         ReDim .msg(0)
     End With
@@ -56,3 +58,4 @@ Public Sub SetJoinState(id As Integer, isJoin As Boolean)
         End If
     Next
 End Sub
+
