@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "MSWINSCK.OCX"
+Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "mswinsck.ocx"
 Begin VB.Form Server 
    Appearance      =   0  'Flat
    BackColor       =   &H80000005&
@@ -225,7 +225,8 @@ End Sub
 'Emerald框架部分
 Private Sub InitEmeraldFramework()
     '启动Emerald
-    StartEmerald Me.hwnd, 800, 600, True
+    StartEmerald Me.hwnd, 1100, 600, False
+    'ScaleGame Screen.Width / Screen.TwipsPerPixelX / 1280, ScaleDefault
     '创建字体渲染
     Set EF = New GFont
     EF.MakeFont "微软雅黑"
@@ -357,6 +358,8 @@ Public Sub OCR_Click()
 End Sub
 
 Private Sub Form_Load()
+    ReDim groups(0)
+
     Call InitEmeraldFramework
     Set Shadow = New aShadow
     With Shadow
@@ -386,8 +389,8 @@ Private Sub Form_Load()
     lis.Listen
     
     '精准控制坐标
-    Text3.Move 0, 60, Me.ScaleWidth, Me.ScaleHeight - 60 - 120
-    Text4.Move 50, Me.ScaleHeight - 80 + 25, Me.ScaleWidth - 245, 80 - 50
+    Text3.Move 300 + 0, 60, Me.ScaleWidth - 300, Me.ScaleHeight - 60 - 120
+    Text4.Move 300 + 50, Me.ScaleHeight - 80 + 25, Me.ScaleWidth - 245 - 300, 80 - 50
     
     Me.Caption = lis.LocalIP & " - " & "已连接" & pop & "人"
     

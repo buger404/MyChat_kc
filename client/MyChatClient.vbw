@@ -1,9 +1,9 @@
-GPage = 0, 0, 0, 0, C
+GPage = 26, 26, 669, 410, Z
 Gdiplus = 0, 0, 0, 0, C
 Bass = 0, 0, 0, 0, C
 GCore = 0, 0, 0, 0, C
 GMan = 0, 0, 0, 0, C
-GFont = 0, 0, 0, 0, C
+GFont = 0, 0, 764, 285, 
 GMusic = 0, 0, 0, 0, C
 GMusicList = 0, 0, 0, 0, C
 GSaving = 0, 0, 0, 0, C
