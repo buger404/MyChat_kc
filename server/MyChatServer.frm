@@ -125,6 +125,7 @@ Begin VB.Form Server
       TabIndex        =   5
       Text            =   "MyChatServer.frx":1BCC2
       Top             =   720
+      Visible         =   0   'False
       Width           =   6300
    End
    Begin VB.CommandButton Command1 
@@ -209,7 +210,7 @@ Public Sub Command1_Click()
     Dim C As Single
     C = Val(Text2.Text)
     
-    If C > Winsock.UBound Then
+    If C > Winsock.ubound Then
         MsgBox ("没有此用户")
     Else
         If Winsock(C).State = 7 Then
@@ -276,7 +277,7 @@ Public Sub Command2_Click()
     
     Dim S As Single
     S = 1
-    Do While (S <= Winsock.UBound)
+    Do While (S <= Winsock.ubound)
         If Winsock(S).State = 7 Then
             Winsock(S).SendData "msg;" + "groupid;" + "主机" + ";id;" + Base64EncodeString(Text4.Text) + ";"
             DoEvents
@@ -308,7 +309,7 @@ Public Sub Command5_Click()
         Dim S As Single
         g = "服务器开启了禁言"
         S = 1
-        Do While (S <= Winsock.UBound)
+        Do While (S <= Winsock.ubound)
             If Winsock(S).State = 7 Then
                 Winsock(S).SendData g
                 DoEvents
@@ -321,7 +322,7 @@ Public Sub Command5_Click()
         Command5.Caption = "禁言"
         g = "服务器关闭了禁言"
         S = 1
-        Do While (S <= Winsock.UBound)
+        Do While (S <= Winsock.ubound)
             If Winsock(S).State = 7 Then
                 Winsock(S).SendData g
                 DoEvents
@@ -362,7 +363,18 @@ End Sub
 
 Private Sub Form_Load()
     ReDim groups(0)
-
+    '测试用
+    AddGroup 1, 1, True, "测试讨论组1"
+    AddGroup 2, 1, False, "未加入测试"
+    AddGroup 3, 1, True, "测试讨论组2"
+    AddGroup 4, 1, True, "testtest"
+    AddGroup 5, 1, True, "hash"
+    AddMessage 1, 1, "测试组员", "我发送了一条消息啦啦啦啦啦啦！"
+    AddMessage 1, 2, "测试组员", "我还能换行" & vbCrLf & "乌拉乌拉"
+    AddMessage 1, -1, "系统消息", "您被禁言，才怪。"
+    AddMessage 1, -2, "老师", "不要乱发消息"
+    userId = -2
+    
     Call InitEmeraldFramework
     Set Shadow = New aShadow
     With Shadow
@@ -378,11 +390,15 @@ Private Sub Form_Load()
     
     pypid = Shell("python """ & App.path & "\" & "server.py"" -o " & lis.LocalIP, 6)
     
+<<<<<<< HEAD
     Call AddGroup(0, -2, True, "公共")
     grpExistId = 0
     
     
     Text3.Visible = True: Text4.Visible = True
+=======
+    Text3.Visible = False: Text4.Visible = True
+>>>>>>> 3b07fd90bb91919c2b4047f89cff85163e999376
     Command5.Enabled = False
     State = False
     m = 1
@@ -411,7 +427,7 @@ Private Sub lis_ConnectionRequest(ByVal requestID As Long)
     Load Winsock(m)
     Command5.Enabled = True
     
-    pop = Winsock.UBound
+    pop = Winsock.ubound
     
     If Winsock(m).State = sckClosed Then
         Winsock(m).Accept requestID
@@ -459,7 +475,7 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
     
     Dim S As Single
     S = 1
-    Do While (S <= Winsock.UBound)
+    Do While (S <= Winsock.ubound)
         If Winsock(S).State = 7 Then
             Winsock(S).SendData strData
             DoEvents
@@ -470,6 +486,7 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
     strSplit = Split(strData, ";")
     id = index
     MsgType = strSplit(0)
+<<<<<<< HEAD
 
     
     Select Case MsgType
@@ -487,5 +504,10 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
     Dim grpCreateName As String
     
     End Select
+=======
+    name = strSplit(2)
+    MsgContent = strSplit(4)
+    MsgContent = Base64DecodeString(MsgContent)
+>>>>>>> 3b07fd90bb91919c2b4047f89cff85163e999376
     
 End Sub

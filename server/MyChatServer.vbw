@@ -9,7 +9,7 @@ GMusicList = 0, 0, 0, 0, C
 GSaving = 25, 25, 742, 489, 
 BMEA_Engine = 0, 0, 0, 0, C
 GAnimation = 0, 0, 0, 0, C
-DebugSwitch = 0, 0, 0, 0, C
+DebugSwitch = 50, 50, 1113, 565, 
 DebugWindow = 0, 0, 0, 0, C, 0, 0, 1036, 331, C
 GDebug = 0, 0, 0, 0, C
 Debuginfo = 0, 0, 0, 0, C, 128, 128, 1164, 459, C
@@ -26,5 +26,13 @@ Server = 176, 58, 893, 522, Z, 25, 25, 742, 489, C
 MainPage = 41, 395, 1077, 808, 
 aShadow = 0, 0, 0, 0, C
 IPPage = 128, 128, 1132, 491, 
+<<<<<<< HEAD
 Base64 = 0, 0, 717, 464, 
 GroupCore = 50, 50, 767, 514, 
+=======
+<<<<<<< HEAD
+GroupCore = 25, 25, 1088, 540, 
+=======
+>>>>>>> 84e17e39507da66897c24c9b7b0824a6d4ebafca
+>>>>>>> 2695412e6fa8ff52e8c365b4a4f9775963cd5be0
+>>>>>>> 3b07fd90bb91919c2b4047f89cff85163e999376

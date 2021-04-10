@@ -10,7 +10,11 @@ Public Type Group
     leader As Integer
     isJoin As Boolean
     name As String
+<<<<<<< HEAD
     msg() As Messages
+=======
+    Msg() As Messages
+>>>>>>> 3b07fd90bb91919c2b4047f89cff85163e999376
 End Type
 Public userId As Integer
 Public groups() As Group
@@ -22,7 +26,7 @@ Public Sub AddGroup(id As Integer, leader As Integer, isJoin As Boolean, name As
         .isJoin = isJoin
         .name = name
         .leader = leader
-        ReDim .msg(0)
+        ReDim .Msg(0)
     End With
 End Sub
 Public Sub DeleteGroup(id As Integer)
@@ -39,8 +43,8 @@ End Sub
 Public Sub AddMessage(id As Integer, memberid As Integer, name As String, Content As String)
     For i = 1 To UBound(groups)
         If groups(i).id = id Then
-            ReDim Preserve groups(i).msg(UBound(groups(i).msg) + 1)
-            With groups(i).msg(UBound(groups(i).msg))
+            ReDim Preserve groups(i).Msg(UBound(groups(i).Msg) + 1)
+            With groups(i).Msg(UBound(groups(i).Msg))
                 .Content = Content
                 .id = id
                 .name = name
