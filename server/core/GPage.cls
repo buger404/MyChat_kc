@@ -67,12 +67,12 @@ Public IsSystem As Boolean
         GdipGraphicsClear GG, Color
     End Sub
     Public Sub Update()
-        Dim I As Integer
-        For I = 1 To UBound(Anis)
-            If Not Anis(I).mark Then
-                If (GetTickCount - Anis(I).Start - Anis(I).Delay) > Anis(I).during Then
-                    Call DrawBox.AnimationDone(I)
-                    Anis(I).mark = True
+        Dim i As Integer
+        For i = 1 To UBound(Anis)
+            If Not Anis(i).mark Then
+                If (GetTickCount - Anis(i).Start - Anis(i).Delay) > Anis(i).during Then
+                    Call DrawBox.AnimationDone(i)
+                    Anis(i).mark = True
                 End If
             End If
         Next
@@ -81,11 +81,11 @@ Public IsSystem As Boolean
         Call DrawBox.Update
         'If Err.Number <> 0 Then Call ECore.RaiseErrorScreen: Exit Sub
     End Sub
-    Public Sub Display(DC As Long)
+    Public Sub Display(dc As Long)
         If TopPage Then
-            If Not ECore.FreezeAvailable Then PaintDC CDC, DC, alpha:=1
+            If Not ECore.FreezeAvailable Then PaintDC CDC, dc, Alpha:=1
         Else
-            If Not ECore.FreezeAvailable Then BitBlt DC, 0, 0, RGW, RGH, CDC, 0, 0, vbSrcCopy
+            If Not ECore.FreezeAvailable Then BitBlt dc, 0, 0, RGW, RGH, CDC, 0, 0, vbSrcCopy
         End If
     End Sub
 '========================================================
@@ -103,10 +103,10 @@ Public IsSystem As Boolean
         ReDim Preserve AniCollection(UBound(AniCollection) + 1)
         AniCollection(UBound(AniCollection)) = Animations.LoadAnimation(path)
         With AniCollection(UBound(AniCollection))
-            For I = 1 To UBound(.channel)
-                For S = 1 To UBound(.channel(I).frames)
-                    For t = 0 To UBound(.channel(I).frames(S).aframes)
-                        .channel(I).frames(S).aframes(t).picindex = Res.GetImage(.channel(I).frames(S).aframes(t).pic)
+            For i = 1 To UBound(.channel)
+                For S = 1 To UBound(.channel(i).frames)
+                    For t = 0 To UBound(.channel(i).frames(S).aframes)
+                        .channel(i).frames(S).aframes(t).picindex = Res.GetImage(.channel(i).frames(S).aframes(t).pic)
                     Next
                 Next
             Next
@@ -122,24 +122,24 @@ Public IsSystem As Boolean
             f = Dir()
         Loop
     End Sub
-    Private Function FindAnimation(Name As String) As EAnimation
-        For I = 1 To UBound(AniCollection)
-            If AniCollection(I).Name = Name Then FindAnimation = AniCollection(I): Exit For
+    Private Function FindAnimation(name As String) As EAnimation
+        For i = 1 To UBound(AniCollection)
+            If AniCollection(i).name = name Then FindAnimation = AniCollection(i): Exit For
         Next
     End Function
     Private Function GetPlayAnimation(playname As String) As Integer
-        For I = 1 To UBound(PlayAni)
-            If PlayAni(I).Name = playname Then GetPlayAnimation = I: Exit For
+        For i = 1 To UBound(PlayAni)
+            If PlayAni(i).name = playname Then GetPlayAnimation = i: Exit For
         Next
     End Function
-    Public Sub CreatePlayAnimation(Name As String, playname As String, channel As String)
+    Public Sub CreatePlayAnimation(name As String, playname As String, channel As String)
         ReDim Preserve PlayAni(UBound(PlayAni) + 1)
-        PlayAni(UBound(PlayAni)) = FindAnimation(Name)
-        PlayAni(UBound(PlayAni)).Name = playname
+        PlayAni(UBound(PlayAni)) = FindAnimation(name)
+        PlayAni(UBound(PlayAni)).name = playname
         PlayAni(UBound(PlayAni)).tick = GetTickCount
-        For I = 1 To UBound(PlayAni(UBound(PlayAni)).channel)
-            PlayAni(UBound(PlayAni)).channel(I).CurrentFrame = 1
-            If PlayAni(UBound(PlayAni)).channel(I).Name = channel Then PlayAni(UBound(PlayAni)).CurrentChannel = I
+        For i = 1 To UBound(PlayAni(UBound(PlayAni)).channel)
+            PlayAni(UBound(PlayAni)).channel(i).CurrentFrame = 1
+            If PlayAni(UBound(PlayAni)).channel(i).name = channel Then PlayAni(UBound(PlayAni)).CurrentChannel = i
         Next
     End Sub
     Public Sub DisposePlayAnimation(playname As String)
@@ -154,10 +154,10 @@ Public IsSystem As Boolean
             PlayAni(S).channel(PlayAni(S).CurrentChannel).frames(PlayAni(S).channel(PlayAni(S).CurrentChannel).CurrentFrame).tick = 0
         End If
         
-        For I = 1 To UBound(PlayAni(S).channel)
-            If PlayAni(S).channel(I).Name = channel Then
-                PlayAni(S).channel(I).CurrentFrame = 1
-                PlayAni(S).CurrentChannel = I
+        For i = 1 To UBound(PlayAni(S).channel)
+            If PlayAni(S).channel(i).name = channel Then
+                PlayAni(S).channel(i).CurrentFrame = 1
+                PlayAni(S).CurrentChannel = i
                 PlayAni(S).tick = GetTickCount
                 Exit For
             End If
@@ -165,7 +165,7 @@ Public IsSystem As Boolean
     End Sub
 '========================================================
 '   Images
-    Public Sub DrawAnimation(playname As String, X As Long, y As Long, Optional Direction As ImgDirection = DirNormal)
+    Public Sub DrawAnimation(playname As String, x As Long, y As Long, Optional Direction As ImgDirection = DirNormal)
         If ECore.FreezeAvailable Then Exit Sub
         
         Dim S As Integer, m As Integer, w As Long, h As Long, last As Boolean
@@ -174,17 +174,17 @@ Public IsSystem As Boolean
         If S = 0 Then Exit Sub
         
         With PlayAni(S).channel(PlayAni(S).CurrentChannel).frames(PlayAni(S).channel(PlayAni(S).CurrentChannel).CurrentFrame)
-            For I = 0 To UBound(.aframes)
-                If .aframes(I).alpha = 1 Then m = 1
-                If .aframes(I).alpha <> 1 Then m = 1
-                If .aframes(I).size <> 1 Then m = 0
+            For i = 0 To UBound(.aframes)
+                If .aframes(i).Alpha = 1 Then m = 1
+                If .aframes(i).Alpha <> 1 Then m = 1
+                If .aframes(i).size <> 1 Then m = 0
                 
                 If m = 0 Then
-                    w = Res.ImgSize(.aframes(I).picindex, imgGetWidth) * .aframes(I).size
-                    h = Res.ImgSize(.aframes(I).picindex, imgGetHeight) * .aframes(I).size
-                    DrawImageEx .aframes(I).picindex, X + .aframes(I).X, y + .aframes(I).y, w, h, PlayAni(S).position
+                    w = Res.ImgSize(.aframes(i).picindex, imgGetWidth) * .aframes(i).size
+                    h = Res.ImgSize(.aframes(i).picindex, imgGetHeight) * .aframes(i).size
+                    DrawImageEx .aframes(i).picindex, x + .aframes(i).x, y + .aframes(i).y, w, h, PlayAni(S).position
                 Else
-                    DrawImage .aframes(I).picindex, X + .aframes(I).X, y + .aframes(I).y, pos:=PlayAni(S).position, alpha:=.aframes(I).alpha, Direction:=Direction
+                    DrawImage .aframes(i).picindex, x + .aframes(i).x, y + .aframes(i).y, pos:=PlayAni(S).position, Alpha:=.aframes(i).Alpha, Direction:=Direction
                 End If
             Next
             
@@ -192,9 +192,9 @@ Public IsSystem As Boolean
             If .tick <> -1 Then
                 last = (PlayAni(S).channel(PlayAni(S).CurrentChannel).CurrentFrame = UBound(PlayAni(S).channel(PlayAni(S).CurrentChannel).frames))
                 If GetTickCount - PlayAni(S).tick >= .tick Then
-                    If .msg = "dispose" Or .disposed Then DisposeMark = True
-                    If .msg <> "" Then
-                        CallByName SrcClass, "AnimationMsg", VbMethod, playname, .msg
+                    If .Msg = "dispose" Or .disposed Then DisposeMark = True
+                    If .Msg <> "" Then
+                        CallByName SrcClass, "AnimationMsg", VbMethod, playname, .Msg
                     End If
                     If .tick <> 0 Then
                         If last Then
@@ -206,8 +206,8 @@ Public IsSystem As Boolean
                     If .tick = 0 Then .tick = -1
                     PlayAni(S).tick = GetTickCount
                     If Not (EMusic Is Nothing) Then
-                        For I = 0 To UBound(PlayAni(S).channel(PlayAni(S).CurrentChannel).frames(PlayAni(S).channel(PlayAni(S).CurrentChannel).CurrentFrame).sounds)
-                            EMusic.Play PlayAni(S).channel(PlayAni(S).CurrentChannel).frames(PlayAni(S).channel(PlayAni(S).CurrentChannel).CurrentFrame).sounds(I).snd
+                        For i = 0 To UBound(PlayAni(S).channel(PlayAni(S).CurrentChannel).frames(PlayAni(S).channel(PlayAni(S).CurrentChannel).CurrentFrame).sounds)
+                            EMusic.Play PlayAni(S).channel(PlayAni(S).CurrentChannel).frames(PlayAni(S).channel(PlayAni(S).CurrentChannel).CurrentFrame).sounds(i).snd
                         Next
                     End If
                 End If
@@ -216,19 +216,19 @@ Public IsSystem As Boolean
         
         If DisposeMark Then DisposePlayAnimation playname
     End Sub
-    Public Sub DrawImageEx(n, ByVal X As Single, ByVal y As Single, Optional w, Optional h, Optional pos As PosAlign = posNormal, Optional angle As Long = 0, Optional animation As Integer = 0)
+    Public Sub DrawImageEx(n, ByVal x As Single, ByVal y As Single, Optional w, Optional h, Optional pos As PosAlign = posNormal, Optional angle As Long = 0, Optional animation As Integer = 0)
         Dim index As Integer
         
         If ECore.FreezeAvailable And (Not IsSystem) Then Exit Sub
         
         If Scales <> 1 Then
-            X = X * Scales: y = y * Scales
+            x = x * Scales: y = y * Scales
             If Not IsMissing(w) Then w = w * Scales
             If Not IsMissing(h) Then h = h * Scales
         End If
         
         Dim OX As Single, OY As Single, ow As Long, oh As Long
-        OX = X: OY = y: ow = w: oh = h
+        OX = x: OY = y: ow = w: oh = h
         
         If animation <> 0 Then
             If Not Anis(animation).mark Then
@@ -277,7 +277,7 @@ Public IsSystem As Boolean
         End If
         
         With DrawF
-            .X = OX
+            .x = OX
             .y = OY
             .Width = ow
             .Height = oh
@@ -299,20 +299,20 @@ Public IsSystem As Boolean
         If Debug_pos Then
             GdipSetPenWidth Pen, 1
             GdipSetPenColor Pen, argb(255, 0, 183, 195)
-            GdipDrawLine GG, Pen, X - 5, y, X + 5, y
-            GdipDrawLine GG, Pen, X, y - 5, X, y + 5
+            GdipDrawLine GG, Pen, x - 5, y, x + 5, y
+            GdipDrawLine GG, Pen, x, y - 5, x, y + 5
         End If
         
         If ChoosePosition Then
             Call JudgeChoosePosition(OX, OY, ow, oh)
         End If
     End Sub
-    Public Sub DrawImage(n, ByVal X As Long, ByVal y As Long, Optional cx, Optional cy, Optional CW, Optional ch, Optional alpha, Optional pos As PosAlign = posNormal, Optional animation As Integer = 0, Optional Direction As ImgDirection = DirNormal)
+    Public Sub DrawImage(n, ByVal x As Long, ByVal y As Long, Optional cx, Optional cy, Optional CW, Optional ch, Optional Alpha, Optional pos As PosAlign = posNormal, Optional animation As Integer = 0, Optional Direction As ImgDirection = DirNormal)
         If ECore.FreezeAvailable And (Not IsSystem) Then Exit Sub
         
         'If OutOfScroll Then Exit Sub
         If Scales <> 1 Then
-            X = X * Scales: y = y * Scales
+            x = x * Scales: y = y * Scales
             If Not IsMissing(cx) Then cx = cx * Scales
             If Not IsMissing(cy) Then cy = cy * Scales
             If Not IsMissing(CW) Then CW = CW * Scales
@@ -320,10 +320,10 @@ Public IsSystem As Boolean
         End If
         Dim B As BLENDFUNCTION, index As Integer, bl As Long
         Dim OX As Long, OY As Long, ow As Long, oh As Long
-        OX = X: OY = y: ow = w: oh = h
+        OX = x: OY = y: ow = w: oh = h
         Dim ocx As Long, ocy As Long, ocw As Long, och As Long
         
-        If Not IsMissing(alpha) Then
+        If Not IsMissing(Alpha) Then
             Dim pro As Single
             pro = 1
             If animation <> 0 Then
@@ -331,15 +331,15 @@ Public IsSystem As Boolean
                     pro = CallByName(EAni, "GetProgress_" & Anis(animation).profunc, VbMethod, (GetTickCount - Anis(animation).Start - Anis(animation).Delay) / Anis(animation).during)
                 End If
             End If
-            alpha = alpha * pro
+            Alpha = Alpha * pro
             
-            If alpha < 0 Then alpha = 0
-            If alpha > 1 Then alpha = 1
+            If Alpha < 0 Then Alpha = 0
+            If Alpha > 1 Then Alpha = 1
             With B
                 .AlphaFormat = &H1
                 .BlendFlags = &H0
                 .BlendOp = 0
-                .SourceConstantAlpha = Int(alpha * 255)
+                .SourceConstantAlpha = Int(Alpha * 255)
             End With
             CopyMemory bl, B, 4
         End If
@@ -374,14 +374,14 @@ Public IsSystem As Boolean
             srcDC = Res.ResourceGIFCurrentHandle(index)
         End If
         
-        If IsMissing(alpha) Then
+        If IsMissing(Alpha) Then
             BitBlt CDC, OX, OY, ocw, och, srcDC, ocx, ocy, vbSrcCopy
         Else
             AlphaBlend CDC, OX, OY, ocw, och, srcDC, ocx, ocy, ocw, och, bl
         End If
 
         With DrawF
-            .X = OX
+            .x = OX
             .y = OY
             .Width = ocw
             .Height = och
@@ -403,8 +403,8 @@ Public IsSystem As Boolean
         If Debug_pos Then
             GdipSetPenWidth Pen, 1
             GdipSetPenColor Pen, argb(255, 0, 183, 195)
-            GdipDrawLine GG, Pen, X - 5, y, X + 5, y
-            GdipDrawLine GG, Pen, X, y - 5, X, y + 5
+            GdipDrawLine GG, Pen, x - 5, y, x + 5, y
+            GdipDrawLine GG, Pen, x, y - 5, x, y + 5
         End If
         
         If ChoosePosition Then
@@ -413,20 +413,20 @@ Public IsSystem As Boolean
     End Sub
 '========================================================
 '   Writer
-    Public Sub Writes(ByVal Text As String, ByVal X As Single, ByVal y As Single, Optional size As Long = 14, Optional Color As Long, Optional ByVal w As Single = 0, Optional ByVal h As Single = 0, Optional align As StringAlignment = StringAlignmentNear, Optional style As FontStyle = FontStyleRegular, Optional animation As Integer = 0, Optional ByVal BorderColor As Long, Optional ByVal BorderSize As Long = 0)
+    Public Sub Writes(ByVal Text As String, ByVal x As Single, ByVal y As Single, Optional size As Long = 14, Optional Color As Long, Optional ByVal w As Single = 0, Optional ByVal h As Single = 0, Optional align As StringAlignment = StringAlignmentNear, Optional style As FontStyle = FontStyleRegular, Optional animation As Integer = 0, Optional ByVal BorderColor As Long, Optional ByVal BorderSize As Long = 0)
         'If OutOfScroll Then Exit Sub
         
         If ECore.FreezeAvailable And (Not IsSystem) Then Exit Sub
         
         If Scales <> 1 Then
-            X = X * Scales: y = y * Scales
+            x = x * Scales: y = y * Scales
             size = size * Scales
             If Not IsMissing(w) Then w = w * Scales
             If Not IsMissing(h) Then h = h * Scales
         End If
         
         Dim OX As Single, OY As Single
-        OX = X: OY = y
+        OX = x: OY = y
         
         If animation <> 0 Then
             If Not Anis(animation).mark Then
@@ -446,7 +446,7 @@ Public IsSystem As Boolean
         
         EF.Writes Text, OX, OY, GG, Color, size, w, h, align, style, BorderColor, BorderSize
         With DrawF
-            .X = OX
+            .x = OX
             .y = OY
             .Width = w
             .Height = h
@@ -466,8 +466,8 @@ Public IsSystem As Boolean
         If Debug_pos Then
             GdipSetPenWidth Pen, 1
             GdipSetPenColor Pen, argb(255, 0, 183, 195)
-            GdipDrawLine GG, Pen, X - 5, y, X + 5, y
-            GdipDrawLine GG, Pen, X, y - 5, X, y + 5
+            GdipDrawLine GG, Pen, x - 5, y, x + 5, y
+            GdipDrawLine GG, Pen, x, y - 5, x, y + 5
         End If
         
         If ChoosePosition Then
@@ -495,9 +495,9 @@ Public IsSystem As Boolean
                 al = co(3): al = al / 255
                 
                 If Anis(animation).custom Then
-                    CallByName DrawBox, Anis(animation).func, VbMethod, X, y, w, h, al, pro
+                    CallByName DrawBox, Anis(animation).func, VbMethod, x, y, w, h, al, pro
                 Else
-                    CallByName EAni, Anis(animation).func, VbMethod, X, y, w, h, al, pro
+                    CallByName EAni, Anis(animation).func, VbMethod, x, y, w, h, al, pro
                 End If
                 Color = argb(al * 255, co(0), co(1), co(2))
             End If
@@ -511,7 +511,7 @@ Public IsSystem As Boolean
         GdipDrawLine GG, Pen, X1, Y1, X2, Y2
         
         With DrawF
-            .X = IIf(X1 < X2, X1, X2)
+            .x = IIf(X1 < X2, X1, X2)
             .y = IIf(Y1 < Y2, Y1, Y2)
             .Width = IIf(X1 < X2, X2 - X1, X1 - X2)
             .Height = IIf(Y1 < Y2, Y2 - Y1, Y1 - Y2)
@@ -525,16 +525,16 @@ Public IsSystem As Boolean
         If Debug_focus Then
             GdipSetPenWidth Pen, 1
             GdipSetPenColor Pen, argb(255, 240, 176, 0)
-            GdipDrawRectangle GG, Pen, DrawF.X, DrawF.y, DrawF.Width + 1, DrawF.Height + 1
+            GdipDrawRectangle GG, Pen, DrawF.x, DrawF.y, DrawF.Width + 1, DrawF.Height + 1
         End If
         
         If ChoosePosition Then
             Call JudgeChoosePosition(X1, Y1, 0, 0)
             Call JudgeChoosePosition(X2, Y2, 0, 0)
-            Call JudgeChoosePosition(DrawF.X, DrawF.y, DrawF.Width, DrawF.Height)
+            Call JudgeChoosePosition(DrawF.x, DrawF.y, DrawF.Width, DrawF.Height)
         End If
     End Sub
-    Public Sub Paint(ByVal Shape As Integer, ByVal X As Single, ByVal y As Single, ByVal w As Single, ByVal h As Single, Optional Color As Long, Optional Radius As Long, Optional size As Long = 1, Optional style As Integer = 0, Optional pos As PosAlign = posNormal, Optional animation As Integer = 0)
+    Public Sub Paint(ByVal Shape As Integer, ByVal x As Single, ByVal y As Single, ByVal w As Single, ByVal h As Single, Optional Color As Long, Optional Radius As Long, Optional size As Long = 1, Optional style As Integer = 0, Optional pos As PosAlign = posNormal, Optional animation As Integer = 0)
         'shape:0=rect,1=ellipse,2=rectr
         'style:0=fill,1=border
         'If OutOfScroll Then Exit Sub
@@ -542,14 +542,14 @@ Public IsSystem As Boolean
         If ECore.FreezeAvailable And (Not IsSystem) Then Exit Sub
 
         If Scales <> 1 Then
-            X = X * Scales: y = y * Scales
+            x = x * Scales: y = y * Scales
             w = w * Scales
             h = h * Scales
             size = size * Scales
         End If
 
         Dim OX As Single, OY As Single, ow As Single, oh As Single
-        OX = X: OY = y: ow = w: oh = h
+        OX = x: OY = y: ow = w: oh = h
         
         If animation <> 0 Then
             If Not Anis(animation).mark Then
@@ -595,13 +595,13 @@ ReShape:
             
         End If
         
-        If Color <> 0 Then
+        'If Color <> 0 Then
             If style = 0 Then GdipSetSolidFillColor brush, Color
             If style = 1 Then
                 GdipSetPenColor Pen, Color
                 GdipSetPenWidth Pen, size
             End If
-        End If
+        'End If
         
         If Shape = 0 Then GdipSetSmoothingMode GG, SmoothingModeDefault
         If style = 0 Then GdipFillPath GG, brush, path
@@ -609,7 +609,7 @@ ReShape:
         If Shape = 0 Then GdipSetSmoothingMode GG, SmoothingModeAntiAlias
         
         With DrawF
-            .X = OX
+            .x = OX
             .y = OY
             .Width = ow
             .Height = oh
@@ -629,28 +629,28 @@ ReShape:
         If Debug_pos Then
             GdipSetPenWidth Pen, 1
             GdipSetPenColor Pen, argb(255, 0, 183, 195)
-            GdipDrawLine GG, Pen, X - 5, y, X + 5, y
-            GdipDrawLine GG, Pen, X, y - 5, X, y + 5
+            GdipDrawLine GG, Pen, x - 5, y, x + 5, y
+            GdipDrawLine GG, Pen, x, y - 5, x, y + 5
         End If
         
         If ChoosePosition Then
             Call JudgeChoosePosition(OX, OY, ow, oh)
         End If
     End Sub
-    Public Sub PaintArc(ByVal X As Single, ByVal y As Single, ByVal w As Single, ByVal h As Single, degree As Single, Optional Start As Single = 0, Optional Color As Long, Optional size As Long = 1, Optional style As Integer = 0, Optional pos As PosAlign = posNormal, Optional animation As Integer = 0)
+    Public Sub PaintArc(ByVal x As Single, ByVal y As Single, ByVal w As Single, ByVal h As Single, degree As Single, Optional Start As Single = 0, Optional Color As Long, Optional size As Long = 1, Optional style As Integer = 0, Optional pos As PosAlign = posNormal, Optional animation As Integer = 0)
         'style:0=fill,1=border,2=sector
 
         If ECore.FreezeAvailable And (Not IsSystem) Then Exit Sub
 
         If Scales <> 1 Then
-            X = X * Scales: y = y * Scales
+            x = x * Scales: y = y * Scales
             w = w * Scales
             h = h * Scales
             size = size * Scales
         End If
 
         Dim OX As Single, OY As Single, ow As Single, oh As Single
-        OX = X: OY = y: ow = w: oh = h
+        OX = x: OY = y: ow = w: oh = h
         
         If animation <> 0 Then
             If Not Anis(animation).mark Then
@@ -670,7 +670,7 @@ ReShape:
         
         GdipResetPath path
         
-        If pos = 1 Then OX = Int(X - ow / 2): OY = Int(y - oh / 2)
+        If pos = 1 Then OX = Int(x - ow / 2): OY = Int(y - oh / 2)
         If pos = 2 Then OX = OX - ow
         If pos = 3 Then OY = OY - oh
         If pos = 4 Then OX = OX + ow
@@ -692,7 +692,7 @@ ReShape:
         If style = 1 Then GdipDrawPath GG, Pen, path
         
         With DrawF
-            .X = OX
+            .x = OX
             .y = OY
             .Width = ow
             .Height = oh
@@ -712,8 +712,8 @@ ReShape:
         If Debug_pos Then
             GdipSetPenWidth Pen, 1
             GdipSetPenColor Pen, argb(255, 0, 183, 195)
-            GdipDrawLine GG, Pen, X - 5, y, X + 5, y
-            GdipDrawLine GG, Pen, X, y - 5, X, y + 5
+            GdipDrawLine GG, Pen, x - 5, y, x + 5, y
+            GdipDrawLine GG, Pen, x, y - 5, x, y + 5
         End If
         
         If ChoosePosition Then
@@ -724,15 +724,15 @@ ReShape:
     
         If ECore.FreezeAvailable And (Not IsSystem) Then Exit Sub
         
-        For I = 0 To UBound(Points)
-            Points(I) = Points(I) * Scales
+        For i = 0 To UBound(Points)
+            Points(i) = Points(i) * Scales
         Next
 
         GdipResetPath path
         Dim p() As POINTF
         ReDim p((UBound(Points) - 1) / 2)
-        For I = 0 To UBound(Points) Step 2
-            p(I / 2).X = Points(I): p(I / 2).y = Points(I + 1)
+        For i = 0 To UBound(Points) Step 2
+            p(i / 2).x = Points(i): p(i / 2).y = Points(i + 1)
         Next
         
         If SmoothMode Then
@@ -763,15 +763,15 @@ ReShape:
         
         If ECore.FreezeAvailable And (Not IsSystem) Then Exit Sub
      
-        For I = 0 To UBound(Points)
-            Points(I) = Points(I) * Scales
+        For i = 0 To UBound(Points)
+            Points(i) = Points(i) * Scales
         Next
 
         GdipResetPath path
         Dim p() As POINTF
         ReDim p((UBound(Points) - 1) / 2)
-        For I = 0 To UBound(Points) Step 2
-            p(I / 2).X = Points(I): p(I / 2).y = Points(I + 1)
+        For i = 0 To UBound(Points) Step 2
+            p(i / 2).x = Points(i): p(i / 2).y = Points(i + 1)
         Next
         
         If SmoothMode Then
@@ -823,11 +823,11 @@ ReShape:
     End Function
 '========================================================
     'Control
-    Public Function ShowEdit(Text As String, Shape As Integer, X As Single, y As Single, w As Single, h As Single, TextColor As Long, Color As Long, HoverColor As Long, LineColor As Long, Optional Radius As Long = 0, Optional ShapeStyle As Integer = 0, Optional size As Long = 14, Optional style As FontStyle = FontStyleRegular) As MButtonState
+    Public Function ShowEdit(Text As String, Shape As Integer, x As Single, y As Single, w As Single, h As Single, TextColor As Long, Color As Long, HoverColor As Long, LineColor As Long, Optional Radius As Long = 0, Optional ShapeStyle As Integer = 0, Optional size As Long = 14, Optional style As FontStyle = FontStyleRegular) As MButtonState
         Dim m As Integer, R As RECT
 
-        m = CheckMouse(X, y, w - IIf(TextHandle = VarPtr(Text), h, 0), h)
-        Paint Shape, X, y, w, h, IIf(m <> 0 Or TextHandle = VarPtr(Text), HoverColor, Color), Radius, style:=ShapeStyle
+        m = CheckMouse(x, y, w - IIf(TextHandle = VarPtr(Text), h, 0), h)
+        Paint Shape, x, y, w, h, IIf(m <> 0 Or TextHandle = VarPtr(Text), HoverColor, Color), Radius, style:=ShapeStyle
         If m = 3 Then TextHandle = VarPtr(Text)
         
         Dim CtrlPressed As Boolean
@@ -856,37 +856,37 @@ ReShape:
             WaitChr = ""
         End If
         
-        Writes Text, X + Radius / 4, y + h / 2 - size / 0.75 / 2 - 1, size, TextColor, w - Radius / 2 - h, size / 0.75, StringAlignmentNear, style
+        Writes Text, x + Radius / 4, y + h / 2 - size / 0.75 / 2 - 1, size, TextColor, w - Radius / 2 - h, size / 0.75, StringAlignmentNear, style
         
         If TextHandle = VarPtr(Text) Then
-            Dim w2 As Long, pro As Long, alpha As Single
+            Dim w2 As Long, pro As Long, Alpha As Single
             w2 = EF.GetWidth(GG, Text, size, StringAlignmentNear, style)
             If w2 > w - Radius / 2 - h Then
                 If Len(Text) > 0 Then Text = Left(Text, Len(Text) - 1): VBA.Beep
             End If
-            Paint Shape, X, y, w, h, LineColor, size:=2, Radius:=Radius, style:=1
+            Paint Shape, x, y, w, h, LineColor, size:=2, Radius:=Radius, style:=1
             pro = GetTickCount Mod 1000
             If pro <= 700 Then
-                alpha = 1 - Cubic(pro / 700, 0, 1, 1, 1)
+                Alpha = 1 - Cubic(pro / 700, 0, 1, 1, 1)
             Else
-                alpha = Cubic((pro - 700) / 300, 0, 1, 1, 1)
+                Alpha = Cubic((pro - 700) / 300, 0, 1, 1, 1)
             End If
             Dim co(3) As Byte, co2 As Long
             co2 = IIf(m <> 0 Or TextHandle = VarPtr(Text), HoverColor, Color)
             CopyMemory co(0), co2, 4
             If w2 = 0 Then w2 = size / 4
-            If alpha <> 0 Then Paint 0, X + w2 + Radius / 4 - size / 8, y + h / 2 - size / 2, 3, size, argb(Int(alpha * 255), 255 - co(2), 255 - co(1), 255 - co(0))
+            If Alpha <> 0 Then Paint 0, x + w2 + Radius / 4 - size / 8, y + h / 2 - size / 2, 3, size, argb(Int(Alpha * 255), 255 - co(2), 255 - co(1), 255 - co(0))
             
-            Paint Shape, X + w - h, y, h, h, LineColor, Radius:=Radius
+            Paint Shape, x + w - h, y, h, h, LineColor, Radius:=Radius
             If CheckMouse2 = mMouseUp Then
                 TextHandle = 0
                 m = 4
             End If
             
             If Shape = 2 Then
-                Writes ">", X + w - h, y + h / 2 - size / 0.75 / 2 - 1, size, TextColor, h + 6, size / 0.75, StringAlignmentCenter, FontStyleBold
+                Writes ">", x + w - h, y + h / 2 - size / 0.75 / 2 - 1, size, TextColor, h + 6, size / 0.75, StringAlignmentCenter, FontStyleBold
             Else
-                Writes ">", X + w - h, y + h / 2 - size / 0.75 / 2 - 2, size, TextColor, h + 3, size / 0.75, StringAlignmentCenter, FontStyleBold
+                Writes ">", x + w - h, y + h / 2 - size / 0.75 / 2 - 2, size, TextColor, h + 3, size / 0.75, StringAlignmentCenter, FontStyleBold
             End If
         End If
         
@@ -895,119 +895,119 @@ ReShape:
         ShowEdit = m
         
     End Function
-    Public Sub ShowLoading(X As Single, y As Single, w As Single, h As Single, size As Long, color1 As Long, color2 As Long, color3 As Long)
+    Public Sub ShowLoading(x As Single, y As Single, w As Single, h As Single, size As Long, color1 As Long, color2 As Long, color3 As Long)
         
-        PaintArc X, y, w, h, 120, (GetTickCount Mod 3000) / 3000 * 360, color3, size * 0.86, 1
-        PaintArc X, y, w, h, 120, (GetTickCount Mod 1800) / 1800 * 360 + 90, color2, size * 0.93, 1
-        PaintArc X, y, w, h, 120, (GetTickCount Mod 1200) / 1200 * 360 + 90, color1, size, 1
+        PaintArc x, y, w, h, 120, (GetTickCount Mod 3000) / 3000 * 360, color3, size * 0.86, 1
+        PaintArc x, y, w, h, 120, (GetTickCount Mod 1800) / 1800 * 360 + 90, color2, size * 0.93, 1
+        PaintArc x, y, w, h, 120, (GetTickCount Mod 1200) / 1200 * 360 + 90, color1, size, 1
         'argb(255, 242, 195, 17),argb(255, 240, 127, 34),argb(255, 232, 76, 61)
     End Sub
-    Public Function ShowButton(pic As String, X As Long, y As Long, Text As String, Color As Long, Optional size As Long = 14, Optional style As FontStyle = FontStyleRegular) As MButtonState
+    Public Function ShowButton(pic As String, x As Long, y As Long, Text As String, Color As Long, Optional size As Long = 14, Optional style As FontStyle = FontStyleRegular) As MButtonState
 
-        Dim w As Single, h As Single, I As Integer, m As Integer
-        I = Res.GetImage(pic)
-        w = Res.ImgSize(I, imgGetWidth): h = Res.ImgSize(I, imgGetHeight)
+        Dim w As Single, h As Single, i As Integer, m As Integer
+        i = Res.GetImage(pic)
+        w = Res.ImgSize(i, imgGetWidth): h = Res.ImgSize(i, imgGetHeight)
         
-        m = CheckMouse(X, y, w, Int(h / 2))
-        DrawImage I, X, y, cy:=IIf(m <> 0, Int(h / 2), 0), ch:=Int(h / 2), alpha:=1
+        m = CheckMouse(x, y, w, Int(h / 2))
+        DrawImage i, x, y, cy:=IIf(m <> 0, Int(h / 2), 0), ch:=Int(h / 2), Alpha:=1
         
-        Writes Text, X, y + h / 2 / 2 - EF.EmHeight / 18 * size / 2 - 1, size, Color, w, size / 0.75, StringAlignmentCenter, style
+        Writes Text, x, y + h / 2 / 2 - EF.EmHeight / 18 * size / 2 - 1, size, Color, w, size / 0.75, StringAlignmentCenter, style
         
         ShowButton = m
     End Function
-    Public Function ShowSimpleButton(pic As String, X As Long, y As Long, Text As String, Color As Long, Optional size As Long = 14, Optional style As FontStyle = FontStyleRegular) As MButtonState
+    Public Function ShowSimpleButton(pic As String, x As Long, y As Long, Text As String, Color As Long, Optional size As Long = 14, Optional style As FontStyle = FontStyleRegular) As MButtonState
 
-        Dim w As Single, h As Single, I As Integer, m As Integer
-        I = Res.GetImage(pic)
-        w = Res.ImgSize(I, imgGetWidth): h = Res.ImgSize(I, imgGetHeight)
+        Dim w As Single, h As Single, i As Integer, m As Integer
+        i = Res.GetImage(pic)
+        w = Res.ImgSize(i, imgGetWidth): h = Res.ImgSize(i, imgGetHeight)
         
-        m = CheckMouse(X, y, w, h)
-        DrawImage I, X, y, alpha:=IIf(m, 1, 0.8)
+        m = CheckMouse(x, y, w, h)
+        DrawImage i, x, y, Alpha:=IIf(m, 1, 0.8)
         
-        Writes Text, X, y + h / 2 - EF.EmHeight / 18 * size / 2 - 1, size, Color, w, size / 0.75, StringAlignmentCenter, style
+        Writes Text, x, y + h / 2 - EF.EmHeight / 18 * size / 2 - 1, size, Color, w, size / 0.75, StringAlignmentCenter, style
     
         ShowSimpleButton = m
     End Function
-    Public Function ShowColorButton(Shape As Integer, X As Single, y As Single, w As Single, h As Single, Text As String, TextColor As Long, Color As Long, HoverColor As Long, Optional Radius As Long = 0, Optional ShapeStyle As Integer = 0, Optional size As Long = 14, Optional style As FontStyle = FontStyleRegular) As MButtonState
+    Public Function ShowColorButton(Shape As Integer, x As Single, y As Single, w As Single, h As Single, Text As String, TextColor As Long, Color As Long, HoverColor As Long, Optional Radius As Long = 0, Optional ShapeStyle As Integer = 0, Optional size As Long = 14, Optional style As FontStyle = FontStyleRegular) As MButtonState
         Dim m As Integer
 
-        m = CheckMouse(X, y, w, h)
-        Paint Shape, X, y, w, h, IIf(m, HoverColor, Color), Radius, style:=ShapeStyle
+        m = CheckMouse(x, y, w, h)
+        Paint Shape, x, y, w, h, IIf(m, HoverColor, Color), Radius, style:=ShapeStyle
         
-        Writes Text, X, y + h / 2 - EF.EmHeight / 18 * size / 2 - 1, size, TextColor, w, size / 0.75, StringAlignmentCenter, style
+        Writes Text, x, y + h / 2 - EF.EmHeight / 18 * size / 2 - 1, size, TextColor, w, size / 0.75, StringAlignmentCenter, style
     
         ShowColorButton = m
     End Function
-    Public Function ShowCheckBox(value, pic As String, X As Long, y As Long, Text As String, Color As Long, Optional size As Long = 14, Optional style As FontStyle = FontStyleRegular) As MButtonState
+    Public Function ShowCheckBox(value, pic As String, x As Long, y As Long, Text As String, Color As Long, Optional size As Long = 14, Optional style As FontStyle = FontStyleRegular) As MButtonState
 
-        Dim w As Single, h As Single, I As Integer, m As Integer
+        Dim w As Single, h As Single, i As Integer, m As Integer
         Dim X2 As Long, Y2 As Long
-        X2 = X: Y2 = y
+        X2 = x: Y2 = y
         
-        I = Res.GetImage(pic)
-        w = Res.ImgSize(I, imgGetWidth): h = Res.ImgSize(I, imgGetHeight)
+        i = Res.GetImage(pic)
+        w = Res.ImgSize(i, imgGetWidth): h = Res.ImgSize(i, imgGetHeight)
         
-        m = CheckMouse(X, y, w, Int(h / 2))
-        DrawImage I, X, y, cy:=IIf(value = True, Int(h / 2), 0), ch:=Int(h / 2), alpha:=1
+        m = CheckMouse(x, y, w, Int(h / 2))
+        DrawImage i, x, y, cy:=IIf(value = True, Int(h / 2), 0), ch:=Int(h / 2), Alpha:=1
         If m = 3 Then value = IIf(value = True, False, True)
         
         Writes Text, X2 + w + EF.EmHeight / 18 * size / 2 + 1, Y2 + h / 2 / 2 - EF.EmHeight / 18 * size / 2 - 1, size, Color, GW, size / 0.75, StringAlignmentNear, style
         
         ShowCheckBox = m
     End Function
-    Public Function ShowColorCheckBox(value, X As Single, y As Single, w As Single, h As Single, Text As String, DefaultColor As Long, ChooseColor As Long, ForeColor As Long, Optional size As Long = 14, Optional style As FontStyle = FontStyleRegular) As MButtonState
+    Public Function ShowColorCheckBox(value, x As Single, y As Single, w As Single, h As Single, Text As String, DefaultColor As Long, ChooseColor As Long, ForeColor As Long, Optional size As Long = 14, Optional style As FontStyle = FontStyleRegular) As MButtonState
 
-        m = CheckMouse(X, y, w, h)
+        m = CheckMouse(x, y, w, h)
         
-        Paint 1, X, y, h, h, IIf(value = True, ChooseColor, DefaultColor)
+        Paint 1, x, y, h, h, IIf(value = True, ChooseColor, DefaultColor)
         If m = 3 Then value = IIf(value = True, False, True)
         
-        Writes Text, X + h + EF.EmHeight / 18 * size / 2 + 1, y + h / 2 - EF.EmHeight / 18 * size / 2 - 1, size, ForeColor, GW, size / 0.75, StringAlignmentNear, style
+        Writes Text, x + h + EF.EmHeight / 18 * size / 2 + 1, y + h / 2 - EF.EmHeight / 18 * size / 2 - 1, size, ForeColor, GW, size / 0.75, StringAlignmentNear, style
         
         ShowColorCheckBox = m
     End Function
-    Public Function ShowSliderBar(value, pic As String, X As Long, y As Long) As MButtonState
+    Public Function ShowSliderBar(value, pic As String, x As Long, y As Long) As MButtonState
 
-        Dim w As Single, h As Single, I As Integer, m As Integer
+        Dim w As Single, h As Single, i As Integer, m As Integer
         Dim X2 As Long, Y2 As Long
         
-        X2 = X: Y2 = y
+        X2 = x: Y2 = y
         
-        I = Res.GetImage(pic)
-        w = Res.ImgSize(I, imgGetWidth): h = Res.ImgSize(I, imgGetHeight)
+        i = Res.GetImage(pic)
+        w = Res.ImgSize(i, imgGetWidth): h = Res.ImgSize(i, imgGetHeight)
         
-        m = CheckMouse(X, y, w, Int(h / 2))
-        DrawImage I, X, y, cy:=0, ch:=Int(h / 2), alpha:=1
-        DrawImage I, X, y, cy:=Int(h / 2), CW:=value * w, ch:=Int(h / 2), alpha:=1
+        m = CheckMouse(x, y, w, Int(h / 2))
+        DrawImage i, x, y, cy:=0, ch:=Int(h / 2), Alpha:=1
+        DrawImage i, x, y, cy:=Int(h / 2), CW:=value * w, ch:=Int(h / 2), Alpha:=1
         
         If m > 0 And Mouse.button > 0 Then
-            value = (Mouse.X - X) / w
+            value = (Mouse.x - x) / w
             If value < 0 Then value = 0
             If value > 1 Then value = 1
         End If
         
         ShowSliderBar = m
     End Function
-    Public Function ShowHScrollBar(value, X As Single, y As Single, w As Single, h As Single, LineColor As Long, BallColor As Long, Optional size As Long = 2) As MButtonState
+    Public Function ShowHScrollBar(value, x As Single, y As Single, w As Single, h As Single, LineColor As Long, BallColor As Long, Optional size As Long = 2) As MButtonState
         Dim m As Integer
         
-        m = CheckMouse(X, y, w, h)
-        PaintLine X, y + h / 2 - size / 2, X + w, y + h / 2 - size / 2, LineColor, size
-        Paint 1, X + value * (w - h), y, h, h, BallColor
+        m = CheckMouse(x, y, w, h)
+        PaintLine x, y + h / 2 - size / 2, x + w, y + h / 2 - size / 2, LineColor, size
+        Paint 1, x + value * (w - h), y, h, h, BallColor
         If m > 0 And Mouse.button > 0 Then
-            value = (Mouse.X - X) / (w - h)
+            value = (Mouse.x - x) / (w - h)
             If value < 0 Then value = 0
             If value > 1 Then value = 1
         End If
         
         ShowHScrollBar = m
     End Function
-    Public Function ShowVScrollBar(value, X As Single, y As Single, w As Single, h As Single, LineColor As Long, BallColor As Long, Optional size As Long = 2) As MButtonState
+    Public Function ShowVScrollBar(value, x As Single, y As Single, w As Single, h As Single, LineColor As Long, BallColor As Long, Optional size As Long = 2) As MButtonState
         Dim m As Integer
 
-        m = CheckMouse(X, y, w, h)
-        PaintLine X + w / 2 - size / 2, y, X + w / 2 - size / 2, y + h, LineColor, size
-        Paint 1, X, y + value * (h - w), w, w, BallColor
+        m = CheckMouse(x, y, w, h)
+        PaintLine x + w / 2 - size / 2, y, x + w / 2 - size / 2, y + h, LineColor, size
+        Paint 1, x, y + value * (h - w), w, w, BallColor
         
         If m > 0 And Mouse.button > 0 Then
             value = (Mouse.y - y) / (h - w)

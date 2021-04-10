@@ -1,4 +1,4 @@
-GPage = 407, 147, 1124, 611, 
+GPage = 286, 143, 1003, 607, 
 Gdiplus = 0, 0, 0, 0, C
 Bass = 0, 0, 0, 0, C
 GCore = 0, 0, 0, 0, C
@@ -21,9 +21,21 @@ GResource = 50, 50, 767, 514,
 AeroEffect = 0, 0, 0, 0, C
 Animations = 0, 0, 0, 0, C
 GCrashBox = 0, 0, 0, 0, C
+<<<<<<< HEAD
+ResPool = 0, 0, 0, 0, C
+Server = 146, -14, 863, 638, , 25, 25, 742, 489, C
+MainPage = 41, 395, 1077, 808, 
+aShadow = 0, 0, 0, 0, C
+IPPage = 128, 128, 1132, 491, I
+Base64 = 0, 0, 0, 0, C
+=======
 ResPool = 104, 104, 868, 389, 
 Server = 176, 58, 893, 522, , 25, 25, 742, 489, C
 MainPage = 41, 395, 1077, 808, Z
 aShadow = 0, 0, 0, 0, C
 IPPage = 128, 128, 1132, 491, 
+<<<<<<< HEAD
 GroupCore = 25, 25, 1088, 540, 
+=======
+>>>>>>> 84e17e39507da66897c24c9b7b0824a6d4ebafca
+>>>>>>> 2695412e6fa8ff52e8c365b4a4f9775963cd5be0
