@@ -1,4 +1,4 @@
-GPage = 26, 26, 669, 410, Z
+GPage = 26, 26, 669, 410, 
 Gdiplus = 0, 0, 0, 0, C
 Bass = 0, 0, 0, 0, C
 GCore = 0, 0, 0, 0, C
@@ -22,7 +22,8 @@ AeroEffect = 0, 0, 0, 0, C
 Animations = 0, 0, 0, 0, C
 GCrashBox = 0, 0, 0, 0, C
 ResPool = 0, 0, 0, 0, C
-Client = 78, 78, 610, 402, , 52, 52, 584, 376, C
+Client = 78, 78, 610, 402, Z, 52, 52, 584, 376, C
 MainPage = 125, 125, 1051, 696, 
 aShadow = 0, 0, 0, 0, C
 IPPage = 26, 26, 558, 350, 
+GroupCore = 0, 0, 0, 0, C
