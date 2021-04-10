@@ -362,7 +362,7 @@ Public Sub OCR_Click()
 End Sub
 
 Private Sub Form_Load()
-    ReDim groups(0)
+    ReDim groups(0): ReDim bans(0)
     '测试用
     AddGroup 1, 1, True, "大厅"
     AddGroup 2, 1, False, "未加入测试"

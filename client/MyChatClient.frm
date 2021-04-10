@@ -344,8 +344,7 @@ End Sub
 'Emerald框架部分
 Private Sub InitEmeraldFramework()
     '启动Emerald
-    StartEmerald Me.hwnd, 800, 600, False
-    ScaleGame Screen.Width / Screen.TwipsPerPixelX / 1280, ScaleDefault
+    StartEmerald Me.hwnd, 1100, 600, False
     '创建字体渲染
     Set EF = New GFont
     EF.MakeFont "微软雅黑"
@@ -389,7 +388,23 @@ End Sub
 '===============================================================================================================
 
 Private Sub Form_Load()
-    ReDim groups(0)
+    ReDim groups(0): ReDim bans(0)
+    '测试用
+    AddGroup 1, 1, True, "大厅"
+    AddGroup 2, 1, False, "未加入测试"
+    AddGroup 3, 1, True, "测试讨论组2"
+    AddGroup 4, 1, True, "testtest"
+    AddGroup 5, 1, True, "hash"
+    AddMessage 1, 1, "测试组员", "这是一条超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长但是就是不换行的消息"
+    AddMessage 1, 2, "测试组员", "我还能换行" & vbCrLf & "乌拉乌拉"
+    AddMessage 1, -1, "系统消息", "您被禁言，才怪。"
+    AddMessage 1, -2, "老师", "不要乱发消息"
+    For i = 1 To 20
+        AddMessage 1, -2, "老师", "身为老师要以身作则带头刷屏，而且要刷那种很长很长的屏，不仅如此，我还要..."
+    Next
+    '这里和服务端不一样是动态的，需要获取。
+    'userId = -2: userName = "老师"
+    
     Call InitEmeraldFramework
     Set Shadow = New aShadow
     With Shadow
@@ -433,9 +448,9 @@ Private Sub Form_Load()
     Text1.Move Text5.Left, Text5.Top, Text5.Width, Text5.Height
     Picture1.Move Text5.Left, Text5.Top, Text5.Width, Text5.Height
     Picture2.Move Text5.Left, Text5.Top, Text5.Width, Text5.Height
-    Text2.Move 50, Me.ScaleHeight - 80 + 25, Me.ScaleWidth - 245, 80 - 50
+    Text2.Move 300 + 50, Me.ScaleHeight - 80 + 25, Me.ScaleWidth - 245 - 300, 80 - 50
     
-    Text1.Visible = True
+    Text1.Visible = False
     Text5.Visible = False
     Picture1.Visible = False
     Picture2.Visible = False
@@ -480,7 +495,7 @@ Public Sub Option3_Click()
     Command4.Visible = False
     
     Picture1.Visible = False
-    Text1.Visible = True
+    Text1.Visible = False
     Text5.Visible = False
     Picture2.Visible = False
 End Sub
@@ -601,14 +616,14 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
     Dim strSplit
     Dim MsgType As String
     Dim grpId As String
-    Dim name As String
+    Dim Name As String
     Dim MsgContent As String
     Winsock1.GetData strdata
     
     strSplit = Split(strdata, ";")
     MsgType = strSplit(0)
-    name = strSplit(2)
+    Name = strSplit(2)
     MsgContent = strSplit(4)
     MsgContent = Base64DecodeString(MsgContent)
-    Text1.Text = name + ":" + MsgContent + vbCrLf + Text1.Text
+    Text1.Text = Name + ":" + MsgContent + vbCrLf + Text1.Text
 End Sub

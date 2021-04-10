@@ -51,6 +51,7 @@ redraw:
         If selectIndex = i Then groups(i).unreadTick = 0
     Next
     
+    Page.Writes "MyChat · 教师端", 20, 15, 20, argb(160, 255, 255, 255)
     Page.Writes groups(selectIndex).Name, 20 + 300, 15, 20, argb(255, 0, 0, 0), style:=FontStyleBold
     
     StartScrollArea Page, scroll
@@ -75,6 +76,10 @@ redraw:
                             tw = scroll.Width - 60
                         End If
                         Page.Paint 2, drx, dry + 25, tw + 20, th + 20, IIf(.id = userId, argb(255, 84, 223, 143), argb(255, 232, 232, 232)), 16
+                        If CheckMouse(drx + 300, dry + 60, tw + 20, th + 20) > 0 And Mouse.button = 2 Then
+                            MenuWindow.id = .id: Mouse.button = 0
+                            Server.PopupMenu MenuWindow.msgMenu
+                        End If
                         Page.Writes .Content, drx + 10, dry + 25 + 10, 18, IIf(.id = userId, argb(255, 255, 255, 255), argb(255, 0, 0, 0)), tw + 1, th
                         
                     End If
@@ -100,10 +105,10 @@ redraw:
         If maxScr = 0 Then maxScr = 1
         dry = 20 + (scroll.Height - 20 - 40) * (scrollY / maxScr)
         Page.Paint 2, scroll.Width - 15, dry, 8, 40, argb(255, 128, 128, 128), 10
-        m = CheckMouse(scroll.Width - 15 + Server.Text3.Left, 20 + Server.Text3.Top, 8, scroll.Height - 40)
+        m = CheckMouse(scroll.Width - 15 + 300, 20 + 60, 8, scroll.Height - 40)
         If (m > 0 And Mouse.button = 1) Or (Mouse.button = 1 And preY <> 0) Then
-            If preY = 0 Then preY = Mouse.y - dry
-            dry = Mouse.y - preY
+            If preY = 0 Then preY = Mouse.y - dry - 60
+            dry = Mouse.y - 60 - preY * 2
             If dry < 20 Then dry = 0
             If dry > scroll.Height - 20 - 40 Then dry = scroll.Height - 20 - 40
             scrollY = dry / (scroll.Height - 20 - 40) * maxScr
@@ -113,7 +118,7 @@ redraw:
         If scrollY > maxScr Then scrollY = maxScr: GoTo redraw
         If scrollY < 0 Then scrollY = 0: GoTo redraw
         
-    EndScrollArea Page, Server.Text3.Left, Server.Text3.Top, 0, 0
+    EndScrollArea Page, 300, 60, 0, 0
 
     'If Server.lis.State = 0 Then Page.Writes Server.Caption & "（连接未启动）", 20, 15, 20, argb(255, 255, 83, 57), style:=FontStyleBold
    ' If Server.lis.State = 1 Then Page.Writes Server.Caption & "（连接已准备）", 20, 15, 20, argb(255, 255, 170, 49), style:=FontStyleBold
