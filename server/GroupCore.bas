@@ -11,10 +11,7 @@ Public Type Group
     isJoin As Boolean
     Name As String
     Msg() As Messages
-<<<<<<< HEAD
-=======
     unreadTick As Integer
->>>>>>> 53e2e550e623ad8f9cb82be9bf2b880d4cb697f9
 End Type
 Public userId As Integer, userName As String
 Public groups() As Group

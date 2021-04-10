@@ -1,11 +1,6 @@
 Type=Exe
-<<<<<<< HEAD
 Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#C:\Windows\SysWOW64\stdole2.tlb#OLE Automation
 Reference=*\G{13FC9823-115E-4CB2-9A02-881895942E28}#1.646#0#..\..\..\client\MyChat client\client new ui\Win32Api.tlb#Win32API之vb6头文件 2017-5-4修正更新 made by 棉花糖 
-=======
-Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#..\..\..\Windows\SysWOW64\stdole2.tlb#OLE Automation
-Reference=*\G{13FC9823-115E-4CB2-9A02-881895942E28}#1.646#0#..\..\AutoRepair\Win32Api.tlb#Win32API之vb6头文件 2017-5-4修正更新 made by 棉花糖 
->>>>>>> 53e2e550e623ad8f9cb82be9bf2b880d4cb697f9
 Object={248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0; MSWINSCK.OCX
 Class=GPage; Core\GPage.cls
 Module=Gdiplus; Core\Gdiplus.bas

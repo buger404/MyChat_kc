@@ -41,11 +41,7 @@ redraw:
         Page.Writes groups(i).Name, 30, (i - 1) * 70 + 60 + 5, 20, argb(255, 255, 255, 255), style:=FontStyleBold
         Dim tip As String
         tip = groups(i).Msg(UBound(groups(i).Msg)).Name & ":" & groups(i).Msg(UBound(groups(i).Msg)).Content
-<<<<<<< HEAD
-        If Len(tip) > 20 Then tip = Left(tip, 17) & "..."
-=======
         If Len(tip) > 12 Then tip = Left(tip, 10) & "..."
->>>>>>> 53e2e550e623ad8f9cb82be9bf2b880d4cb697f9
         Page.Writes tip, 30, (i - 1) * 70 + 60 + 33, 18, argb(200, 255, 255, 255)
         If m = 3 Then selectIndex = i: scrBottom = True
         If groups(i).unreadTick > 0 Then
@@ -64,10 +60,9 @@ redraw:
         For i = 1 To UBound(groups(selectIndex).Msg)
             With groups(selectIndex).Msg(i)
                 drx = IIf(.id = userId, scroll.Width - 20, 20)
-<<<<<<< HEAD
+
                 Page.Writes .Name & IIf(id > 0, "(#" & .id & ")", "") & "   " & format(.time, "hh:MM:ss"), drx, dry, 18, IIf(.id > 0, argb(255, 168, 168, 168), argb(255, 0, 176, 240)), align:=IIf(.id = userId, StringAlignmentFar, StringAlignmentNear)
-=======
->>>>>>> 53e2e550e623ad8f9cb82be9bf2b880d4cb697f9
+
                 tw = EF.GetWidth(Page.GG, .Content, 18, StringAlignmentNear, FontStyleRegular)
                 th = EF.GetHeight(Page.GG, .Content, 18, StringAlignmentNear, FontStyleRegular)
                 If dry >= -(th + 40 + 20) And dry <= scroll.Height Then
@@ -165,17 +160,17 @@ redraw:
     m = CheckMouse2
     Page.DrawImage "send.png", 300 + 630, GH - 40 * pro + 40 * dpro, Alpha:=IIf(Server.Command2.Enabled, IIf(m, 1, 0.8), 0.3) * pro, pos:=posOnCenter
     ECore.TipMsg "发送消息", 0
-<<<<<<< HEAD
-    If m = mMouseDown And Mouse.button = 1 And Server.Text4.Visible Then Call Server.SendMsg: Mouse.button = 0
 
-=======
+    'If m = mMouseDown And Mouse.button = 1 And Server.Text4.Visible Then Call Server.SendMsg: Mouse.button = 0
+
+
     If m = mMouseDown And Mouse.button = 1 And Server.Text4.Visible Then
-        Server.Command2_Click
+        Server.SendMsg
         Mouse.button = 0
         'AddMessage groups(selectIndex).id, userId, userName, Server.Text4.Text
         scrBottom = True
     End If
->>>>>>> 53e2e550e623ad8f9cb82be9bf2b880d4cb697f9
+
     
     Page.DrawImage "clear.png", 300 + 690, GH - 40 * pro + 40 * dpro, Alpha:=0, pos:=posOnCenter
     m = CheckMouse2
@@ -194,9 +189,16 @@ SkipTab1:
     Page.DrawImage "disconnect.png", 300 + 50, GH - 40 * dpro + 40 * pro, Alpha:=1 * dpro, pos:=posOnCenter
     ECore.TipMsg "断开客户端连接", 0
     If m = mMouseDown And Mouse.button = 1 Then Server.Text2.Text = InputBox("将断开的客户端的序号", "断开客户端连接"): Server.Command1_Click: Mouse.button = 0
-    Page.DrawImage "ban.png", 300 + 110, GH - 40 * dpro + 40 * pro, Alpha:=0, pos:=posOnCenter
+    
+    Page.DrawImage "disconnect.png", 300 + 110, GH - 40 * dpro + 40 * pro, Alpha:=0, pos:=posOnCenter
     m = CheckMouse2
-    Page.DrawImage "ban.png", 300 + 110, GH - 40 * dpro + 40 * pro, Alpha:=IIf(Server.Command5.Enabled, 1, 0.3) * dpro, pos:=posOnCenter
+    Page.DrawImage "disconnect.png", 300 + 110, GH - 40 * dpro + 40 * pro, Alpha:=1 * dpro, pos:=posOnCenter
+    ECore.TipMsg "创建组", 0
+    If m = mMouseDown And Mouse.button = 1 Then Call Server.createGrp: Mouse.button = 0
+    
+    Page.DrawImage "ban.png", 300 + 170, GH - 40 * dpro + 40 * pro, Alpha:=0, pos:=posOnCenter
+    m = CheckMouse2
+    Page.DrawImage "ban.png", 300 + 170, GH - 40 * dpro + 40 * pro, Alpha:=IIf(Server.Command5.Enabled, 1, 0.3) * dpro, pos:=posOnCenter
     ECore.TipMsg "客户端禁言", 0
     If m = mMouseDown And Mouse.button = 1 And Server.Command5.Enabled Then Server.Command5_Click: Mouse.button = 0
     

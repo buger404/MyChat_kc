@@ -202,6 +202,7 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Dim State As Boolean, pop As Single
 Dim pypid
+Dim grpid As Integer
 Dim g As String, q As Single, m As Single
 Dim MainPage As MainPage, IPPage As IPPage
 
@@ -279,16 +280,25 @@ Public Sub SendMsg()
     S = 1
     Do While (S <= Winsock.UBound)
         If Winsock(S).State = 7 Then
-            Call AddMessage(0, userId, "老师", Text4.Text)
-            Winsock(S).SendData "msg;" + "0;" + "老师;" + Str(userId) + ";" + Base64EncodeString(Text4.Text) + ";"
+            Call AddMessage(0, userId, userName, Text4.Text)
+            Winsock(S).SendData "msg;" + "0;" + userName + ";" + Str(userId) + ";" + Base64EncodeString(Text4.Text) + ";"
             DoEvents
         End If
         S = S + 1
     Loop
     
-    Text3.Text = "我：" & Text4.Text & vbCrLf & Text3.Text
     Text4.Text = ""
 
+End Sub
+
+Public Sub createGrp()
+    Dim id As Integer, leader As Integer, isJoin As Boolean, Name As String
+    id = InputBox("id")
+    leader = InputBox("leader")
+    isJoin = True
+    Name = InputBox("Name")
+    Call AddGroup(Int(id), Int(leader), isJoin, Name)
+    
 End Sub
 
 Public Sub Command3_Click()
@@ -394,16 +404,7 @@ Private Sub Form_Load()
     
     pypid = Shell("python """ & App.path & "\" & "server.py"" -o " & lis.LocalIP, 6)
     
-<<<<<<< HEAD
     Call AddGroup(0, -2, True, "公共")
-    grpExistId = 0
-    
-
-=======
-    grpExistId = 0
-    
-    
->>>>>>> 53e2e550e623ad8f9cb82be9bf2b880d4cb697f9
     Text3.Visible = False: Text4.Visible = True
     Command5.Enabled = False
     State = False
@@ -473,9 +474,6 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
     Dim strSplit
     Dim id As Integer
     Dim MsgType As String
-    Dim grpId As String
-    Dim Name As String
-    Dim MsgContent As String
     Dim strData As String
     Winsock(index).GetData strData
     
@@ -496,22 +494,22 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
     
     Select Case MsgType
     Case "msg"
-    Name = strSplit(2)
-    grpId = strSplit(1)
-    MsgContent = strSplit(4)
-    MsgContent = Base64DecodeString(MsgContent)
-<<<<<<< HEAD
-    Call AddMessage(Int(grpId), id, Name, MsgContent)
-    'Text3.Text = Name + ":" + MsgContent + "   #" + Str(id) + "#" + Str(grpId) + "#" + vbCrLf + Text3.Text
-=======
-    Text3.Text = Name + ":" + MsgContent + "   #" + Str(id) + "#" + Str(grpId) + "#" + vbCrLf + Text3.Text
->>>>>>> 53e2e550e623ad8f9cb82be9bf2b880d4cb697f9
+        Dim Name As String
+        Dim MsgContent As String
+        Name = strSplit(2)
+        grpid = strSplit(1)
+        MsgContent = strSplit(4)
+        MsgContent = Base64DecodeString(MsgContent)
+        Call AddMessage(Int(grpid), id, Name, MsgContent)
+        'Text3.Text = Name + ":" + MsgContent + "   #" + Str(id) + "#" + Str(grpId) + "#" + vbCrLf + Text3.Text
     Case "picmsg"
     Case "addgroup"
+        grpid = Int(srtSplit(1))
+        Dim leader As Integer
+        leader = groups(grpid)
     Case "okgroup"
-    Case "creategroup"
     
-    Dim grpCreateName As String
+    Case "creategroup"
     
     End Select
     
