@@ -37,15 +37,15 @@ Public Sub Update()
     For i = 1 To UBound(groups)
         m = CheckMouse(0, (i - 1) * 70 + 60, 301, 71)
         Page.Paint 0, 0, (i - 1) * 70 + 60, 301, 71, argb(IIf(selectIndex = i, 60, IIf(m > 0, 30, 0)), 0, 0, 0)
-        Page.Writes groups(i).name, 30, (i - 1) * 70 + 60 + 5, 20, argb(255, 255, 255, 255), style:=FontStyleBold
+        Page.Writes groups(i).Name, 30, (i - 1) * 70 + 60 + 5, 20, argb(255, 255, 255, 255), style:=FontStyleBold
         Dim tip As String
-        tip = groups(i).Msg(UBound(groups(i).Msg)).name & ":" & groups(i).Msg(UBound(groups(i).Msg)).Content
+        tip = groups(i).Msg(UBound(groups(i).Msg)).Name & ":" & groups(i).Msg(UBound(groups(i).Msg)).Content
         If Len(tip) > 20 Then tip = Left(tip, 17) & "..."
         Page.Writes tip, 30, (i - 1) * 70 + 60 + 33, 18, argb(200, 255, 255, 255)
         If m = 3 Then selectIndex = i
     Next
     
-    Page.Writes groups(selectIndex).name, 20 + 300, 15, 20, argb(255, 0, 0, 0), style:=FontStyleBold
+    Page.Writes groups(selectIndex).Name, 20 + 300, 15, 20, argb(255, 0, 0, 0), style:=FontStyleBold
     
     StartScrollArea Page, scroll
         Page.Clear argb(0, 0, 0, 0)
@@ -54,7 +54,7 @@ Public Sub Update()
         For i = 1 To UBound(groups(selectIndex).Msg)
             With groups(selectIndex).Msg(i)
                 drx = IIf(.id = userId, scroll.Width - 20, 20)
-                Page.Writes .name & IIf(id > 0, "(#" & .id & ")", "") & "   " & format(.time, "hh:MM:ss"), drx, dry, 18, IIf(.id > 0, argb(255, 168, 168, 168), argb(255, 0, 176, 240)), align:=IIf(.id = userId, StringAlignmentFar, StringAlignmentNear)
+                Page.Writes .Name & IIf(id > 0, "(#" & .id & ")", "") & "   " & format(.time, "hh:MM:ss"), drx, dry, 18, IIf(.id > 0, argb(255, 168, 168, 168), argb(255, 0, 176, 240)), align:=IIf(.id = userId, StringAlignmentFar, StringAlignmentNear)
                 tw = EF.GetWidth(Page.GG, .Content, 18, StringAlignmentNear, FontStyleRegular)
                 th = EF.GetHeight(Page.GG, .Content, 18, StringAlignmentNear, FontStyleRegular)
                 If .id = userId Then drx = drx - tw - 20
@@ -107,7 +107,7 @@ Public Sub Update()
     m = CheckMouse2
     Page.DrawImage "send.png", 300 + 630, GH - 40 * pro + 40 * dpro, Alpha:=IIf(Server.Command2.Enabled, IIf(m, 1, 0.8), 0.3) * pro, pos:=posOnCenter
     ECore.TipMsg "·¢ËÍÏûÏ¢", 0
-    If m = mMouseDown And Mouse.button = 1 And Server.Text4.Visible Then Server.Command2_Click: Mouse.button = 0
+    If m = mMouseDown And Mouse.button = 1 And Server.Text4.Visible Then Call Server.SendMsg: Mouse.button = 0
 
     
     Page.DrawImage "clear.png", 300 + 690, GH - 40 * pro + 40 * dpro, Alpha:=0, pos:=posOnCenter

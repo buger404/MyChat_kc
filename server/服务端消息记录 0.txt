@@ -1,5 +1,6 @@
-wxt:asdf   # 2# 0#
-wxt:asdf   # 2##
-id:   # 1##
+我：asdfasdfas
+我：asdf 
+我：asdf
+我：asdf
 welcome,administrator!
 

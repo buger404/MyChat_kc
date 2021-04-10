@@ -201,7 +201,6 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Dim State As Boolean, pop As Single
-Dim grpExistId As Integer
 Dim pypid
 Dim g As String, q As Single, m As Single
 Dim MainPage As MainPage, IPPage As IPPage
@@ -210,7 +209,7 @@ Public Sub Command1_Click()
     Dim C As Single
     C = Val(Text2.Text)
     
-    If C > Winsock.ubound Then
+    If C > Winsock.UBound Then
         MsgBox ("没有此用户")
     Else
         If Winsock(C).State = 7 Then
@@ -271,15 +270,17 @@ Private Sub Form_KeyPress(KeyAscii As Integer)
     If TextHandle <> 0 Then WaitChr = WaitChr & Chr(KeyAscii)
 End Sub
 '===============================================================================================================
-Public Sub Command2_Click()
+
+Public Sub SendMsg()
 
     If Text4.Text = "" Then VBA.Beep: Exit Sub
     
     Dim S As Single
     S = 1
-    Do While (S <= Winsock.ubound)
+    Do While (S <= Winsock.UBound)
         If Winsock(S).State = 7 Then
-            Winsock(S).SendData "msg;" + "groupid;" + "主机" + ";id;" + Base64EncodeString(Text4.Text) + ";"
+            Call AddMessage(0, userId, "老师", Text4.Text)
+            Winsock(S).SendData "msg;" + "0;" + "老师;" + Str(userId) + ";" + Base64EncodeString(Text4.Text) + ";"
             DoEvents
         End If
         S = S + 1
@@ -309,7 +310,7 @@ Public Sub Command5_Click()
         Dim S As Single
         g = "服务器开启了禁言"
         S = 1
-        Do While (S <= Winsock.ubound)
+        Do While (S <= Winsock.UBound)
             If Winsock(S).State = 7 Then
                 Winsock(S).SendData g
                 DoEvents
@@ -322,7 +323,7 @@ Public Sub Command5_Click()
         Command5.Caption = "禁言"
         g = "服务器关闭了禁言"
         S = 1
-        Do While (S <= Winsock.ubound)
+        Do While (S <= Winsock.UBound)
             If Winsock(S).State = 7 Then
                 Winsock(S).SendData g
                 DoEvents
@@ -390,15 +391,11 @@ Private Sub Form_Load()
     
     pypid = Shell("python """ & App.path & "\" & "server.py"" -o " & lis.LocalIP, 6)
     
-<<<<<<< HEAD
     Call AddGroup(0, -2, True, "公共")
     grpExistId = 0
     
-    
-    Text3.Visible = True: Text4.Visible = True
-=======
+
     Text3.Visible = False: Text4.Visible = True
->>>>>>> 3b07fd90bb91919c2b4047f89cff85163e999376
     Command5.Enabled = False
     State = False
     m = 1
@@ -427,7 +424,7 @@ Private Sub lis_ConnectionRequest(ByVal requestID As Long)
     Load Winsock(m)
     Command5.Enabled = True
     
-    pop = Winsock.ubound
+    pop = Winsock.UBound
     
     If Winsock(m).State = sckClosed Then
         Winsock(m).Accept requestID
@@ -468,14 +465,14 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
     Dim id As Integer
     Dim MsgType As String
     Dim grpId As String
-    Dim name As String
+    Dim Name As String
     Dim MsgContent As String
     Dim strData As String
     Winsock(index).GetData strData
     
     Dim S As Single
     S = 1
-    Do While (S <= Winsock.ubound)
+    Do While (S <= Winsock.UBound)
         If Winsock(S).State = 7 Then
             Winsock(S).SendData strData
             DoEvents
@@ -486,16 +483,16 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
     strSplit = Split(strData, ";")
     id = index
     MsgType = strSplit(0)
-<<<<<<< HEAD
 
     
     Select Case MsgType
     Case "msg"
-    name = strSplit(2)
+    Name = strSplit(2)
     grpId = strSplit(1)
     MsgContent = strSplit(4)
     MsgContent = Base64DecodeString(MsgContent)
-    Text3.Text = name + ":" + MsgContent + "   #" + Str(id) + "#" + Str(grpId) + "#" + vbCrLf + Text3.Text
+    Call AddMessage(Int(grpId), id, Name, MsgContent)
+    'Text3.Text = Name + ":" + MsgContent + "   #" + Str(id) + "#" + Str(grpId) + "#" + vbCrLf + Text3.Text
     Case "picmsg"
     Case "addgroup"
     Case "okgroup"
@@ -504,10 +501,5 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
     Dim grpCreateName As String
     
     End Select
-=======
-    name = strSplit(2)
-    MsgContent = strSplit(4)
-    MsgContent = Base64DecodeString(MsgContent)
->>>>>>> 3b07fd90bb91919c2b4047f89cff85163e999376
     
 End Sub

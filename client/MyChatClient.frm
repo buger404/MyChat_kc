@@ -559,13 +559,10 @@ Public Sub SendMsg()
     If Text2.Text = "" Then
         VBA.Beep
     Else
-        'Winsock1.SendData "msg;" + Str(grpId) + ";" + Me.Caption + ";id;" + Base64EncodeString(Text2.Text) + ";"
-        Winsock1.SendData Text2.Text
+        Winsock1.SendData "msg;" + Str(grpId) + ";" + Me.Caption + ";id;" + Base64EncodeString(Text2.Text) + ";"
+        'Winsock1.SendData Text2.Text
         Text2.Text = ""
     End If
-End Sub
-Public Sub JoinGrp()
-
 End Sub
 
 Public Sub Command3_Click()
@@ -601,14 +598,14 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
     Dim strSplit
     Dim MsgType As String
     Dim grpId As String
-    Dim name As String
+    Dim Name As String
     Dim MsgContent As String
     Winsock1.GetData strdata
     
     strSplit = Split(strdata, ";")
     MsgType = strSplit(0)
-    name = strSplit(2)
+    Name = strSplit(2)
     MsgContent = strSplit(4)
     MsgContent = Base64DecodeString(MsgContent)
-    Text1.Text = name + ":" + MsgContent + vbCrLf + Text1.Text
+    Text1.Text = Name + ":" + MsgContent + vbCrLf + Text1.Text
 End Sub
