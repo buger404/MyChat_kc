@@ -30,6 +30,7 @@ Form=MyChatServer.frm
 Class=MainPage; MainPage.cls
 Class=aShadow; aShadow.cls
 Class=IPPage; IPPage.cls
+Module=Base64; Base64.bas
 Startup="Server"
 HelpFile=""
 Title="ÁÄÌì·şÎñ¶Ë"

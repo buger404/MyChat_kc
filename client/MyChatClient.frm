@@ -306,11 +306,11 @@ Public Sub Command8_Click()
 End Sub
 
 Private Sub logBtn_Click()
-    If Dir("id_info.txt") <> "" Then Kill ("id_info.txt")
-    If Dir("id_info.txt") <> "" Then Kill "id_info.txt"
+    'If Dir("id_info.txt") <> "" Then Kill ("id_info.txt")
+    'If Dir("id_info.txt") <> "" Then Kill "id_info.txt"
     If Dir("face.png") <> "" Then Kill "face.png"
     
-    ShellEx "python """ & App.path & "\" & "client.py"" -l " & Winsock1.RemoteHost
+    'ShellEx "python """ & App.path & "\" & "client.py"" -l " & Winsock1.RemoteHost
     If Dir("id_info.txt") = "" Then MsgBox "查无此人，考虑注册？", 16, "登陆失败": End
     Open "id_info.txt" For Input As 1
     A = StrConv(InputB(FileLen("id_info.txt"), 1), vbUnicode)
@@ -410,10 +410,6 @@ Private Sub Form_Load()
     Dim A As String
     Dim S
 
-    If Dir("id_info.txt") <> "" Then
-    Kill "id_info.txt"
-    End If
-    
     Dim o As Object
     On Error Resume Next
     For Each o In Me.Controls
@@ -559,7 +555,7 @@ Public Sub SendMsg()
     If Text2.Text = "" Then
         VBA.Beep
     Else
-        Winsock1.SendData Me.Caption + "：" + Text2.Text
+        Winsock1.SendData "msg;" + "groupid;" + Me.Caption + ";id;" + Base64EncodeString(Text2.Text) + ";"
         Text2.Text = ""
     End If
 End Sub
@@ -593,6 +589,17 @@ End Sub
 Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
     '接收
     Dim strdata As String
+    Dim strSplit
+    Dim MsgType As String
+    Dim grpId As String
+    Dim Name As String
+    Dim MsgContent As String
     Winsock1.GetData strdata
-    Text1.Text = strdata & vbCrLf & Text1.Text
+    
+    strSplit = Split(strdata, ";")
+    MsgType = strSplit(0)
+    Name = strSplit(2)
+    MsgContent = strSplit(4)
+    MsgContent = Base64DecodeString(MsgContent)
+    Text1.Text = Name + ":" + MsgContent + vbCrLf + Text1.Text
 End Sub

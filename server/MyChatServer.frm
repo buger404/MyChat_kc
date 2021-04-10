@@ -441,6 +441,12 @@ End Sub
 Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
     If State = True Then Exit Sub
     
+    Dim strSplit
+    Dim id As Integer
+    Dim msgType As String
+    Dim grpId As String
+    Dim name As String
+    Dim msgContent As String
     Dim strData As String
     Winsock(index).GetData strData
     
@@ -453,6 +459,13 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
         End If
         S = S + 1
     Loop
+    
+    strSplit = Split(strData, ";")
+    id = index
+    msgType = strSplit(0)
+    name = strSplit(2)
+    msgContent = strSplit(4)
+    msgContent = Base64DecodeString(msgContent)
     
     Text3.Text = strData & "   #" & index & "#" & vbCrLf & Text3.Text
 End Sub
