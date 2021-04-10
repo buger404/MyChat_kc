@@ -1,5 +1,5 @@
 @echo off
-set /p msg=请描述本次提交更新的内容
+set /p msg=请描述本次提交更新的内容:
 git add .
 git commit -m %msg%
 git push --set-upstream origin master

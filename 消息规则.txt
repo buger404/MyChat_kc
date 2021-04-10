@@ -4,7 +4,7 @@ msg;groupid;name;id;content(base64)
 2.图片消息（双向）
 picmsg;groupid;name;id;content(base64)
 3.列出服务器上的所有组（服务端->客户端）
-grouplist;count;groupid1;group1name(base64);leader1name(base64);leader1id;groupid2;group2name(base64);leader2name(base64);leader2id;....
+grouplist;count;groupid1;group1name(base64);leader1name(base64);leader1id;IsInGroup1;groupid2;group2name(base64);leader2name(base64);leader2id;IsInGroup2;....
 4.有新的组被创建（服务端->客户端）
 newgroup;groupid;groupname(base64);leadername(base64);leaderid
 5.申请加入组（客户端->服务端）
