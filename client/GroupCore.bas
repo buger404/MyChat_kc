@@ -5,15 +5,22 @@ Public Type Messages
     Content As String
     time As Date
 End Type
-Public Type Group
+Public Type group
     id As Integer
     leader As Integer
     isJoin As Boolean
     Name As String
     Msg() As Messages
+    unreadTick As Integer
 End Type
-Public userId As Integer
-Public groups() As Group
+Public Type MsgBan
+    id As Integer
+    groupid As Integer
+    StartTime As Date
+    Duration As Long
+End Type
+Public userId As Integer, userName As String
+Public groups() As group, bans() As MsgBan
 
 Public Sub AddGroup(id As Integer, leader As Integer, isJoin As Boolean, Name As String)
     ReDim Preserve groups(UBound(groups) + 1)
@@ -42,10 +49,12 @@ Public Sub AddMessage(id As Integer, memberid As Integer, Name As String, Conten
             ReDim Preserve groups(i).Msg(UBound(groups(i).Msg) + 1)
             With groups(i).Msg(UBound(groups(i).Msg))
                 .Content = Content
-                .id = id
+                .id = memberid
                 .Name = Name
                 .time = Now
             End With
+            groups(i).unreadTick = groups(i).unreadTick + 1
+            If groups(i).unreadTick > 100 Then groups(i).unreadTick = 100
             Exit For
         End If
     Next
@@ -57,5 +66,14 @@ Public Sub SetJoinState(id As Integer, isJoin As Boolean)
             Exit For
         End If
     Next
+End Sub
+Public Sub AddBan(id As Integer, group As Integer, Duration As Long)
+    ReDim Preserve bans(UBound(bans) + 1)
+    With bans(UBound(bans))
+        .id = id
+        .groupid = group
+        .StartTime = Now
+        .Duration = Duration
+    End With
 End Sub
 

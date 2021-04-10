@@ -32,6 +32,7 @@ Class=aShadow; aShadow.cls
 Class=IPPage; IPPage.cls
 Module=Base64; Base64.bas
 Module=GroupCore; GroupCore.bas
+Form=MenuWindow.frm
 Startup="Server"
 HelpFile=""
 Title="ÁÄÌì·şÎñ¶Ë"

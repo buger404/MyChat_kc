@@ -15,39 +15,119 @@ Attribute VB_Exposed = False
 '   页面绘制器
     Dim Page As GPage
     Dim ProTime As Long, mode As Integer
+    Dim selectIndex As Integer
+    Dim scroll As ScrollArea, scrollY As Long, preY As Long, scrBottom As Boolean
 '======================================
 
 Public Sub Update()
+redraw:
     Page.Clear '清空画布
     '标题栏
     Dim m As MButtonState
-    Page.Paint 0, 0, 0, GW, 61, argb(255, 89, 89, 89)
-    m = CheckMouse(0, 0, GW - 120, 61)
+    Page.DrawImage "back.jpg", 0, 0
+    Page.Paint 0, 0, 0, 301, GH, argb(100, 0, 0, 0)
+    Page.Paint 0, 300, 0, GW - 300, GH, argb(230, 255, 255, 255)
+    'Page.Paint 0, 0, 0, GW, 61, argb(255, 89, 89, 89)
+    m = CheckMouse(300, 0, GW - 300 - 120, 61)
     If m = mMouseDown Then
         '发送标题栏移动消息
         SendMessageA GHwnd, WM_NCLBUTTONDOWN, HTCAPTION, 0
         ReleaseCapture
     End If
     
-    If Client.Winsock1.State = 0 Then Page.Writes Client.Caption & "（连接未启动）", 20, 15, 20, argb(255, 255, 83, 57), style:=FontStyleBold
-    If Client.Winsock1.State = 1 Then Page.Writes Client.Caption & "（连接已准备）", 20, 15, 20, argb(255, 255, 170, 49), style:=FontStyleBold
-    If Client.Winsock1.State = 2 Then Page.Writes Client.Caption & "（等待连接）", 20, 15, 20, argb(255, 255, 170, 49), style:=FontStyleBold
-    If Client.Winsock1.State = 3 Then Page.Writes Client.Caption & "（连接被挂起）", 20, 15, 20, argb(255, 255, 83, 57), style:=FontStyleBold
-    If Client.Winsock1.State = 4 Then Page.Writes Client.Caption & "（正在解析域名）", 20, 15, 20, argb(255, 255, 170, 49), style:=FontStyleBold
-    If Client.Winsock1.State = 5 Then Page.Writes Client.Caption & "（已识别服务器主机）", 20, 15, 20, argb(255, 255, 170, 49), style:=FontStyleBold
-    If Client.Winsock1.State = 6 Then Page.Writes Client.Caption & "（正在连接服务端）", 20, 15, 20, argb(255, 255, 170, 49), style:=FontStyleBold
-    If Client.Winsock1.State = 7 Then Page.Writes Client.Caption & "（已连接服务端）", 20, 15, 20, argb(255, 232, 232, 232), style:=FontStyleBold
-    If Client.Winsock1.State = 8 Then Page.Writes Client.Caption & "（连接被关闭）", 20, 15, 20, argb(255, 255, 83, 57), style:=FontStyleBold
-    If Client.Winsock1.State = 9 Then Page.Writes Client.Caption & "（连接服务端失败）", 20, 15, 20, argb(255, 255, 83, 57), style:=FontStyleBold
+    For i = 1 To UBound(groups)
+        m = CheckMouse(0, (i - 1) * 70 + 60, 301, 71)
+        Page.Paint 0, 0, (i - 1) * 70 + 60, 301, 71, argb(IIf(selectIndex = i, 60, IIf(m > 0, 30, 0)), 0, 0, 0)
+        Page.Writes groups(i).Name, 30, (i - 1) * 70 + 60 + 5, 20, argb(255, 255, 255, 255), style:=FontStyleBold
+        Dim tip As String
+        tip = groups(i).Msg(UBound(groups(i).Msg)).Name & ":" & groups(i).Msg(UBound(groups(i).Msg)).Content
+        If Len(tip) > 12 Then tip = Left(tip, 10) & "..."
+        Page.Writes tip, 30, (i - 1) * 70 + 60 + 33, 18, argb(200, 255, 255, 255)
+        If m = 3 Then selectIndex = i: scrBottom = True
+        If groups(i).unreadTick > 0 Then
+            Page.Paint 2, 230, (i - 1) * 70 + 60 + 20, 50, 30, argb(255, 251, 77, 63), 100
+            Page.Writes IIf(groups(i).unreadTick = 100, "99+", groups(i).unreadTick), 230 + 25, (i - 1) * 70 + 60 + 21, 18, argb(255, 255, 255, 255), align:=StringAlignmentCenter, style:=FontStyleBold
+        End If
+        If selectIndex = i Then groups(i).unreadTick = 0
+    Next
+    
+    Page.Writes "MyChat · 学生端", 20, 15, 20, argb(160, 255, 255, 255)
+    Page.Writes groups(selectIndex).Name, 20 + 300, 15, 20, argb(255, 0, 0, 0), style:=FontStyleBold
+    
+    StartScrollArea Page, scroll
+        Page.Clear argb(0, 0, 0, 0)
+        Dim drx As Long, dry As Long, tw As Long, th As Long, ory As Long
+        dry = 20 - scrollY: ory = dry
+        For i = 1 To UBound(groups(selectIndex).Msg)
+            With groups(selectIndex).Msg(i)
+                drx = IIf(.id = userId, scroll.Width - 20, 20)
+                tw = EF.GetWidth(Page.GG, .Content, 18, StringAlignmentNear, FontStyleRegular)
+                th = EF.GetHeight(Page.GG, .Content, 18, StringAlignmentNear, FontStyleRegular)
+                If dry >= -(th + 40 + 20) And dry <= scroll.Height Then
+                    If .id = -1 Then
+                        Page.Paint 2, scroll.Width / 2, dry + 30, tw + 40, 40, argb(255, 212, 212, 212), 100, pos:=posOnCenter
+                        Page.Writes .Content, scroll.Width / 2, dry + 20 - 4, 18, argb(255, 0, 0, 0), align:=StringAlignmentCenter
+                        
+                    Else
+                        Page.Writes .Name & IIf(id > 0, "(#" & .id & ")", "") & "   " & format(.time, "hh:MM:ss"), drx, dry, 18, IIf(.id > 0 And .id <> userId, argb(255, 168, 168, 168), argb(255, 84, 223, 143)), align:=IIf(.id = userId, StringAlignmentFar, StringAlignmentNear)
+                        If .id = userId Then drx = drx - tw - 20
+                        If tw > scroll.Width - 60 Then
+                            th = th + (tw - scroll.Width + 60) / 18 / 0.75 - 3
+                            tw = scroll.Width - 60
+                        End If
+                        Page.Paint 2, drx, dry + 25, tw + 20, th + 20, IIf(.id = userId, argb(255, 84, 223, 143), argb(255, 232, 232, 232)), 16
+                        If CheckMouse(drx + 300, dry + 60, tw + 20, th + 20) > 0 And Mouse.button = 2 Then
+                            MenuWindow.id = .id: Mouse.button = 0
+                            Server.PopupMenu MenuWindow.msgMenu
+                        End If
+                        Page.Writes .Content, drx + 10, dry + 25 + 10, 18, IIf(.id = userId, argb(255, 255, 255, 255), argb(255, 0, 0, 0)), tw + 1, th
+                        
+                    End If
+                End If
+                If .id = -1 Then
+                    dry = dry + th + 20 + 20
+                Else
+                    dry = dry + th + 40 + 20
+                End If
+            End With
+        Next
+        Dim maxScr As Long
+        If dry - ory > scroll.Height - 30 Then
+            maxScr = dry - ory - scroll.Height + 30
+        Else
+            maxScr = 0
+        End If
+        If scrBottom Then
+            scrBottom = False
+            scrollY = maxScr
+            GoTo redraw
+        End If
+        If maxScr = 0 Then maxScr = 1
+        dry = 20 + (scroll.Height - 20 - 40) * (scrollY / maxScr)
+        Page.Paint 2, scroll.Width - 15, dry, 8, 40, argb(255, 128, 128, 128), 10
+        m = CheckMouse(scroll.Width - 15 + 300, 20 + 60, 8, scroll.Height - 40)
+        If (m > 0 And Mouse.button = 1) Or (Mouse.button = 1 And preY <> 0) Then
+            If preY = 0 Then preY = Mouse.y - dry - 60
+            dry = Mouse.y - 60 - preY * 2
+            If dry < 20 Then dry = 0
+            If dry > scroll.Height - 20 - 40 Then dry = scroll.Height - 20 - 40
+            scrollY = dry / (scroll.Height - 20 - 40) * maxScr
+        ElseIf preY <> 0 Then
+            preY = 0
+        End If
+        If scrollY > maxScr Then scrollY = maxScr: GoTo redraw
+        If scrollY < 0 Then scrollY = 0: GoTo redraw
+        
+    EndScrollArea Page, 300, 60, 0, 0
 
     m = CheckMouse(GW - 45, 15, 30, 30)
-    Page.Paint 1, GW - 45, 15, 30, 30, argb(IIf(m, 255, 100), 255, 83, 57)
-    Page.Writes "×", GW - 41, 16, 18, argb(255, 255, 255, 255), style:=FontStyleBold
+    Page.Paint 1, GW - 45, 15, 30, 30, argb(IIf(m, 255, 100), 180, 180, 180)
+    Page.Writes "×", GW - 41, 16, 18, argb(255, 0, 0, 0), style:=FontStyleBold
     If m = mMouseUp Then Unload Client: End
     m = CheckMouse(GW - 85, 15, 30, 30)
-    Page.Paint 1, GW - 85, 15, 30, 30, argb(IIf(m, 255, 100), 128, 128, 128)
-    Page.Writes "-", GW - 77, 16, 18, argb(255, 255, 255, 255), style:=FontStyleBold
-    If m = mMouseUp Then Client.WindowState = 1
+    Page.Paint 1, GW - 85, 15, 30, 30, argb(IIf(m, 255, 100), 180, 180, 180)
+    Page.Writes "-", GW - 77, 16, 18, argb(255, 0, 0, 0), style:=FontStyleBold
+    If m = mMouseUp Then Server.WindowState = 1
     
     '计算动画百分比
     Dim pro As Single, dpro As Single
@@ -63,15 +143,15 @@ Public Sub Update()
     If Not (Client.Text1.Visible Or Client.Picture2.Visible) Then TextV = False
     If Client.Text2.Visible <> TextV Then Client.Text2.Visible = TextV
 
-    Page.Paint 0, 0, GH - 82, GW, 83, argb(255, 232, 232, 232)
+    Page.Paint 0, 300, GH - 82, GW, 83, argb(255, 232, 232, 232)
     
     If pro = 0 Then GoTo SkipTab1
     
     If Client.Text1.Visible Or Client.Picture2.Visible Then
-        Page.Paint 2, 33, GH - (82 - 18) * pro + 40 * dpro, GW - 250 + 70, 42, argb(255 * pro, 255, 255, 255), Radius:=42
-        Page.DrawImage "send.png", 630, GH - 40 * pro + 40 * dpro, Alpha:=0, pos:=posOnCenter
+        Page.Paint 2, 33 + 300, GH - (82 - 18) * pro + 40 * dpro, GW - 250 - 300 + 70, 42, argb(255 * pro, 255, 255, 255), Radius:=42
+        Page.DrawImage "send.png", 630 + 300, GH - 40 * pro + 40 * dpro, Alpha:=0, pos:=posOnCenter
         m = CheckMouse2
-        Page.DrawImage "send.png", 630, GH - 40 * pro + 40 * dpro, Alpha:=IIf(Client.Command2.Enabled, IIf(m, 1, 0.8), 0.3) * pro, pos:=posOnCenter
+        Page.DrawImage "send.png", 630 + 300, GH - 40 * pro + 40 * dpro, Alpha:=IIf(Client.Command2.Enabled, IIf(m, 1, 0.8), 0.3) * pro, pos:=posOnCenter
         ECore.TipMsg "发送消息", 0
         If m = mMouseDown And Mouse.button = 1 And Client.Text1.Visible Then Client.SendMsg: Mouse.button = 0
     End If
@@ -82,9 +162,9 @@ Public Sub Update()
     ClearEn = ClearEn Or (Client.Picture1.Visible)
     ClearEn = ClearEn Or (Client.Text5.Text <> "" And Client.Text5.Visible)
     
-    Page.DrawImage "clear.png", 690, GH - 40 * pro + 40 * dpro, Alpha:=0, pos:=posOnCenter
+    Page.DrawImage "clear.png", 690 + 300, GH - 40 * pro + 40 * dpro, Alpha:=0, pos:=posOnCenter
     m = CheckMouse2
-    Page.DrawImage "clear.png", 690, GH - 40 * pro + 40 * dpro, Alpha:=IIf(ClearEn, IIf(m, 1, 0.8), 0.3) * pro, pos:=posOnCenter
+    Page.DrawImage "clear.png", 690 + 300, GH - 40 * pro + 40 * dpro, Alpha:=IIf(ClearEn, IIf(m, 1, 0.8), 0.3) * pro, pos:=posOnCenter
     ECore.TipMsg "清空", 0
     If m = mMouseDown And Mouse.button = 1 Then
         If Client.Text1.Visible Then Client.Command3_Click
@@ -97,72 +177,72 @@ Public Sub Update()
     If Client.Picture1.Visible Then
         Dim ct(3) As Byte
         CopyMemory ct(0), Client.LBtnColor, 4
-        Page.Paint 1, 50, GH - 42 * pro + 40 * dpro, 46, 46, argb(255, ct(0), ct(1), ct(2)), pos:=posOnCenter
+        Page.Paint 1, 50 + 300, GH - 42 * pro + 40 * dpro, 46, 46, argb(255, ct(0), ct(1), ct(2)), pos:=posOnCenter
         If CheckMouse2 = mMouseUp Then Client.ColorPad.Color = Client.LBtnColor: Client.ColorPad.ShowColor: Client.LBtnColor = Client.ColorPad.Color
-        Page.Paint 1, 50, GH - 42 * pro + 40 * dpro, 46, 46, argb(255, 0, 0, 0), pos:=posOnCenter, size:=2, style:=1
+        Page.Paint 1, 50 + 300, GH - 42 * pro + 40 * dpro, 46, 46, argb(255, 0, 0, 0), pos:=posOnCenter, size:=2, style:=1
         CopyMemory ct(0), Client.RBtnColor, 4
-        Page.Paint 1, 110, GH - 42 * pro + 40 * dpro, 46, 46, argb(255, ct(0), ct(1), ct(2)), pos:=posOnCenter
+        Page.Paint 1, 110 + 300, GH - 42 * pro + 40 * dpro, 46, 46, argb(255, ct(0), ct(1), ct(2)), pos:=posOnCenter
         If CheckMouse2 = mMouseUp Then Client.ColorPad.Color = Client.RBtnColor: Client.ColorPad.ShowColor: Client.RBtnColor = Client.ColorPad.Color
-        Page.Paint 1, 110, GH - 42 * pro + 40 * dpro, 46, 46, argb(255, 0, 0, 0), pos:=posOnCenter, size:=2, style:=1
+        Page.Paint 1, 110 + 300, GH - 42 * pro + 40 * dpro, 46, 46, argb(255, 0, 0, 0), pos:=posOnCenter, size:=2, style:=1
         Dim pSize As Single
         pSize = Client.Picture1.DrawWidth / 20
-        Page.ShowSliderBar pSize, "slider.png", 162, GH - 49 * pro
+        Page.ShowSliderBar pSize, "slider.png", 162 + 300, GH - 49 * pro
         If Int(pSize * 20) < 1 Then pSize = 1 / 20
         If Int(pSize * 20) <> Client.Picture1.DrawWidth Then Client.Picture1.DrawWidth = Int(pSize * 20)
-        Page.Writes "笔刷大小：" & Client.Picture1.DrawWidth, 360, GH - 33 * pro, 18, argb(255 * pro, 128, 128, 128), align:=StringAlignmentCenter
+        Page.Writes "笔刷大小：" & Client.Picture1.DrawWidth, 360 + 300, GH - 33 * pro, 18, argb(255 * pro, 128, 128, 128), align:=StringAlignmentCenter
         
-        Page.DrawImage "drawing" & IIf(Client.DotMode, "d", "") & ".png", 632, GH - 40 * pro + 40 * dpro, Alpha:=0, pos:=posOnCenter
+        Page.DrawImage "drawing" & IIf(Client.DotMode, "d", "") & ".png", 632 + 300, GH - 40 * pro + 40 * dpro, Alpha:=0, pos:=posOnCenter
         m = CheckMouse2
-        Page.DrawImage "drawing" & IIf(Client.DotMode, "d", "") & ".png", 632, GH - 40 * pro + 40 * dpro, Alpha:=1 * pro, pos:=posOnCenter
+        Page.DrawImage "drawing" & IIf(Client.DotMode, "d", "") & ".png", 632 + 300, GH - 40 * pro + 40 * dpro, Alpha:=1 * pro, pos:=posOnCenter
         ECore.TipMsg IIf(Not Client.DotMode, "连线模式", "画点模式"), 0
         If m = mMouseDown And Mouse.button = 1 Then Client.DotMode = Not Client.DotMode: Mouse.button = 0
     End If
     
     If Client.Text5.Visible Then
-        Page.Writes "总字数 " & Len(Client.Text5.Text) & ", 行数 " & (UBound(Split(Client.Text5.Text, vbCrLf)) + 1), 20, GH - 71 * pro, 20, argb(255 * pro, 32, 32, 32)
-        Page.Writes "光标选取位置 " & Client.Text5.SelStart & ", 选取字数 " & Client.Text5.SelLength, 20, GH - 46 * pro, 20, argb(255 * pro, 96, 96, 96)
+        Page.Writes "总字数 " & Len(Client.Text5.Text) & ", 行数 " & (UBound(Split(Client.Text5.Text, vbCrLf)) + 1), 20 + 300, GH - 71 * pro, 20, argb(255 * pro, 32, 32, 32)
+        Page.Writes "光标选取位置 " & Client.Text5.SelStart & ", 选取字数 " & Client.Text5.SelLength, 20 + 300, GH - 46 * pro, 20, argb(255 * pro, 96, 96, 96)
     End If
 
 SkipTab1:
     If pro = 1 Then GoTo SkipTab2
 
-    Page.DrawImage "chat" & IIf(Not Client.Text1.Visible, "d", "") & ".png", 50, GH - 40 * dpro + 40 * pro, Alpha:=0, pos:=posOnCenter
+    Page.DrawImage "chat" & IIf(Not Client.Text1.Visible, "d", "") & ".png", 50 + 300, GH - 40 * dpro + 40 * pro, Alpha:=0, pos:=posOnCenter
     m = CheckMouse2
-    Page.DrawImage "chat" & IIf(Not Client.Text1.Visible, "d", "") & ".png", 50, GH - 40 * dpro + 40 * pro, Alpha:=1 * dpro, pos:=posOnCenter
+    Page.DrawImage "chat" & IIf(Not Client.Text1.Visible, "d", "") & ".png", 50 + 300, GH - 40 * dpro + 40 * pro, Alpha:=1 * dpro, pos:=posOnCenter
     ECore.TipMsg "聊天模式", 0
     If m = mMouseDown And Mouse.button = 1 Then Client.Option3_Click: Mouse.button = 0
-    Page.DrawImage "notepad" & IIf(Not Client.Text5.Visible, "d", "") & ".png", 110, GH - 40 * dpro + 40 * pro, Alpha:=0, pos:=posOnCenter
+    Page.DrawImage "notepad" & IIf(Not Client.Text5.Visible, "d", "") & ".png", 110 + 300, GH - 40 * dpro + 40 * pro, Alpha:=0, pos:=posOnCenter
     m = CheckMouse2
-    Page.DrawImage "notepad" & IIf(Not Client.Text5.Visible, "d", "") & ".png", 110, GH - 40 * dpro + 40 * pro, Alpha:=1 * dpro, pos:=posOnCenter
+    Page.DrawImage "notepad" & IIf(Not Client.Text5.Visible, "d", "") & ".png", 110 + 300, GH - 40 * dpro + 40 * pro, Alpha:=1 * dpro, pos:=posOnCenter
     ECore.TipMsg "记事本", 0
     If m = mMouseDown And Mouse.button = 1 Then Client.Option2_Click: Mouse.button = 0
-    Page.DrawImage "drawing" & IIf(Not Client.Picture1.Visible, "d", "") & ".png", 170, GH - 40 * dpro + 40 * pro, Alpha:=0, pos:=posOnCenter
+    Page.DrawImage "drawing" & IIf(Not Client.Picture1.Visible, "d", "") & ".png", 170 + 300, GH - 40 * dpro + 40 * pro, Alpha:=0, pos:=posOnCenter
     m = CheckMouse2
-    Page.DrawImage "drawing" & IIf(Not Client.Picture1.Visible, "d", "") & ".png", 170, GH - 40 * dpro + 40 * pro, Alpha:=1 * dpro, pos:=posOnCenter
+    Page.DrawImage "drawing" & IIf(Not Client.Picture1.Visible, "d", "") & ".png", 170 + 300, GH - 40 * dpro + 40 * pro, Alpha:=1 * dpro, pos:=posOnCenter
     ECore.TipMsg "画板", 0
     If m = mMouseDown And Mouse.button = 1 Then Client.Option1_Click: Mouse.button = 0
-    Page.DrawImage "dj" & IIf(Not Client.Picture2.Visible, "d", "") & ".png", 230, GH - 40 * dpro + 40 * pro, Alpha:=0, pos:=posOnCenter
+    Page.DrawImage "dj" & IIf(Not Client.Picture2.Visible, "d", "") & ".png", 230 + 300, GH - 40 * dpro + 40 * pro, Alpha:=0, pos:=posOnCenter
     m = CheckMouse2
-    Page.DrawImage "dj" & IIf(Not Client.Picture2.Visible, "d", "") & ".png", 230, GH - 40 * dpro + 40 * pro, Alpha:=1 * dpro, pos:=posOnCenter
+    Page.DrawImage "dj" & IIf(Not Client.Picture2.Visible, "d", "") & ".png", 230 + 300, GH - 40 * dpro + 40 * pro, Alpha:=1 * dpro, pos:=posOnCenter
     ECore.TipMsg "DJ Mode", 0
     If m = mMouseDown And Mouse.button = 1 Then Client.Option4_Click: Mouse.button = 0
     
-    Page.DrawImage "image.png", 692, GH - 40 * dpro + 40 * pro, Alpha:=0, pos:=posOnCenter
+    Page.DrawImage "image.png", 692 + 300, GH - 40 * dpro + 40 * pro, Alpha:=0, pos:=posOnCenter
     m = CheckMouse2
-    Page.DrawImage "image.png", 692, GH - 40 * dpro + 40 * pro, Alpha:=1 * dpro, pos:=posOnCenter
+    Page.DrawImage "image.png", 692 + 300, GH - 40 * dpro + 40 * pro, Alpha:=1 * dpro, pos:=posOnCenter
     
     ECore.TipMsg "图片文字识别", 0
     If m = mMouseDown And Mouse.button = 1 Then Mouse.button = 0: Client.OCR_Click: ProTime = GetTickCount: mode = IIf(mode = 0, 1, 0): Mouse.button = 0
-    Page.DrawImage "voice.png", 632, GH - 40 * dpro + 40 * pro, Alpha:=0, pos:=posOnCenter
+    Page.DrawImage "voice.png", 632 + 300, GH - 40 * dpro + 40 * pro, Alpha:=0, pos:=posOnCenter
     m = CheckMouse2
-    Page.DrawImage "voice.png", 632, GH - 40 * dpro + 40 * pro, Alpha:=1 * dpro, pos:=posOnCenter
+    Page.DrawImage "voice.png", 632 + 300, GH - 40 * dpro + 40 * pro, Alpha:=1 * dpro, pos:=posOnCenter
     
     ECore.TipMsg "语音转文本", 0
     If m = mMouseDown And Mouse.button = 1 Then Mouse.button = 0: Client.Audio_Click: ProTime = GetTickCount: mode = IIf(mode = 0, 1, 0): Mouse.button = 0
     If Client.Picture2.Visible = False Then
-        Page.DrawImage "save.png", 572, GH - 40 * dpro + 40 * pro, Alpha:=0, pos:=posOnCenter
+        Page.DrawImage "save.png", 572 + 300, GH - 40 * dpro + 40 * pro, Alpha:=0, pos:=posOnCenter
         m = CheckMouse2
-        Page.DrawImage "save.png", 572, GH - 40 * dpro + 40 * pro, Alpha:=1 * dpro, pos:=posOnCenter
+        Page.DrawImage "save.png", 572 + 300, GH - 40 * dpro + 40 * pro, Alpha:=1 * dpro, pos:=posOnCenter
         ECore.TipMsg "保存文件", 0
         If m = mMouseDown And Mouse.button = 1 Then
             If Client.Text1.Visible Then Client.save3_Click
@@ -174,9 +254,9 @@ SkipTab1:
     
 SkipTab2:
 
-    Page.DrawImage "tools.png", 752, GH - (40 - 6), Alpha:=0, pos:=posOnCenter
+    Page.DrawImage "tools.png", 752 + 300, GH - (40 - 6), Alpha:=0, pos:=posOnCenter
     m = CheckMouse2
-    Page.DrawImage "tools.png", 752, GH - (40 - 6), Alpha:=IIf(m, 1, 0.8), pos:=posOnCenter
+    Page.DrawImage "tools.png", 752 + 300, GH - (40 - 6), Alpha:=IIf(m, 1, 0.8), pos:=posOnCenter
     ECore.TipMsg "工具菜单", 0
     If m = mMouseDown And Mouse.button = 1 Then
         ProTime = GetTickCount: mode = IIf(mode = 0, 1, 0): Mouse.button = 0
@@ -210,7 +290,11 @@ Private Sub Class_Initialize()
     Set Page = New GPage
     Page.Create Me
     '导入资源
+    Page.Res.newImage App.path & "\assets\back.jpg", GW, GH
+    Page.Res.ApplyBlurEffect "back.jpg", 20, 0
     Page.Res.NewImages App.path & "\assets", 0.5
+    scroll = CreateScrollArea(798, 418)
+    selectIndex = 2
     '创建页面
     ECore.Add Page, "MainPage"
 End Sub

@@ -1,1 +1,11 @@
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+老师:asdfasdfas
+老师:asdf 
+老师:asdf
+wxt:撒地方
+>>>>>>> 88dcf5e9c54e72ff8966fb125c1d46945ba67f50
+>>>>>>> deea08ccf92810387b7f2e37bd16e926ba231a0b
 welcome,wxt!
