@@ -27,12 +27,12 @@ Public RenderMode As Integer
         If fFam = 0 Then GdipCreateFontFamilyFromName StrPtr("System"), 0, fFam
         
         Dim Flag As Long
-        For I = 0 To 2
-            GdipCreateStringFormat 0, 0, StrF(I)
-            GdipSetStringFormatAlign StrF(I), I
+        For i = 0 To 2
+            GdipCreateStringFormat 0, 0, StrF(i)
+            GdipSetStringFormatAlign StrF(i), i
             'GdipStringFormatGetGenericTypographic strF(i)
-            GdipGetStringFormatFlags StrF(I), Flag
-            GdipSetStringFormatFlags StrF(I), (Flag Or StringFormatFlagsMeasureTrailingSpaces)
+            GdipGetStringFormatFlags StrF(i), Flag
+            GdipSetStringFormatFlags StrF(i), (Flag Or StringFormatFlagsMeasureTrailingSpaces)
         Next
         PoolCreateSolidFill argb(255, 64, 64, 64), brush
         PoolCreatePath FillModeAlternate, Spath
@@ -46,12 +46,12 @@ Public RenderMode As Integer
         If fFile <> "" Then RemoveFontResource fFile
         Exit Sub
         PoolDeleteBrush brush
-        For I = 0 To 2
-            PoolDeleteStringFormat StrF(I)
+        For i = 0 To 2
+            PoolDeleteStringFormat StrF(i)
         Next
         For S = 0 To 8
-            For I = 1 To 1000
-                If Font(S, I) <> 0 Then PoolDeleteFont Font(S, I)
+            For i = 1 To 1000
+                If Font(S, i) <> 0 Then PoolDeleteFont Font(S, i)
             Next
        Next
     End Sub
@@ -85,18 +85,18 @@ Public RenderMode As Integer
         
         GetHeight = R.Bottom
     End Function
-    Public Sub Writes(Text As String, X As Single, Y As Single, g As Long, Color As Long, ByVal size As Long, W As Single, H As Single, ByVal align As StringAlignment, ByVal style As FontStyle, Optional ByVal BorderColor As Long, Optional ByVal BorderSize As Long = 0)
-        'On Error Resume Next
+    Public Sub Writes(Text As String, x As Single, y As Single, g As Long, Color As Long, ByVal size As Long, w As Single, h As Single, ByVal align As StringAlignment, ByVal style As FontStyle, Optional ByVal BorderColor As Long, Optional ByVal BorderSize As Long = 0)
+        On Error Resume Next
         If Font(style, size) = 0 Then
             PoolCreateFont fFam, size, style, UnitPixel, Font(style, size)
         End If
         If EmHeight = 0 Then EmHeight = GetHeight(g, "ABCDEFG", 18, StringAlignmentNear, FontStyleRegular)
         
         If RenderMode = 0 Then
-            GdipDrawString g, StrPtr(Text), -1, Font(style, size), NewRectF(X, Y, W, H), StrF(align), brush
+            GdipDrawString g, StrPtr(Text), -1, Font(style, size), NewRectF(x, y, w, h), StrF(align), brush
         Else
             GdipResetPath Spath
-            GdipAddPathString Spath, StrPtr(Text), -1, fFam, style, size, NewRectF(X, Y, W, H), StrF(align)
+            GdipAddPathString Spath, StrPtr(Text), -1, fFam, style, size, NewRectF(x, y, w, h), StrF(align)
             GdipSetSolidFillColor brush, Color
             
             GdipFillPath g, brush, Spath

@@ -345,7 +345,8 @@ End Sub
 'Emerald框架部分
 Private Sub InitEmeraldFramework()
     '启动Emerald
-    StartEmerald Me.hwnd, 800, 600, True
+    StartEmerald Me.hwnd, 800, 600, False
+    ScaleGame Screen.Width / Screen.TwipsPerPixelX / 1280, ScaleDefault
     '创建字体渲染
     Set EF = New GFont
     EF.MakeFont "微软雅黑"
