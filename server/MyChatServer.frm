@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "MSWINSCK.OCX"
+Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "mswinsck.ocx"
 Begin VB.Form Server 
    Appearance      =   0  'Flat
    BackColor       =   &H80000005&
@@ -358,6 +358,8 @@ Public Sub OCR_Click()
 End Sub
 
 Private Sub Form_Load()
+    ReDim groups(0)
+
     Call InitEmeraldFramework
     Set Shadow = New aShadow
     With Shadow
