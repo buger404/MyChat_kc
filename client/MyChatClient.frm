@@ -19,14 +19,6 @@ Begin VB.Form Client
    ScaleMode       =   3  'Pixel
    ScaleWidth      =   584
    StartUpPosition =   2  '屏幕中心
-   Begin VB.CommandButton logBtn 
-      Caption         =   "logBtn"
-      Height          =   615
-      Left            =   7080
-      TabIndex        =   16
-      Top             =   5040
-      Width           =   1455
-   End
    Begin MSComDlg.CommonDialog ColorPad 
       Left            =   1248
       Top             =   936
@@ -326,6 +318,7 @@ Private Sub logIn()
     Close #1
     If S(0) = "404" Then MsgBox "ip地址有误，请检查ip地址", 16, "ip地址错误": End
     Me.Caption = S(0)
+    Text1.Visible = True
     
     'If Dir("id_info.txt") <> "" Then Kill "id_info.txt"
     'If Dir("face.png") <> "" Then Kill "face.png"
@@ -334,10 +327,8 @@ Private Sub logIn()
     If Winsock1.State = sckClosed Then
         Winsock1.Connect
     End If
+
 End Sub
-
-
-
 Public Sub OCR_Click()
     ShellEx "python """ & App.path & "\" & "client.py"" -o "
     If Dir("OCR_text.txt") = "" Then ShellEx "python """ & App.path & "\" & "client.py"" -o "
@@ -571,7 +562,7 @@ Public Sub SendMsg()
     If Text2.Text = "" Then
         VBA.Beep
     Else
-        Winsock1.SendData "msg;" + Str(grpId) + ";" + Me.Caption + ";id;" + Base64EncodeString(Text2.Text) + ";"
+        Winsock1.SendData "msg;" + Str(MainPage.selectI ndex) + ";" + Me.Caption + ";id;" + Base64EncodeString(Text2.Text) + ";"
         'Winsock1.SendData Text2.Text
         Text2.Text = ""
     End If
@@ -629,7 +620,6 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
         'Text1.Text = Name + ":" + MsgContent + vbCrLf + Text1.Text
         Call AddMessage(grpId, id, Name, MsgContent)
     Case "newleader"
-        Dim grpId As Integer
         Dim leaderId As Integer
         Dim grpName As String
         grpName = strSplit(2)

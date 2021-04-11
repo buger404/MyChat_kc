@@ -1,20 +1,19 @@
 Attribute VB_Name = "GroupCore"
 Public Type Messages
     id As Integer
-    name As String
+    Name As String
     Content As String
     time As Date
 End Type
 Public Type Member
     id As Integer
-    name As String
+    Name As String
 End Type
 Public Type group
     id As Integer
     leader As Integer
-    LeaderName As String
     isJoin As Boolean
-    name As String
+    Name As String
     Msg() As Messages
     unreadTick As Integer
     members() As Member
@@ -40,14 +39,13 @@ Public Sub DumpFile()
     Put #1, , dump
     Close #1
 End Sub
-Public Sub AddGroup(id As Integer, leader As Integer, isJoin As Boolean, name As String, LeaderName As String)
+Public Sub AddGroup(id As Integer, leader As Integer, isJoin As Boolean, Name As String)
     ReDim Preserve groups(UBound(groups) + 1)
     With groups(UBound(groups))
         .id = id
         .isJoin = isJoin
-        .name = name
+        .Name = Name
         .leader = leader
-        .LeaderName = .LeaderName
         ReDim .Msg(0)
         ReDim .members(0)
     End With
@@ -65,14 +63,14 @@ Public Sub DeleteGroup(id As Integer)
     Next
     Call DumpFile
 End Sub
-Public Sub AddMessage(id As Integer, memberid As Integer, name As String, Content As String)
+Public Sub AddMessage(id As Integer, memberid As Integer, Name As String, Content As String)
     For i = 1 To UBound(groups)
         If groups(i).id = id Then
             ReDim Preserve groups(i).Msg(UBound(groups(i).Msg) + 1)
             With groups(i).Msg(UBound(groups(i).Msg))
                 .Content = Content
                 .id = memberid
-                .name = name
+                .Name = Name
                 .time = Now
             End With
             groups(i).unreadTick = groups(i).unreadTick + 1
@@ -90,12 +88,12 @@ Public Sub SetJoinState(id As Integer, isJoin As Boolean)
         End If
     Next
 End Sub
-Public Sub AddMember(name As String, id As Integer, group As Integer)
+Public Sub AddMember(Name As String, id As Integer, group As Integer)
     For i = 1 To UBound(groups)
         If groups(i).id = id Then
             ReDim Preserve groups(i).members(UBound(groups(i).members) + 1)
             With groups(i).members(UBound(groups(i).members))
-                .name = name
+                .Name = Name
                 .id = id
             End With
             Exit For

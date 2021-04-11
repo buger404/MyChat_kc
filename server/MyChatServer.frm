@@ -301,8 +301,19 @@ Public Sub createGrp()
         isJoin = True
         Name = InputBox("Name")
         Call AddGroup(id, leader, isJoin, Name)
-        Call AddMember(leader, id)
+        Call AddMember("name", leader, id)
+        'newleader;groupid;groupname(base64);leaderid
         Winsock(leader).SendData "newleader;" + Str(id) + ";" + Base64EncodeString(Name) + ";" + Str(leader) + ";"
+        Dim S As Single
+        S = 1
+        Do While (S <= Winsock.UBound)
+            If Winsock(S).State = 7 Then
+                'newgroup;groupid;groupname(base64);leaderid
+                Winsock(S).SendData "newgroup;" + Str(MainPage.selectIndex) + ";" + Str(leader) + ";"
+                DoEvents
+            End If
+            S = S + 1
+        Loop
     Else
         MsgBox "学生不存在。"
     End If
@@ -381,7 +392,7 @@ End Sub
 
 Private Sub Form_Load()
     ReDim groups(0): ReDim bans(0)
-    AddGroup 1, -2, True, "大厅", "老师"
+    AddGroup 1, -2, True, "大厅"
     userId = -2: userName = "老师"
     
     Call InitEmeraldFramework
@@ -434,8 +445,6 @@ Private Sub lis_ConnectionRequest(ByVal requestID As Long)
         Winsock(m).Accept requestID
     End If
     
-    Me.Caption = lis.LocalIP & " - " & "已连接" & pop & "人"
-    Call AddMessage(1, -1, "系统消息", "已连接：" + Str(pop) + " 人")
     m = m + 1
 End Sub
 
@@ -457,7 +466,6 @@ End Sub
 
 Private Sub Winsock_Close(index As Integer)
     pop = pop - 1
-    Call AddMessage(1, -1, "系统消息", "")
 End Sub
 
 Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
@@ -469,15 +477,6 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
     Dim strData As String
     Winsock(index).GetData strData
     
-    Dim S As Single
-    S = 1
-    Do While (S <= Winsock.UBound)
-        If Winsock(S).State = 7 Then
-            Winsock(S).SendData strData
-            DoEvents
-        End If
-        S = S + 1
-    Loop
     
     strSplit = Split(strData, ";")
     id = index
@@ -492,9 +491,9 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
         grpid = strSplit(1)
         MsgContent = strSplit(4)
         MsgContent = Base64DecodeString(MsgContent)
-        Call AddMessage(Str(MainPage.selectIndex), id, Name, MsgContent)
+        Call AddMessage(Str(MainPage.selectIndex), id, Name, MsgContent + "#" + Str(id) + "#")
         
-        strData = MsgType + ";" + Str(MainPage.selectIndex) + ";" + Name + ";" + Str(id) + ";" + Base64EncodeString(MsgContent)
+        strData = MsgType + ";" + Str(grpid) + ";" + Name + ";" + Str(id) + ";" + Base64EncodeString(MsgContent)
         Dim S As Single
         S = 1
         Do While (S <= Winsock.UBound)
