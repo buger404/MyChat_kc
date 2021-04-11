@@ -282,7 +282,7 @@ Public Sub SendMsg()
         If Winsock(S).State = 7 Then
             Call AddMessage(MainPage.selectIndex, userId, userName, Text4.Text)
             MsgBox Str(MainPage.selectIndex)
-            Winsock(S).SendData "msg;" + Str(MainPage.selectIndex) + ";" + userName + ";" + Str(userId) + ";" + Base64EncodeString(Text4.Text) + ";"
+            Winsock(S).SendData "msg;" + Str(MainPage.selectIndex) + ";" + userName + ";" + Str(userId) + ";" + Base64EncodeString(Text4.Text) + ";" + vbCrLf
             DoEvents
         End If
         S = S + 1
@@ -303,13 +303,13 @@ Public Sub createGrp()
         Call AddGroup(id, leader, isJoin, Name)
         Call AddMember("name", leader, id)
         'newleader;groupid;groupname(base64);leaderid
-        Winsock(leader).SendData "newleader;" + Str(id) + ";" + Base64EncodeString(Name) + ";" + Str(leader) + ";"
+        Winsock(leader).SendData "newleader;" + Str(id) + ";" + Base64EncodeString(Name) + ";" + Str(leader) + ";" + vbCrLf
         Dim S As Single
         S = 1
         Do While (S <= Winsock.UBound)
             If Winsock(S).State = 7 Then
                 'newgroup;groupid;groupname(base64);leaderid
-                Winsock(S).SendData "newgroup;" + Str(MainPage.selectIndex) + ";" + Str(leader) + ";"
+                Winsock(S).SendData "newgroup;" + Str(MainPage.selectIndex) + ";" + Str(leader) + ";" + vbCrLf
                 DoEvents
             End If
             S = S + 1
@@ -493,7 +493,7 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
         MsgContent = Base64DecodeString(MsgContent)
         Call AddMessage(Str(MainPage.selectIndex), id, Name, MsgContent + "#" + Str(id) + "#")
         
-        strData = MsgType + ";" + Str(grpid) + ";" + Name + ";" + Str(id) + ";" + Base64EncodeString(MsgContent)
+        strData = MsgType + ";" + Str(grpid) + ";" + Name + ";" + Str(id) + ";" + Base64EncodeString(MsgContent) + vbCrLf
         Dim S As Single
         S = 1
         Do While (S <= Winsock.UBound)

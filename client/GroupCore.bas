@@ -10,9 +10,10 @@ Public Type group
     leader As Integer
     isJoin As Boolean
     Name As String
-    msg() As Messages
+    Msg() As Messages
     unreadTick As Integer
     members() As Integer
+    lederName As String
 End Type
 Public Type MsgBan
     id As Integer
@@ -35,14 +36,15 @@ Public Sub DumpFile()
     Put #1, , dump
     Close #1
 End Sub
-Public Sub AddGroup(id As Integer, leader As Integer, isJoin As Boolean, Name As String)
+Public Sub AddGroup(id As Integer, leader As Integer, isJoin As Boolean, Name As String, leaderName As String)
     ReDim Preserve groups(UBound(groups) + 1)
     With groups(UBound(groups))
         .id = id
         .isJoin = isJoin
         .Name = Name
         .leader = leader
-        ReDim .msg(0)
+        .lederName = leaderName
+        ReDim .Msg(0)
         ReDim .members(0)
     End With
     Call DumpFile
@@ -62,8 +64,8 @@ End Sub
 Public Sub AddMessage(id As Integer, memberid As Integer, Name As String, Content As String)
     For i = 1 To UBound(groups)
         If groups(i).id = id Then
-            ReDim Preserve groups(i).msg(UBound(groups(i).msg) + 1)
-            With groups(i).msg(UBound(groups(i).msg))
+            ReDim Preserve groups(i).Msg(UBound(groups(i).Msg) + 1)
+            With groups(i).Msg(UBound(groups(i).Msg))
                 .Content = Content
                 .id = memberid
                 .Name = Name

@@ -562,7 +562,7 @@ Public Sub SendMsg()
     If Text2.Text = "" Then
         VBA.Beep
     Else
-        Winsock1.SendData "msg;" + Str(MainPage.selectI ndex) + ";" + Me.Caption + ";id;" + Base64EncodeString(Text2.Text) + ";"
+        Winsock1.SendData "msg;" + Str(MainPage.selectIndex) + ";" + Me.Caption + ";id;" + Base64EncodeString(Text2.Text) + ";" + vbCrLf
         'Winsock1.SendData Text2.Text
         Text2.Text = ""
     End If
@@ -600,6 +600,13 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
     Dim strdata As String
     Dim strSplit
     Dim MsgType As String
+    Dim grpId As Integer
+    Dim id As Integer
+    Dim Name As String
+    Dim MsgContent As String
+    Dim leaderId As Integer
+    Dim grpName As String
+    Dim leaderName As String
     Winsock1.GetData strdata
     
     strSplit = Split(strdata, ";")
@@ -608,10 +615,6 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
     
     Select Case MsgType
     Case "msg"
-        Dim grpId As Integer
-        Dim id As Integer
-        Dim Name As String
-        Dim MsgContent As String
         grpId = Int(strSplit(1))
         id = Int(strSplit(3))
         Name = strSplit(2)
@@ -620,15 +623,15 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
         'Text1.Text = Name + ":" + MsgContent + vbCrLf + Text1.Text
         Call AddMessage(grpId, id, Name, MsgContent)
     Case "newleader"
-        Dim leaderId As Integer
-        Dim grpName As String
         grpName = strSplit(2)
         grpName = Base64DecodeString(grpName)
         leaderId = strSplit(3)
         grpId = strSplit(1)
         Call SetJoinState(grpId, True)
-        Call AddGroup(grpId, leaderId, True, grpName)
+        Call AddGroup(grpId, leaderId, True, grpName, userName)
     Case "newgroup"
+        newgroup;groupid;groupname(base64);leadername(base64);leaderid
+        Call AddGroup(Int(strSplit(1)), Int(strSplit(4)), False, Base64DecodeString(strSplit(2)), Base64DecodeString(strSplit(3)))
         
     Case "newmember"
     End Select
