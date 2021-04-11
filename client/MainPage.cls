@@ -41,9 +41,9 @@ ReDraw:
     For i = 1 To UBound(groups)
         m = CheckMouse(0, (i - 1) * 70 + 60 - sideY, 301, 71)
         Page.Paint 0, 0, (i - 1) * 70 + 60 - sideY, 301, 71, argb(IIf(selectIndex = i, 60, IIf(m > 0, 30, 0)), 0, 0, 0)
-        Page.Writes groups(i).name, 30, (i - 1) * 70 + 60 + 5 - sideY, 20, argb(255, 255, 255, 255), style:=FontStyleBold
+        Page.Writes groups(i).Name, 30, (i - 1) * 70 + 60 + 5 - sideY, 20, argb(255, 255, 255, 255), style:=FontStyleBold
         Dim tip As String
-        tip = groups(i).Msg(UBound(groups(i).Msg)).name & ":" & groups(i).Msg(UBound(groups(i).Msg)).Content
+        tip = groups(i).Msg(UBound(groups(i).Msg)).Name & ":" & groups(i).Msg(UBound(groups(i).Msg)).Content
         If Len(tip) > 12 Then tip = Left(tip, 10) & "..."
         If tip = ":" Then tip = "(暂无消息)"
         Page.Writes tip, 30, (i - 1) * 70 + 60 + 33 - sideY, 18, argb(200, 255, 255, 255)
@@ -54,6 +54,8 @@ ReDraw:
         End If
         If selectIndex = i Then groups(i).unreadTick = 0
     Next
+
+    Page.Writes "MyChat · 学生端", 20, 15, 20, argb(160, 255, 255, 255)
     Dim maxScr As Long
     If (i - 1) * 70 + 60 > GH - 30 Then
         maxScr = (i - 1) * 70 + 60 - GH + 30
@@ -62,8 +64,8 @@ ReDraw:
     End If
     If sideY > maxScr Then sideY = maxScr: GoTo ReDraw
     If sideY < 0 Then sideY = 0: GoTo ReDraw
-        
-    Page.Writes groups(selectIndex).name & "(" & UBound(groups(selectIndex).members) & ")", 20 + 300, 15, 20, argb(255, 0, 0, 0), style:=FontStyleBold
+
+    Page.Writes groups(selectIndex).Name & "(" & UBound(groups(selectIndex).members) & ")", 20 + 300, 15, 20, argb(255, 0, 0, 0), style:=FontStyleBold
     
     Dim disbledToolbar As Boolean
     If Not groups(selectIndex).isJoin Then
@@ -92,8 +94,8 @@ ReDraw:
                         Page.Writes .Content, scroll.Width / 2, dry + 20 - 4, 18, argb(255, 0, 0, 0), align:=StringAlignmentCenter
                         
                     Else
-                        Page.Writes .name & IIf(id > 0, "(#" & .id & ")", "") & "   " & format(.time, "hh:MM:ss"), drx, dry, 18, IIf(.id > 0, argb(255, 168, 168, 168), argb(255, 0, 176, 240)), align:=IIf(.id = userId, StringAlignmentFar, StringAlignmentNear)
-                        Page.Writes .name & IIf(id > 0, "(#" & .id & ")", "") & "   " & format(.time, "hh:MM:ss"), drx, dry, 18, IIf(.id > 0 And .id <> userId, argb(255, 168, 168, 168), argb(255, 84, 223, 143)), align:=IIf(.id = userId, StringAlignmentFar, StringAlignmentNear)
+                        Page.Writes .Name & IIf(id > 0, "(#" & .id & ")", "") & "   " & format(.time, "hh:MM:ss"), drx, dry, 18, IIf(.id > 0, argb(255, 168, 168, 168), argb(255, 0, 176, 240)), align:=IIf(.id = userId, StringAlignmentFar, StringAlignmentNear)
+                        Page.Writes .Name & IIf(id > 0, "(#" & .id & ")", "") & "   " & format(.time, "hh:MM:ss"), drx, dry, 18, IIf(.id > 0 And .id <> userId, argb(255, 168, 168, 168), argb(255, 84, 223, 143)), align:=IIf(.id = userId, StringAlignmentFar, StringAlignmentNear)
                         If .id = userId Then drx = drx - tw - 20
                         If tw > scroll.Width - 60 Then
                             th = th + (tw - scroll.Width + 60) / 18 / 0.75 - 3

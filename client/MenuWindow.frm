@@ -50,3 +50,6 @@ Private Sub copyMsg_Click()
     Clipboard.SetText selectMsg.Content
 End Sub
 
+Private Sub Form_Load()
+
+End Sub

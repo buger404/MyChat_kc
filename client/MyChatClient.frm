@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "mswinsck.ocx"
+Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "MSWINSCK.OCX"
 Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
 Begin VB.Form Client 
    Appearance      =   0  'Flat
@@ -314,12 +314,12 @@ End Sub
 
 
 
-Private Sub logBtn_Click()
+Private Sub logIn()
     'If Dir("id_info.txt") <> "" Then Kill ("id_info.txt")
     'If Dir("id_info.txt") <> "" Then Kill "id_info.txt"
-    If Dir("face.png") <> "" Then Kill "face.png"
+    'If Dir("face.png") <> "" Then Kill "face.png"
     
-    'ShellEx "python """ & App.path & "\" & "client.py"" -l " & Winsock1.RemoteHost
+    ShellEx "python """ & App.path & "\" & "client.py"" -l " & Winsock1.RemoteHost
     If Dir("id_info.txt") = "" Then MsgBox "查无此人，考虑注册？", 16, "登陆失败": End
     Open "id_info.txt" For Input As 1
     A = StrConv(InputB(FileLen("id_info.txt"), 1), vbUnicode)
@@ -329,7 +329,7 @@ Private Sub logBtn_Click()
     Me.Caption = S(0)
     
     'If Dir("id_info.txt") <> "" Then Kill "id_info.txt"
-    If Dir("face.png") <> "" Then Kill "face.png"
+    'If Dir("face.png") <> "" Then Kill "face.png"
     
     Winsock1.RemotePort = 2001
     If Winsock1.State = sckClosed Then
@@ -399,8 +399,9 @@ End Sub
 
 Private Sub Form_Load()
     ReDim groups(0): ReDim bans(0)
-    
-    '这里和服务端不一样是动态的，需要获取，包括包含的组。
+    '测试用
+    AddGroup 1, 1, True, "大厅"
+    '这里和服务端不一样是动态的，需要获取。
     'userId = -2: userName = "老师"
     
     Call InitEmeraldFramework
@@ -436,9 +437,9 @@ Private Sub Form_Load()
         DoEvents
     Loop Until Winsock1.RemoteHost <> ""
     
-    If Winsock1.RemoteHost <> "" Then logBtn_Click
 
-    grpId = 0
+    If Winsock1.RemoteHost <> "" Then logIn
+    grpId = 1
     
     '精准控制坐标
     Text5.Move 0, 60, Me.ScaleWidth, Me.ScaleHeight - 60 - 120
@@ -609,15 +610,37 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
     Dim strdata As String
     Dim strSplit
     Dim MsgType As String
+<<<<<<< HEAD
     Dim grpId As String
     Dim name As String
     Dim MsgContent As String
+=======
+>>>>>>> d20a03907bc5329207007ae37759aa94ebd33ce0
     Winsock1.GetData strdata
     
     strSplit = Split(strdata, ";")
     MsgType = strSplit(0)
+<<<<<<< HEAD
     name = strSplit(2)
     MsgContent = strSplit(4)
     MsgContent = Base64DecodeString(MsgContent)
     Text1.Text = name + ":" + MsgContent + vbCrLf + Text1.Text
+=======
+    
+    Select Case MsgType
+    Case "msg"
+        Dim grpId As Integer
+        Dim id As Integer
+        Dim Name As String
+        Dim MsgContent As String
+        grpId = Int(strSplit(1))
+        id = Int(strSplit(3))
+        Name = strSplit(2)
+        MsgContent = strSplit(4)
+        MsgContent = Base64DecodeString(MsgContent)
+        'Text1.Text = Name + ":" + MsgContent + vbCrLf + Text1.Text
+        Call AddMessage(grpId, id, Name, MsgContent)
+    
+    End Select
+>>>>>>> d20a03907bc5329207007ae37759aa94ebd33ce0
 End Sub
