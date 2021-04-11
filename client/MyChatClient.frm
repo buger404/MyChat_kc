@@ -562,10 +562,14 @@ Public Sub SendMsg()
         VBA.Beep
     Else
 <<<<<<< HEAD
+        Winsock1.SendData "msg;" + Str(MainPage.selectIndex) + ";" + Me.Caption + ";id;" + Base64EncodeString(Text2.Text) + ";" + vbCrLf
+=======
+<<<<<<< HEAD
         Winsock1.SendData "msg;" + Str(grpId) + ";" + userName + ";id;" + Base64EncodeString(Text2.Text) + ";"
 =======
         Winsock1.SendData "msg;" + Str(MainPage.selectI ndex) + ";" + Me.Caption + ";id;" + Base64EncodeString(Text2.Text) + ";"
 >>>>>>> 462fd88225dd92b642e8cf57cf902c9c2a030268
+>>>>>>> ba91a10369aedb365e306bd252a612fa4844d140
         'Winsock1.SendData Text2.Text
         Text2.Text = ""
     End If
@@ -603,6 +607,13 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
     Dim strdata As String
     Dim strSplit() As String
     Dim MsgType As String
+    Dim grpId As Integer
+    Dim id As Integer
+    Dim Name As String
+    Dim MsgContent As String
+    Dim leaderId As Integer
+    Dim grpName As String
+    Dim leaderName As String
     Winsock1.GetData strdata
     
     Dim cmds() As String
@@ -612,6 +623,30 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
         strSplit = Split(cmds(k), ";")
         MsgType = strSplit(0)
     
+<<<<<<< HEAD
+    Select Case MsgType
+    Case "msg"
+        grpId = Int(strSplit(1))
+        id = Int(strSplit(3))
+        Name = strSplit(2)
+        MsgContent = strSplit(4)
+        MsgContent = Base64DecodeString(MsgContent)
+        'Text1.Text = Name + ":" + MsgContent + vbCrLf + Text1.Text
+        Call AddMessage(grpId, id, Name, MsgContent)
+    Case "newleader"
+        grpName = strSplit(2)
+        grpName = Base64DecodeString(grpName)
+        leaderId = strSplit(3)
+        grpId = strSplit(1)
+        Call SetJoinState(grpId, True)
+        Call AddGroup(grpId, leaderId, True, grpName, userName)
+    Case "newgroup"
+        newgroup;groupid;groupname(base64);leadername(base64);leaderid
+        Call AddGroup(Int(strSplit(1)), Int(strSplit(4)), False, Base64DecodeString(strSplit(2)), Base64DecodeString(strSplit(3)))
+        
+    Case "newmember"
+    End Select
+=======
         Select Case MsgType
         Case "msg"
             Dim grpId As Integer
@@ -654,4 +689,5 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
         End Select
     Next
 
+>>>>>>> ba91a10369aedb365e306bd252a612fa4844d140
 End Sub

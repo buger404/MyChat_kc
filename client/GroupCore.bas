@@ -17,7 +17,12 @@ Public Type group
     Name As String
     Msg() As Messages
     unreadTick As Integer
+<<<<<<< HEAD
+    members() As Integer
+    lederName As String
+=======
     members() As Member
+>>>>>>> ba91a10369aedb365e306bd252a612fa4844d140
 End Type
 Public Type MsgBan
     id As Integer
@@ -40,14 +45,22 @@ Public Sub DumpFile()
     Put #1, , dump
     Close #1
 End Sub
+<<<<<<< HEAD
+Public Sub AddGroup(id As Integer, leader As Integer, isJoin As Boolean, Name As String, leaderName As String)
+=======
 Public Sub AddGroup(id As Integer, leader As Integer, isJoin As Boolean, Name As String, LeaderName As String)
+>>>>>>> ba91a10369aedb365e306bd252a612fa4844d140
     ReDim Preserve groups(UBound(groups) + 1)
     With groups(UBound(groups))
         .id = id
         .isJoin = isJoin
         .Name = Name
         .leader = leader
+<<<<<<< HEAD
+        .lederName = leaderName
+=======
         .LeaderName = LeaderName
+>>>>>>> ba91a10369aedb365e306bd252a612fa4844d140
         ReDim .Msg(0)
         ReDim .members(0)
     End With

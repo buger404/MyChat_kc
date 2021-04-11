@@ -282,7 +282,7 @@ Public Sub SendMsg()
         If Winsock(S).State = 7 Then
             Call AddMessage(MainPage.selectIndex, userId, userName, Text4.Text)
             MsgBox Str(MainPage.selectIndex)
-            Winsock(S).SendData "msg;" + Str(MainPage.selectIndex) + ";" + userName + ";" + Str(userId) + ";" + Base64EncodeString(Text4.Text) + ";"
+            Winsock(S).SendData "msg;" + Str(MainPage.selectIndex) + ";" + userName + ";" + Str(userId) + ";" + Base64EncodeString(Text4.Text) + ";" + vbCrLf
             DoEvents
         End If
         S = S + 1
@@ -303,13 +303,13 @@ Public Sub createGrp()
         Call AddGroup(id, leader, isJoin, Name)
         Call AddMember("name", leader, id)
         'newleader;groupid;groupname(base64);leaderid
-        Winsock(leader).SendData "newleader;" + Str(id) + ";" + Base64EncodeString(Name) + ";" + Str(leader) + ";"
+        Winsock(leader).SendData "newleader;" + Str(id) + ";" + Base64EncodeString(Name) + ";" + Str(leader) + ";" + vbCrLf
         Dim S As Single
         S = 1
         Do While (S <= Winsock.UBound)
             If Winsock(S).State = 7 Then
                 'newgroup;groupid;groupname(base64);leaderid
-                Winsock(S).SendData "newgroup;" + Str(MainPage.selectIndex) + ";" + Str(leader) + ";"
+                Winsock(S).SendData "newgroup;" + Str(MainPage.selectIndex) + ";" + Str(leader) + ";" + vbCrLf
                 DoEvents
             End If
             S = S + 1
@@ -502,6 +502,32 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
     Dim cmds() As String
     cmds = Split(strData, vbCrLf)
     
+<<<<<<< HEAD
+    Select Case MsgType
+    Case "msg"
+        Dim Name As String
+        Dim MsgContent As String
+        Name = strSplit(2)
+        grpid = strSplit(1)
+        MsgContent = strSplit(4)
+        MsgContent = Base64DecodeString(MsgContent)
+        Call AddMessage(Str(MainPage.selectIndex), id, Name, MsgContent + "#" + Str(id) + "#")
+        
+        strData = MsgType + ";" + Str(grpid) + ";" + Name + ";" + Str(id) + ";" + Base64EncodeString(MsgContent) + vbCrLf
+        Dim S As Single
+        S = 1
+        Do While (S <= Winsock.UBound)
+            If Winsock(S).State = 7 Then
+                Winsock(S).SendData strData
+                DoEvents
+            End If
+            S = S + 1
+        Loop
+        
+    Case "picmsg"
+    Case "addgroup"
+=======
+>>>>>>> ba91a10369aedb365e306bd252a612fa4844d140
 
     For k = 0 To UBound(cmds) - 1
         strSplit = Split(cmds(k), ";")
