@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "MSWINSCK.OCX"
+Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "mswinsck.ocx"
 Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
 Begin VB.Form Client 
    Appearance      =   0  'Flat
@@ -280,13 +280,13 @@ Public DotMode As Boolean
 Dim DrawX As Single, DrawY As Single
 Dim Shadow As aShadow
 Public Sub createGrp()
-    Dim id As Integer, leader As Integer, isJoin As Boolean, name As String
+    Dim id As Integer, leader As Integer, isJoin As Boolean, Name As String
     'id = InputBox("id")
     'leader = InputBox("leader")
     'isJoin = True
 reinput:
-    name = InputBox("请输入要创建的讨论组的名字")
-    If name = "" Then MsgBox "讨论组的名字不能为空！", 48: GoTo reinput
+    Name = InputBox("请输入要创建的讨论组的名字")
+    If Name = "" Then MsgBox "讨论组的名字不能为空！", 48: GoTo reinput
     'Call AddGroup(Int(id), Int(leader), isJoin, name)
     
 End Sub
@@ -610,23 +610,11 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
     Dim strdata As String
     Dim strSplit
     Dim MsgType As String
-<<<<<<< HEAD
-    Dim grpId As String
-    Dim name As String
-    Dim MsgContent As String
-=======
->>>>>>> d20a03907bc5329207007ae37759aa94ebd33ce0
     Winsock1.GetData strdata
     
     strSplit = Split(strdata, ";")
     MsgType = strSplit(0)
-<<<<<<< HEAD
-    name = strSplit(2)
-    MsgContent = strSplit(4)
-    MsgContent = Base64DecodeString(MsgContent)
-    Text1.Text = name + ":" + MsgContent + vbCrLf + Text1.Text
-=======
-    
+
     Select Case MsgType
     Case "msg"
         Dim grpId As Integer
@@ -639,8 +627,8 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
         MsgContent = strSplit(4)
         MsgContent = Base64DecodeString(MsgContent)
         'Text1.Text = Name + ":" + MsgContent + vbCrLf + Text1.Text
-        Call AddMessage(grpId, id, Name, MsgContent)
+        Call AddMessage(MainPage.selectIndex, id, Name, MsgContent)
     
     End Select
->>>>>>> d20a03907bc5329207007ae37759aa94ebd33ce0
+
 End Sub
