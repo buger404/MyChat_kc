@@ -17,40 +17,57 @@ Attribute VB_Exposed = False
 '   页面绘制器
     Dim Page As GPage
     Dim IP As String
-    Dim Mode As Integer
+    Dim mode As Integer
 '======================================
 
 Public Sub Update()
     '应用界面每一帧刷新会调用的方法（页面绘制i代码请放在此处）
     
-    Page.Clear '清空画布
+    Page.Clear argb(255, 0, 0, 0) '清空画布
 
-    If Mode = 1 Then
+    Page.DrawImage "back.jpg", 0, 0, Alpha:=0.3
+
+    If mode = 1 Then
         Page.ShowLoading GW / 2 - 150, GH / 2 - 150, 300, 300, 5, argb(255, 0, 176, 240), argb(255, 255, 51, 102), argb(255, 255, 214, 100)
         'ECore.NewTransform transToLeft, 500, "MainPage"
         Exit Sub
     End If
 
+    Dim p(199 + 4)
+    For i = 0 To 99
+        p(2 * i) = i / 99 * (GW + 40)
+        p(2 * i + 1) = 250 + Sin(GetTickCount / 1000 + i / 50) * 40
+    Next
+    p(199 + 1) = GW: p(199 + 2) = GH: p(199 + 3) = 0: p(199 + 4) = GH
+    Page.PaintPolygon2 argb(120, 255, 255, 255), 0, p, True
+    For i = 0 To 99
+        p(2 * i) = i / 99 * (GW + 40)
+        p(2 * i + 1) = 270 + Sin(GetTickCount / 600 + i / 40) * 40
+    Next
+    p(199 + 1) = GW: p(199 + 2) = GH: p(199 + 3) = 0: p(199 + 4) = GH
+    Page.PaintPolygon2 argb(255, 255, 255, 255), 0, p, True
+    
     m = CheckMouse(GW - 45, 15, 30, 30)
-    Page.Paint 1, GW - 45, 15, 30, 30, argb(IIf(m, 255, 100), 255, 83, 57)
-    Page.Writes "×", GW - 41, 16, 18, argb(255, 255, 255, 255), style:=FontStyleBold
+    Page.Paint 1, GW - 45, 15, 30, 30, argb(IIf(m, 255, 100), 180, 180, 180)
+    Page.Writes "×", GW - 41, 16, 18, argb(255, 0, 0, 0), style:=FontStyleBold
     If m = mMouseUp Then Unload Client: End
     
-    Page.Writes "输入服务端IP地址以开始使用", GW / 2, GH / 2 - 80, 24, argb(255, 0, 0, 0), align:=StringAlignmentCenter
+    Page.Writes "MyChat · 分组课堂讨论", GW / 2, GH / 2 - 170, 36, argb(255, 255, 255, 255), align:=StringAlignmentCenter, style:=FontStyleBold
+    Page.Writes "输入IP地址然后开始吧", GW / 2, GH / 2 + 70, 20, argb(255, 0, 0, 0), align:=StringAlignmentCenter
     
-    Page.ShowEdit IP, 2, GW / 2 - 200, GH / 2 + 10, 400, 50, argb(255, 0, 0, 0), argb(255, 232, 232, 232), argb(255, 222, 222, 222), argb(255, 0, 176, 240), 99, size:=24
+    Page.ShowEdit IP, 0, GW / 2 - 150, GH / 2 + 130, 300, 40, argb(255, 0, 0, 0), argb(255, 232, 232, 232), argb(255, 222, 222, 222), argb(255, 0, 176, 240), size:=20
 
     If UBound(Split(IP, ".")) = 3 Then
-        If Page.ShowColorButton(2, GW / 2 + 100 - 70, GH - 100, 140, 50, "登陆", argb(255, 255, 255, 255), argb(220, 0, 176, 240), argb(255, 0, 176, 240), 99, size:=24) = mMouseUp Then
+        If Page.ShowColorButton(0, GW / 2 + 80 - 70, GH - 100, 140, 40, "登陆", argb(255, 255, 255, 255), argb(220, 84, 223, 143), argb(255, 84, 223, 143), size:=20) = mMouseUp Then
             Client.Winsock1.RemoteHost = IP
             ECore.NewTransform
-            Mode = 1
+            mode = 1
         End If
-        If Page.ShowColorButton(2, GW / 2 - 100 - 70, GH - 100, 140, 50, "注册", argb(255, 255, 255, 255), argb(220, 0, 176, 240), argb(255, 0, 176, 240), 99, size:=24) = mMouseUp Then
-            Mode = 1
+        If Page.ShowColorButton(0, GW / 2 - 80 - 70, GH - 100, 140, 40, "注册", argb(255, 255, 255, 255), argb(220, 84, 223, 143), argb(255, 84, 223, 143), size:=20) = mMouseUp Then
+            mode = 1
             ShellEx "python """ & App.path & "\" & "client.py"" -s " & IP
             Kill "sign_img.png"
-            Mode = 0
+            mode = 0
         End If
     End If
 End Sub
@@ -80,6 +97,8 @@ End Sub
 Private Sub Class_Initialize()
     Set Page = New GPage  '创建页面绘制器
     Page.Create Me  '将绘制器与控制器绑定
+    Page.Res.newImage App.path & "\assets\back.jpg", GW, GH
+    Page.Res.ApplyBlurEffect "back.jpg", 20, 0
     Page.Res.NewImages App.path & "\assets"  '导入资源
     ECore.Add Page, "IPPage"  '创建页面
     

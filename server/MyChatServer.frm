@@ -381,18 +381,7 @@ End Sub
 
 Private Sub Form_Load()
     ReDim groups(0): ReDim bans(0)
-    '测试用
-    AddGroup 1, 1, True, "大厅"
-    If Dir(App.path & "\groups.bin") <> "" Then
-        Dim dump As dump
-        Open App.path & "\groups.bin" For Binary As #1
-        Get #1, , dump
-        Close #1
-        groups = dump.groups
-        bans = dump.bans
-    Else
-        AddGroup 1, 1, True, "大厅"
-    End If
+    AddGroup 1, -2, True, "大厅", "老师"
     userId = -2: userName = "老师"
     
     Call InitEmeraldFramework
@@ -479,6 +468,16 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
     Dim MsgType As String
     Dim strData As String
     Winsock(index).GetData strData
+    
+    Dim S As Single
+    S = 1
+    Do While (S <= Winsock.UBound)
+        If Winsock(S).State = 7 Then
+            Winsock(S).SendData strData
+            DoEvents
+        End If
+        S = S + 1
+    Loop
     
     strSplit = Split(strData, ";")
     id = index

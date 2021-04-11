@@ -36,6 +36,7 @@ ReDraw:
     End If
     
     If UBound(groups) = 0 Then Exit Sub
+    If Not groups(selectIndex).isJoin Then mode = 1
     
     For i = 1 To UBound(groups)
         m = CheckMouse(0, (i - 1) * 70 + 60 - sideY, 301, 71)
@@ -46,7 +47,7 @@ ReDraw:
         If Len(tip) > 12 Then tip = Left(tip, 10) & "..."
         If tip = ":" Then tip = "(暂无消息)"
         Page.Writes tip, 30, (i - 1) * 70 + 60 + 33 - sideY, 18, argb(200, 255, 255, 255)
-        If m = 3 Then selectIndex = i: scrBottom = True
+        If m = 3 Then selectIndex = i: scrBottom = True: mode = 0
         If groups(i).unreadTick > 0 Then
             Page.Paint 2, 230, (i - 1) * 70 + 60 + 20 - sideY, 50, 30, argb(255, 251, 77, 63), 100
             Page.Writes IIf(groups(i).unreadTick = 100, "99+", groups(i).unreadTick), 230 + 25, (i - 1) * 70 + 60 + 21 - sideY, 18, argb(255, 255, 255, 255), align:=StringAlignmentCenter, style:=FontStyleBold
@@ -64,7 +65,18 @@ ReDraw:
     If sideY > maxScr Then sideY = maxScr: GoTo ReDraw
     If sideY < 0 Then sideY = 0: GoTo ReDraw
 
-    Page.Writes groups(selectIndex).Name, 20 + 300, 15, 20, argb(255, 0, 0, 0), style:=FontStyleBold
+    Page.Writes groups(selectIndex).Name & "(" & UBound(groups(selectIndex).members) & ")", 20 + 300, 15, 20, argb(255, 0, 0, 0), style:=FontStyleBold
+    
+    Dim disbledToolbar As Boolean
+    If Not groups(selectIndex).isJoin Then
+        Page.Paint 2, 300 + (GW - 300) / 2, GH / 2, 450, 250, argb(120, 0, 0, 0), 20, pos:=posOnCenter
+        Page.Writes "您尚未加入该讨论组", 300 + (GW - 300) / 2, GH / 2 - 70, 20, argb(255, 255, 255, 255), align:=StringAlignmentCenter, style:=FontStyleBold
+        If Page.ShowColorButton(2, 300 + (GW - 300) / 2 - 100, GH - 250, 200, 40, "申请加入", argb(255, 255, 255, 255), argb(220, 84, 223, 143), argb(255, 84, 223, 143), 99, size:=20) = mMouseUp Then
+            ' 申请加入的代码放置此处
+        End If
+        disbledToolbar = True
+        GoTo nomsg
+    End If
     
     StartScrollArea Page, scroll
         Page.Clear argb(0, 0, 0, 0)
@@ -90,8 +102,12 @@ ReDraw:
                             tw = scroll.Width - 60
                         End If
                         Page.Paint 2, drx, dry + 25, tw + 20, th + 20, IIf(.id = userId, argb(255, 84, 223, 143), argb(255, 232, 232, 232)), 16
-                        If CheckMouse(drx + 300, dry + 60, tw + 20, th + 20) > 0 And Mouse.button = 2 Then
+                        If CheckMouse(drx + 300, dry + 60 + 25, tw + 20, th + 20) > 0 And Mouse.button = 2 Then
                             MenuWindow.id = .id: selectMsg = groups(selectIndex).Msg(i): Mouse.button = 0
+                            
+                            MenuWindow.banMsg.Visible = (.id <> userId)
+                            MenuWindow.kickGroup.Visible = (.id <> userId)
+                            
                             Client.PopupMenu MenuWindow.msgMenu
                         End If
                         Page.Writes .Content, drx + 10, dry + 25 + 10, 18, IIf(.id = userId, argb(255, 255, 255, 255), argb(255, 0, 0, 0)), tw + 1, th
@@ -133,6 +149,28 @@ ReDraw:
         
     EndScrollArea Page, 300, 60, 0, 0
 
+    For i = 1 To UBound(bans)
+        Dim span As Date, tickspan As Long
+        If i > UBound(bans) Then Exit For
+        If bans(i).groupid = groups(selectIndex).id And bans(i).id = userId Then
+            span = Now - bans(i).StartTime
+            tickspan = Minute(span) * 60 + Second(span) + Hour(span) * 60 * 60
+            If tickspan < bans(i).Duration Then
+                mode = 1
+                Page.Paint 2, 300 + (GW - 300) / 2, GH / 2, 450, 250, argb(100, 0, 0, 0), 20, pos:=posOnCenter
+                Page.Writes "您正被禁言，无法发言", 300 + (GW - 300) / 2, GH / 2 - 70, 20, argb(255, 255, 255, 255), align:=StringAlignmentCenter, style:=FontStyleBold
+                Page.Writes Int((bans(i).Duration - tickspan) / 60) & ":" & format((bans(i).Duration - tickspan) Mod 60, "00"), 300 + (GW - 300) / 2, GH / 2 - 0, 36, argb(255, 255, 255, 255), align:=StringAlignmentCenter, style:=FontStyleBold
+                disbledToolbar = True
+                Exit For
+            Else
+                bans(i) = bans(UBound(bans))
+                ReDim Preserve bans(UBound(bans) - 1)
+                i = i - 1
+            End If
+        End If
+    Next
+nomsg:
+    
     m = CheckMouse(GW - 45, 15, 30, 30)
     Page.Paint 1, GW - 45, 15, 30, 30, argb(IIf(m, 255, 100), 180, 180, 180)
     Page.Writes "×", GW - 41, 16, 18, argb(255, 0, 0, 0), style:=FontStyleBold
@@ -156,9 +194,9 @@ ReDraw:
     If Not (Client.Text1.Visible Or Client.Picture2.Visible) Then TextV = False
     If Client.Text2.Visible <> TextV Then Client.Text2.Visible = TextV
 
-    Page.Paint 0, 300, GH - 82, GW, 83, argb(255, 232, 232, 232)
+    If Not disbledToolbar Then Page.Paint 0, 300, GH - 82, GW, 83, argb(255, 232, 232, 232)
     
-    If pro = 0 Then GoTo SkipTab1
+    If pro = 0 Or disbledToolbar Then GoTo SkipTab1
     
     If Client.Text1.Visible Or Client.Picture2.Visible Then
         Page.Paint 2, 33 + 300, GH - (82 - 18) * pro + 40 * dpro, GW - 250 - 300 + 70, 42, argb(255 * pro, 255, 255, 255), Radius:=42
@@ -217,7 +255,7 @@ ReDraw:
     End If
 
 SkipTab1:
-    If pro = 1 Then GoTo SkipTab2
+    If pro = 1 Or disbledToolbar Then GoTo SkipTab2
 
     Page.DrawImage "chat" & IIf(Not Client.Text1.Visible, "d", "") & ".png", 50 + 300, GH - 40 * dpro + 40 * pro, Alpha:=0, pos:=posOnCenter
     m = CheckMouse2
@@ -267,17 +305,23 @@ SkipTab1:
     
 SkipTab2:
 
-    Page.DrawImage "tools.png", 752 + 300, GH - (40 - 6), Alpha:=0, pos:=posOnCenter
-    m = CheckMouse2
-    Page.DrawImage "tools.png", 752 + 300, GH - (40 - 6), Alpha:=IIf(m, 1, 0.8), pos:=posOnCenter
-    ECore.TipMsg "工具菜单", 0
-    If m = mMouseDown And Mouse.button = 1 Then
-        ProTime = GetTickCount: mode = IIf(mode = 0, 1, 0): Mouse.button = 0
+    If Not disbledToolbar Then
+        Page.DrawImage "tools.png", 300 + 752, GH - (40 - 6), Alpha:=0, pos:=posOnCenter
+        m = CheckMouse2
+        Page.DrawImage "tools.png", 300 + 752, GH - (40 - 6), Alpha:=IIf(m, 1, 0.8), pos:=posOnCenter
+        ECore.TipMsg "工具菜单", 0
+        If m = mMouseDown And Mouse.button = 1 Then ProTime = GetTickCount: mode = IIf(mode = 0, 1, 0): Mouse.button = 0
     End If
     
     Page.DrawImage "back.jpg", 0, 0, 0, 0, 300, 60, 1
     Page.Paint 0, 0, 0, 301, 61, argb(100, 0, 0, 0)
     Page.Writes "MyChat · 学生端", 20, 15, 20, argb(160, 255, 255, 255)
+    m = CheckMouse(255, 15, 30, 30)
+    Page.Paint 1, 255, 15, 30, 30, argb(IIf(m, 255, 100), 180, 180, 180)
+    Page.Writes "+", 260, 16, 18, argb(255, 0, 0, 0), style:=FontStyleBold
+    If m = mMouseUp Then
+        Call Server.createGrp
+    End If
 End Sub
 Public Sub Wheel(Direction As Integer, Depth As Single)
     '鼠标滚轮事件

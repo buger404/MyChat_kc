@@ -279,7 +279,17 @@ Public LBtnColor As Long, RBtnColor As Long
 Public DotMode As Boolean
 Dim DrawX As Single, DrawY As Single
 Dim Shadow As aShadow
-
+Public Sub createGrp()
+    Dim id As Integer, leader As Integer, isJoin As Boolean, Name As String
+    'id = InputBox("id")
+    'leader = InputBox("leader")
+    'isJoin = True
+reinput:
+    Name = InputBox("请输入要创建的讨论组的名字")
+    If Name = "" Then MsgBox "讨论组的名字不能为空！", 48: GoTo reinput
+    'Call AddGroup(Int(id), Int(leader), isJoin, name)
+    
+End Sub
 Public Sub Audio_Click()
     ShellEx "python """ & App.path & "\" & "client.py"" -a "
     If Dir("audio_text.txt") = "" Then ShellEx "python """ & App.path & "\" & "client.py"" -a "
@@ -603,6 +613,7 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
     
     strSplit = Split(strdata, ";")
     MsgType = strSplit(0)
+
     
     Select Case MsgType
     Case "msg"
@@ -618,6 +629,7 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
         'Text1.Text = Name + ":" + MsgContent + vbCrLf + Text1.Text
         Call AddMessage(grpId, id, Name, MsgContent)
     Case "newleader"
+        Dim grpId As Integer
         Dim leaderId As Integer
         Dim grpName As String
         grpName = strSplit(2)
