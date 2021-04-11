@@ -1,18 +1,23 @@
 Attribute VB_Name = "GroupCore"
 Public Type Messages
     id As Integer
-    Name As String
+    name As String
     Content As String
     time As Date
+End Type
+Public Type Member
+    id As Integer
+    name As String
 End Type
 Public Type group
     id As Integer
     leader As Integer
+    LeaderName As String
     isJoin As Boolean
-    Name As String
-    msg() As Messages
+    name As String
+    Msg() As Messages
     unreadTick As Integer
-    members() As Integer
+    members() As Member
 End Type
 Public Type MsgBan
     id As Integer
@@ -35,14 +40,15 @@ Public Sub DumpFile()
     Put #1, , dump
     Close #1
 End Sub
-Public Sub AddGroup(id As Integer, leader As Integer, isJoin As Boolean, Name As String)
+Public Sub AddGroup(id As Integer, leader As Integer, isJoin As Boolean, name As String, LeaderName As String)
     ReDim Preserve groups(UBound(groups) + 1)
     With groups(UBound(groups))
         .id = id
         .isJoin = isJoin
-        .Name = Name
+        .name = name
         .leader = leader
-        ReDim .msg(0)
+        .LeaderName = .LeaderName
+        ReDim .Msg(0)
         ReDim .members(0)
     End With
     Call DumpFile
@@ -59,14 +65,14 @@ Public Sub DeleteGroup(id As Integer)
     Next
     Call DumpFile
 End Sub
-Public Sub AddMessage(id As Integer, memberid As Integer, Name As String, Content As String)
+Public Sub AddMessage(id As Integer, memberid As Integer, name As String, Content As String)
     For i = 1 To UBound(groups)
         If groups(i).id = id Then
-            ReDim Preserve groups(i).msg(UBound(groups(i).msg) + 1)
-            With groups(i).msg(UBound(groups(i).msg))
+            ReDim Preserve groups(i).Msg(UBound(groups(i).Msg) + 1)
+            With groups(i).Msg(UBound(groups(i).Msg))
                 .Content = Content
                 .id = memberid
-                .Name = Name
+                .name = name
                 .time = Now
             End With
             groups(i).unreadTick = groups(i).unreadTick + 1
@@ -84,17 +90,34 @@ Public Sub SetJoinState(id As Integer, isJoin As Boolean)
         End If
     Next
 End Sub
-Public Sub AddMember(id As Integer, group As Integer)
+Public Sub AddMember(name As String, id As Integer, group As Integer)
     For i = 1 To UBound(groups)
         If groups(i).id = id Then
             ReDim Preserve groups(i).members(UBound(groups(i).members) + 1)
-            groups(i).members(UBound(groups(i).members)) = id
+            With groups(i).members(UBound(groups(i).members))
+                .name = name
+                .id = id
+            End With
             Exit For
         End If
     Next
     Call DumpFile
 End Sub
-
+Public Sub DeleteMember(id As Integer, group As Integer)
+    For i = 1 To UBound(groups)
+        If groups(i).id = id Then
+            For j = 1 To UBound(groups(i).members)
+                If groups(i).members(j).id = id Then
+                    groups(i).members(j) = groups(i).members(UBound(groups(i).members))
+                    ReDim Preserve groups(i).members(UBound(groups(i).members) - 1)
+                    Exit For
+                End If
+            Next
+            Exit For
+        End If
+    Next
+    Call DumpFile
+End Sub
 Public Sub AddBan(id As Integer, group As Integer, Duration As Long)
     ReDim Preserve bans(UBound(bans) + 1)
     With bans(UBound(bans))
@@ -104,4 +127,7 @@ Public Sub AddBan(id As Integer, group As Integer, Duration As Long)
         .Duration = Duration
     End With
     Call DumpFile
+End Sub
+Public Sub DeleteBan(id As Integer, group As Integer)
+
 End Sub

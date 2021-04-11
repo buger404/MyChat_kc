@@ -210,7 +210,7 @@ Public Sub Command1_Click()
     Dim C As Single
     C = Val(Text2.Text)
     
-    If C > Winsock.UBound Then
+    If C > Winsock.ubound Then
         MsgBox ("没有此用户")
     Else
         If Winsock(C).State = 7 Then
@@ -278,7 +278,7 @@ Public Sub SendMsg()
     
     Dim S As Single
     S = 1
-    Do While (S <= Winsock.UBound)
+    Do While (S <= Winsock.ubound)
         If Winsock(S).State = 7 Then
             Call AddMessage(0, userId, userName, Text4.Text)
             Winsock(S).SendData "msg;" + "0;" + userName + ";" + Str(userId) + ";" + Base64EncodeString(Text4.Text) + ";"
@@ -292,12 +292,14 @@ Public Sub SendMsg()
 End Sub
 
 Public Sub createGrp()
-    Dim id As Integer, leader As Integer, isJoin As Boolean, Name As String
-    id = InputBox("id")
-    leader = InputBox("leader")
-    isJoin = True
-    Name = InputBox("Name")
-    Call AddGroup(Int(id), Int(leader), isJoin, Name)
+    Dim id As Integer, leader As Integer, isJoin As Boolean, name As String
+    'id = InputBox("id")
+    'leader = InputBox("leader")
+    'isJoin = True
+reinput:
+    name = InputBox("请输入要创建的讨论组的名字")
+    If name = "" Then MsgBox "讨论组的名字不能为空！", 48: GoTo reinput
+    'Call AddGroup(Int(id), Int(leader), isJoin, name)
     
 End Sub
 
@@ -320,7 +322,7 @@ Public Sub Command5_Click()
         Dim S As Single
         g = "服务器开启了禁言"
         S = 1
-        Do While (S <= Winsock.UBound)
+        Do While (S <= Winsock.ubound)
             If Winsock(S).State = 7 Then
                 Winsock(S).SendData g
                 DoEvents
@@ -333,7 +335,7 @@ Public Sub Command5_Click()
         Command5.Caption = "禁言"
         g = "服务器关闭了禁言"
         S = 1
-        Do While (S <= Winsock.UBound)
+        Do While (S <= Winsock.ubound)
             If Winsock(S).State = 7 Then
                 Winsock(S).SendData g
                 DoEvents
@@ -374,16 +376,7 @@ End Sub
 
 Private Sub Form_Load()
     ReDim groups(0): ReDim bans(0)
-    If Dir(App.path & "\groups.bin") <> "" Then
-        Dim dump As dump
-        Open App.path & "\groups.bin" For Binary As #1
-        Get #1, , dump
-        Close #1
-        groups = dump.groups
-        bans = dump.bans
-    Else
-        AddGroup 1, 1, True, "大厅"
-    End If
+    AddGroup 1, -2, True, "大厅", "老师"
     userId = -2: userName = "老师"
     
     Call InitEmeraldFramework
@@ -430,7 +423,7 @@ Private Sub lis_ConnectionRequest(ByVal requestID As Long)
     Load Winsock(m)
     Command5.Enabled = True
     
-    pop = Winsock.UBound
+    pop = Winsock.ubound
     
     If Winsock(m).State = sckClosed Then
         Winsock(m).Accept requestID
@@ -475,7 +468,7 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
     
     Dim S As Single
     S = 1
-    Do While (S <= Winsock.UBound)
+    Do While (S <= Winsock.ubound)
         If Winsock(S).State = 7 Then
             Winsock(S).SendData strData
             DoEvents
@@ -490,13 +483,13 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
     
     Select Case MsgType
     Case "msg"
-        Dim Name As String
+        Dim name As String
         Dim MsgContent As String
-        Name = strSplit(2)
+        name = strSplit(2)
         grpid = strSplit(1)
         MsgContent = strSplit(4)
         MsgContent = Base64DecodeString(MsgContent)
-        Call AddMessage(Int(grpid), id, Name, MsgContent)
+        Call AddMessage(Int(grpid), id, name, MsgContent)
         'Text3.Text = Name + ":" + MsgContent + "   #" + Str(id) + "#" + Str(grpId) + "#" + vbCrLf + Text3.Text
     Case "picmsg"
     Case "addgroup"
