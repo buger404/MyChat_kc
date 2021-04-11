@@ -12,12 +12,12 @@ End Type
 Public Type group
     id As Integer
     leader As Integer
-    LeaderName As String
     isJoin As Boolean
     Name As String
     Msg() As Messages
     unreadTick As Integer
     members() As Member
+    LeaderName As String
 End Type
 Public Type MsgBan
     id As Integer

@@ -19,14 +19,6 @@ Begin VB.Form Client
    ScaleMode       =   3  'Pixel
    ScaleWidth      =   584
    StartUpPosition =   2  'ÆÁÄ»ÖÐÐÄ
-   Begin VB.CommandButton logBtn 
-      Caption         =   "logBtn"
-      Height          =   615
-      Left            =   7080
-      TabIndex        =   16
-      Top             =   5040
-      Width           =   1455
-   End
    Begin MSComDlg.CommonDialog ColorPad 
       Left            =   1248
       Top             =   936
@@ -335,10 +327,8 @@ Private Sub logIn()
     If Winsock1.State = sckClosed Then
         Winsock1.Connect
     End If
+
 End Sub
-
-
-
 Public Sub OCR_Click()
     ShellEx "python """ & App.path & "\" & "client.py"" -o "
     If Dir("OCR_text.txt") = "" Then ShellEx "python """ & App.path & "\" & "client.py"" -o "
@@ -571,7 +561,11 @@ Public Sub SendMsg()
     If Text2.Text = "" Then
         VBA.Beep
     Else
+<<<<<<< HEAD
         Winsock1.SendData "msg;" + Str(grpId) + ";" + userName + ";id;" + Base64EncodeString(Text2.Text) + ";"
+=======
+        Winsock1.SendData "msg;" + Str(MainPage.selectI ndex) + ";" + Me.Caption + ";id;" + Base64EncodeString(Text2.Text) + ";"
+>>>>>>> 462fd88225dd92b642e8cf57cf902c9c2a030268
         'Winsock1.SendData Text2.Text
         Text2.Text = ""
     End If
@@ -659,4 +653,5 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
             DeleteMember Val(strSplit(1)), Val(strSplit(2))
         End Select
     Next
+
 End Sub

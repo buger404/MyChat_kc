@@ -210,7 +210,7 @@ Public Sub Command1_Click()
     Dim C As Single
     C = Val(Text2.Text)
     
-    If C > Winsock.ubound Then
+    If C > Winsock.UBound Then
         MsgBox ("没有此用户")
     Else
         If Winsock(C).State = 7 Then
@@ -278,7 +278,7 @@ Public Sub SendMsg()
     
     Dim S As Single
     S = 1
-    Do While (S <= Winsock.ubound)
+    Do While (S <= Winsock.UBound)
         If Winsock(S).State = 7 Then
             Call AddMessage(MainPage.selectIndex, userId, userName, Text4.Text)
             MsgBox Str(MainPage.selectIndex)
@@ -296,13 +296,24 @@ Public Sub createGrp()
     Dim id As Integer, leader As Integer, isJoin As Boolean, Name As String
     id = UBound(groups) + 1
     leader = Int(InputBox("leader"))
-    If leader >= -2 And Winsock.ubound Then
-    MsgBox Str(Winsock.ubound)
+    If leader >= -2 And Winsock.UBound Then
+    MsgBox Str(Winsock.UBound)
         isJoin = True
         Name = InputBox("Name")
         Call AddGroup(id, leader, isJoin, Name)
-        Call AddMember(leader, id)
+        Call AddMember("name", leader, id)
+        'newleader;groupid;groupname(base64);leaderid
         Winsock(leader).SendData "newleader;" + Str(id) + ";" + Base64EncodeString(Name) + ";" + Str(leader) + ";"
+        Dim S As Single
+        S = 1
+        Do While (S <= Winsock.UBound)
+            If Winsock(S).State = 7 Then
+                'newgroup;groupid;groupname(base64);leaderid
+                Winsock(S).SendData "newgroup;" + Str(MainPage.selectIndex) + ";" + Str(leader) + ";"
+                DoEvents
+            End If
+            S = S + 1
+        Loop
     Else
         MsgBox "学生不存在。"
     End If
@@ -327,7 +338,7 @@ Public Sub Command5_Click()
         Dim S As Single
         g = "服务器开启了禁言"
         S = 1
-        Do While (S <= Winsock.ubound)
+        Do While (S <= Winsock.UBound)
             If Winsock(S).State = 7 Then
                 Winsock(S).SendData g
                 DoEvents
@@ -340,7 +351,7 @@ Public Sub Command5_Click()
         Command5.Caption = "禁言"
         g = "服务器关闭了禁言"
         S = 1
-        Do While (S <= Winsock.ubound)
+        Do While (S <= Winsock.UBound)
             If Winsock(S).State = 7 Then
                 Winsock(S).SendData g
                 DoEvents
@@ -428,7 +439,7 @@ Private Sub lis_ConnectionRequest(ByVal requestID As Long)
     Load Winsock(m)
     Command5.Enabled = True
     
-    pop = Winsock.ubound
+    pop = Winsock.UBound
     
     If Winsock(m).State = sckClosed Then
         Winsock(m).Accept requestID
@@ -441,8 +452,6 @@ Private Sub lis_ConnectionRequest(ByVal requestID As Long)
         Next
     End If
     
-    Me.Caption = lis.LocalIP & " - " & "已连接" & pop & "人"
-    Call AddMessage(1, -1, "系统消息", "已连接：" + Str(pop) + " 人")
     m = m + 1
 End Sub
 
@@ -493,6 +502,7 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
     Dim cmds() As String
     cmds = Split(strData, vbCrLf)
     
+
     For k = 0 To UBound(cmds) - 1
         strSplit = Split(cmds(k), ";")
         id = index
@@ -511,7 +521,7 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
             strData = MsgType + ";" + Str(MainPage.selectIndex) + ";" + Name + ";" + Str(id) + ";" + Base64EncodeString(MsgContent)
     
             S = 1
-            Do While (S <= Winsock.ubound)
+            Do While (S <= Winsock.UBound)
                 If Winsock(S).State = 7 Then
                     Winsock(S).SendData strData
                     DoEvents
