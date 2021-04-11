@@ -188,7 +188,7 @@ nomsg:
     m = CheckMouse(GW - 85, 15, 30, 30)
     Page.Paint 1, GW - 85, 15, 30, 30, argb(IIf(m, 255, 100), 180, 180, 180)
     Page.Writes "-", GW - 77, 16, 18, argb(255, 0, 0, 0), style:=FontStyleBold
-    If m = mMouseUp Then Server.WindowState = 1
+    If m = mMouseUp Then Client.WindowState = 1
     
     '计算动画百分比
     Dim pro As Single, dpro As Single
