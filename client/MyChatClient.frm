@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "mswinsck.ocx"
+Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "MSWINSCK.OCX"
 Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
 Begin VB.Form Client 
    Appearance      =   0  'Flat
@@ -265,6 +265,7 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Dim grpId As Integer
+Dim localId As Integer
 Dim i As Single, p As Single, q As Single, dr As Single
 Dim IPPage As IPPage
 Public LBtnColor As Long, RBtnColor As Long
@@ -561,18 +562,15 @@ Public Sub SendMsg()
     If Text2.Text = "" Then
         VBA.Beep
     Else
-<<<<<<< HEAD
-        Winsock1.SendData "msg;" + Str(MainPage.selectIndex) + ";" + Me.Caption + ";id;" + Base64EncodeString(Text2.Text) + ";" + vbCrLf
-=======
-<<<<<<< HEAD
-        Winsock1.SendData "msg;" + Str(grpId) + ";" + userName + ";id;" + Base64EncodeString(Text2.Text) + ";"
-=======
-        Winsock1.SendData "msg;" + Str(MainPage.selectI ndex) + ";" + Me.Caption + ";id;" + Base64EncodeString(Text2.Text) + ";"
->>>>>>> 462fd88225dd92b642e8cf57cf902c9c2a030268
->>>>>>> ba91a10369aedb365e306bd252a612fa4844d140
+        Call AddMessage(MainPage.selectIndex, -2, "Œ“", Text2.Text)
+        Winsock1.SendData "msg;" + Str(MainPage.selectIndex) + ";" + userName + ";" + Str(id) + ";" + Base64EncodeString(MsgContent)
         'Winsock1.SendData Text2.Text
         Text2.Text = ""
     End If
+End Sub
+Public Sub getId()
+    If Winsock1.State <> 7 Then Exit Sub
+    Winsock1.SendData "getId;" + vbCrLf
 End Sub
 
 Public Sub Command3_Click()
@@ -613,7 +611,7 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
     Dim MsgContent As String
     Dim leaderId As Integer
     Dim grpName As String
-    Dim leaderName As String
+    Dim LeaderName As String
     Winsock1.GetData strdata
     
     Dim cmds() As String
@@ -622,37 +620,11 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
     For k = 0 To UBound(cmds) - 1
         strSplit = Split(cmds(k), ";")
         MsgType = strSplit(0)
-    
-<<<<<<< HEAD
-    Select Case MsgType
-    Case "msg"
-        grpId = Int(strSplit(1))
-        id = Int(strSplit(3))
-        Name = strSplit(2)
-        MsgContent = strSplit(4)
-        MsgContent = Base64DecodeString(MsgContent)
-        'Text1.Text = Name + ":" + MsgContent + vbCrLf + Text1.Text
-        Call AddMessage(grpId, id, Name, MsgContent)
-    Case "newleader"
-        grpName = strSplit(2)
-        grpName = Base64DecodeString(grpName)
-        leaderId = strSplit(3)
-        grpId = strSplit(1)
-        Call SetJoinState(grpId, True)
-        Call AddGroup(grpId, leaderId, True, grpName, userName)
-    Case "newgroup"
-        newgroup;groupid;groupname(base64);leadername(base64);leaderid
-        Call AddGroup(Int(strSplit(1)), Int(strSplit(4)), False, Base64DecodeString(strSplit(2)), Base64DecodeString(strSplit(3)))
-        
-    Case "newmember"
-    End Select
-=======
+
         Select Case MsgType
+        Case "getId"
+            localId = strSplit(1)
         Case "msg"
-            Dim grpId As Integer
-            Dim id As Integer
-            Dim Name As String
-            Dim MsgContent As String
             grpId = Int(strSplit(1))
             id = Int(strSplit(3))
             Name = strSplit(2)
@@ -660,15 +632,9 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
             MsgContent = Base64DecodeString(MsgContent)
             'Text1.Text = Name + ":" + MsgContent + vbCrLf + Text1.Text
             Call AddMessage(grpId, id, Name, MsgContent)
-        Case "newleader"
-            Dim leaderId As Integer
-            Dim grpName As String
-            grpName = strSplit(2)
-            grpName = Base64DecodeString(grpName)
-            leaderId = strSplit(3)
-            grpId = strSplit(1)
-            Call SetJoinState(grpId, True)
-            Call AddGroup(grpId, leaderId, True, grpName, "")
+        Case "newgroup"
+            'newgroup;groupid;groupname(base64);LeaderName(base64);leaderid
+            Call AddGroup(Int(strSplit(1)), Int(strSplit(4)), False, Base64DecodeString(strSplit(2)), Base64DecodeString(strSplit(3)))
         Case "identify"
             userId = Val(strSplit(1))
             Winsock1.SendData "addgrouprequest;" & Base64EncodeString(userName) & ";" & userId & ";" & 1 & vbCrLf
@@ -689,5 +655,4 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
         End Select
     Next
 
->>>>>>> ba91a10369aedb365e306bd252a612fa4844d140
 End Sub
