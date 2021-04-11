@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "MSWINSCK.OCX"
+Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "mswinsck.ocx"
 Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
 Begin VB.Form Client 
    Appearance      =   0  'Flat
@@ -317,8 +317,8 @@ Private Sub logIn()
     S = Split(A, ",")
     Close #1
     If S(0) = "404" Then MsgBox "ip地址有误，请检查ip地址", 16, "ip地址错误": End
-    Me.Caption = S(0)
-    Text1.Visible = True
+    userName = S(0)
+    Me.Caption = userName
     
     'If Dir("id_info.txt") <> "" Then Kill "id_info.txt"
     'If Dir("face.png") <> "" Then Kill "face.png"
@@ -389,10 +389,6 @@ End Sub
 
 Private Sub Form_Load()
     ReDim groups(0): ReDim bans(0)
-    '测试用
-    AddGroup 1, 1, True, "大厅"
-    '这里和服务端不一样是动态的，需要获取。
-    'userId = -2: userName = "老师"
     
     Call InitEmeraldFramework
     Set Shadow = New aShadow
@@ -449,6 +445,9 @@ Private Sub Form_Load()
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
+    For i = 2 To UBound(groups)
+        Winsock1.SendData "quitgroup;" & groups(i).id & vbCrLf
+    Next
     Client.save3_Click
     Set Shadow = Nothing
     Call UnloadEmeraldFramework
@@ -516,22 +515,22 @@ Private Sub Picture1_MouseUp(button As Integer, Shift As Integer, x As Single, y
 End Sub
 
 Public Sub save2_Click()
-    Open App.path & "\" & Me.Caption & "的笔记" & Str(p) & ".txt" For Output As #1
+    Open App.path & "\" & userName & "的笔记" & Str(p) & ".txt" For Output As #1
     Print #1, Text5.Text
     Close #1
-    MsgBox "已成功保存笔记！" & vbCrLf & App.path & "\" & Me.Caption & "的笔记" & Str(p) & ".txt", 64, "保存成功"
+    MsgBox "已成功保存笔记！" & vbCrLf & App.path & "\" & userName & "的笔记" & Str(p) & ".txt", 64, "保存成功"
     p = p + 1
 End Sub
 Public Sub save3_Click()
-    Open App.path & "\" & Me.Caption & "的消息记录" & Str(q) & ".txt" For Output As #1
+    Open App.path & "\" & userName & "的消息记录" & Str(q) & ".txt" For Output As #1
     Print #1, Text1.Text
     Close #1
-    MsgBox "已成功保存消息记录！" & vbCrLf & App.path & "\" & Me.Caption & "的消息记录" & Str(q) & ".txt", 64, "保存成功"
+    MsgBox "已成功保存消息记录！" & vbCrLf & App.path & "\" & userName & "的消息记录" & Str(q) & ".txt", 64, "保存成功"
     q = q + 1
 End Sub
 Public Sub saveDrawing()
-    SavePicture Client.Picture1.Image, App.path & "\" & Me.Caption & "的涂鸦" & Str(dr) & ".bmp"
-    MsgBox "已成功保存涂鸦！" & vbCrLf & App.path & "\" & Me.Caption & "的涂鸦" & Str(dr) & ".bmp", 64, "保存成功"
+    SavePicture Client.Picture1.Image, App.path & "\" & userName & "的涂鸦" & Str(dr) & ".bmp"
+    MsgBox "已成功保存涂鸦！" & vbCrLf & App.path & "\" & userName & "的涂鸦" & Str(dr) & ".bmp", 64, "保存成功"
     dr = dr + 1
 End Sub
 
@@ -562,7 +561,15 @@ Public Sub SendMsg()
     If Text2.Text = "" Then
         VBA.Beep
     Else
+<<<<<<< HEAD
         Winsock1.SendData "msg;" + Str(MainPage.selectIndex) + ";" + Me.Caption + ";id;" + Base64EncodeString(Text2.Text) + ";" + vbCrLf
+=======
+<<<<<<< HEAD
+        Winsock1.SendData "msg;" + Str(grpId) + ";" + userName + ";id;" + Base64EncodeString(Text2.Text) + ";"
+=======
+        Winsock1.SendData "msg;" + Str(MainPage.selectI ndex) + ";" + Me.Caption + ";id;" + Base64EncodeString(Text2.Text) + ";"
+>>>>>>> 462fd88225dd92b642e8cf57cf902c9c2a030268
+>>>>>>> ba91a10369aedb365e306bd252a612fa4844d140
         'Winsock1.SendData Text2.Text
         Text2.Text = ""
     End If
@@ -598,7 +605,7 @@ End Sub
 Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
     '接收
     Dim strdata As String
-    Dim strSplit
+    Dim strSplit() As String
     Dim MsgType As String
     Dim grpId As Integer
     Dim id As Integer
@@ -609,10 +616,14 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
     Dim leaderName As String
     Winsock1.GetData strdata
     
-    strSplit = Split(strdata, ";")
-    MsgType = strSplit(0)
-
+    Dim cmds() As String
+    cmds = Split(strdata, vbCrLf)
     
+    For k = 0 To UBound(cmds) - 1
+        strSplit = Split(cmds(k), ";")
+        MsgType = strSplit(0)
+    
+<<<<<<< HEAD
     Select Case MsgType
     Case "msg"
         grpId = Int(strSplit(1))
@@ -635,4 +646,48 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
         
     Case "newmember"
     End Select
+=======
+        Select Case MsgType
+        Case "msg"
+            Dim grpId As Integer
+            Dim id As Integer
+            Dim Name As String
+            Dim MsgContent As String
+            grpId = Int(strSplit(1))
+            id = Int(strSplit(3))
+            Name = strSplit(2)
+            MsgContent = strSplit(4)
+            MsgContent = Base64DecodeString(MsgContent)
+            'Text1.Text = Name + ":" + MsgContent + vbCrLf + Text1.Text
+            Call AddMessage(grpId, id, Name, MsgContent)
+        Case "newleader"
+            Dim leaderId As Integer
+            Dim grpName As String
+            grpName = strSplit(2)
+            grpName = Base64DecodeString(grpName)
+            leaderId = strSplit(3)
+            grpId = strSplit(1)
+            Call SetJoinState(grpId, True)
+            Call AddGroup(grpId, leaderId, True, grpName, "")
+        Case "identify"
+            userId = Val(strSplit(1))
+            Winsock1.SendData "addgrouprequest;" & Base64EncodeString(userName) & ";" & userId & ";" & 1 & vbCrLf
+        Case "grouprequest"
+            If MsgBox(Base64DecodeString(strSplit(1)) & "(#" & Val(strSplit(2)) & ") 申请加入 " & groups(Val(strSplit(3))).Name & "，是否同意？", 48 + vbYesNo) = vbYes Then
+                AddMember Base64DecodeString(strSplit(1)), Val(strSplit(2)), Val(strSplit(3))
+                Winsock1.SendData "broadcast;addmember;" & strSplit(1) & ";" & strSplit(2) & ";" & strSplit(3) & vbCrLf
+            End If
+        Case "addmember"
+            If Val(strSplit(2)) = userId Then SetJoinState Val(strSplit(3)), True
+            AddMember Base64DecodeString(strSplit(1)), Val(strSplit(2)), Val(strSplit(3))
+        Case "addgroup"
+            Call AddGroup(Val(strSplit(4)), Val(strSplit(1)), Val(strSplit(1)) = userId, Base64DecodeString(strSplit(2)), Base64DecodeString(strSplit(3)))
+        Case "deletegroup"
+            DeleteGroup Val(strSplit(1))
+        Case "deletemember"
+            DeleteMember Val(strSplit(1)), Val(strSplit(2))
+        End Select
+    Next
+
+>>>>>>> ba91a10369aedb365e306bd252a612fa4844d140
 End Sub

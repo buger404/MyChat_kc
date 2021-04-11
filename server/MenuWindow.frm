@@ -36,13 +36,19 @@ Begin VB.Form MenuWindow
          Caption         =   "移出群聊"
       End
    End
+   Begin VB.Menu groupMenu 
+      Caption         =   "组菜单"
+      Begin VB.Menu quitGroup 
+         Caption         =   "解散"
+      End
+   End
 End
 Attribute VB_Name = "MenuWindow"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
-Public id As Integer
+Public id As Integer, groupid As Integer
 
 Private Sub copyMsg_Click()
     On Error Resume Next
@@ -50,3 +56,9 @@ Private Sub copyMsg_Click()
     Clipboard.SetText selectMsg.Content
 End Sub
 
+Private Sub quitGroup_Click()
+    DeleteGroup groups(groupid).id
+    For Each w In Server.Winsock
+        If w.State = 7 Then w.SendData "deletegroup;" & groups(groupid).id & vbCrLf
+    Next
+End Sub

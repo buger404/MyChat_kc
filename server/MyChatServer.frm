@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "MSWINSCK.OCX"
+Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "mswinsck.ocx"
 Begin VB.Form Server 
    Appearance      =   0  'Flat
    BackColor       =   &H80000005&
@@ -392,7 +392,7 @@ End Sub
 
 Private Sub Form_Load()
     ReDim groups(0): ReDim bans(0)
-    AddGroup 1, -2, True, "大厅"
+    AddGroup 1, -2, True, "大厅", "老师"
     userId = -2: userName = "老师"
     
     Call InitEmeraldFramework
@@ -443,6 +443,13 @@ Private Sub lis_ConnectionRequest(ByVal requestID As Long)
     
     If Winsock(m).State = sckClosed Then
         Winsock(m).Accept requestID
+        Winsock(m).SendData "identify;" & m & vbCrLf
+        For i = 1 To UBound(groups)
+            Winsock(m).SendData "addgroup;" & groups(i).leader & ";" & Base64EncodeString(groups(i).Name) & ";" & Base64EncodeString(groups(i).LeaderName) & ";" & groups(i).id & vbCrLf
+            For j = 1 To UBound(groups(i).members)
+                Winsock(m).SendData "addmember;" & Base64EncodeString(groups(i).members(j).Name) & ";" & groups(i).members(j).id & ";" & groups(i).id & vbCrLf
+            Next
+        Next
     End If
     
     m = m + 1
@@ -466,23 +473,36 @@ End Sub
 
 Private Sub Winsock_Close(index As Integer)
     pop = pop - 1
+    Call AddMessage(1, -1, "系统消息", "")
+    DeleteMember index, 1
+    For Each w In Winsock
+        If w.State = 7 Then w.SendData "deletemember;" & index & ";" & 1 & vbCrLf
+    Next
 End Sub
 
 Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
     If State = True Then Exit Sub
     
-    Dim strSplit
+    Dim strSplit() As String
     Dim id As Integer
     Dim MsgType As String
     Dim strData As String
     Winsock(index).GetData strData
     
+    Dim S As Single
+  '  S = 1
+   ' Do While (S <= Winsock.ubound)
+   '     If Winsock(S).State = 7 Then
+   '         Winsock(S).SendData strData
+   '         DoEvents
+   '     End If
+   '     S = S + 1
+   ' Loop
     
-    strSplit = Split(strData, ";")
-    id = index
-    MsgType = strSplit(0)
-
+    Dim cmds() As String
+    cmds = Split(strData, vbCrLf)
     
+<<<<<<< HEAD
     Select Case MsgType
     Case "msg"
         Dim Name As String
@@ -506,11 +526,85 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
         
     Case "picmsg"
     Case "addgroup"
+=======
+>>>>>>> ba91a10369aedb365e306bd252a612fa4844d140
 
-    Case "okgroup"
+    For k = 0 To UBound(cmds) - 1
+        strSplit = Split(cmds(k), ";")
+        id = index
+        MsgType = strSplit(0)
     
-    Case "creategroup"
+        Select Case MsgType
+        Case "msg"
+            Dim Name As String
+            Dim MsgContent As String
+            Name = strSplit(2)
+            grpid = strSplit(1)
+            MsgContent = strSplit(4)
+            MsgContent = Base64DecodeString(MsgContent)
+            Call AddMessage(Str(MainPage.selectIndex), id, Name, MsgContent)
+            
+            strData = MsgType + ";" + Str(MainPage.selectIndex) + ";" + Name + ";" + Str(id) + ";" + Base64EncodeString(MsgContent)
     
-    End Select
-    
+            S = 1
+            Do While (S <= Winsock.UBound)
+                If Winsock(S).State = 7 Then
+                    Winsock(S).SendData strData
+                    DoEvents
+                End If
+                S = S + 1
+            Loop
+            
+        Case "picmsg"
+        Case "addgrouprequest"
+            If groups(Val(strSplit(3))).leader = -2 Then
+                If Val(strSplit(3)) = 1 Then GoTo skipNotify
+                If MsgBox(Base64DecodeString(strSplit(1)) & "(#" & Val(strSplit(2)) & ") 申请加入 " & groups(Val(strSplit(3))).Name & "，是否同意？", 48 + vbYesNo) = vbYes Then
+skipNotify:
+                    AddMember Base64DecodeString(strSplit(1)), Val(strSplit(2)), Val(strSplit(3))
+                    For Each w In Winsock
+                        If w.State = 7 Then w.SendData "addmember;" & strSplit(1) & ";" & strSplit(2) & ";" & strSplit(3) & vbCrLf
+                    Next
+                End If
+            Else
+                Winsock(groups(Val(strSplit(3))).leader).SendData "grouprequest;" & strSplit(1) & ";" & strSplit(2) & ";" & strSplit(3) & vbCrLf
+            End If
+        Case "broadcast"
+            Dim newcmd As String
+            For i = 1 To UBound(strSplit)
+                newcmd = newcmd & strSplit(i) & IIf(i < UBound(strSplit), ";", "")
+            Next
+            For Each w In Winsock
+                If w.State = 7 And w.index <> index Then w.SendData newcmd & vbCrLf
+            Next
+        Case "addmember"
+            AddMember Base64DecodeString(strSplit(1)), Val(strSplit(2)), Val(strSplit(3))
+        Case "creategroup"
+            ProcessCreateGroup strSplit, id
+        Case "quitgroup"
+            If index = groups(Val(strSplit(1))).leader Then
+                '解散处理
+                DeleteGroup Val(strSplit(1))
+                For Each w In Winsock
+                    If w.State = 7 Then w.SendData "deletegroup;" & Val(strSplit(1)) & vbCrLf
+                Next
+            Else
+                '退群处理
+                DeleteMember index, Val(strSplit(1))
+                For Each w In Winsock
+                    If w.State = 7 Then w.SendData "deletemember;" & Val(strSplit(1)) & ";" & index & vbCrLf
+                Next
+            End If
+        End Select
+    Next
+End Sub
+Public Sub ProcessCreateGroup(arg() As String, id As Integer)
+    Dim gid As Integer
+    Call AddGroup(groups(UBound(groups)).id + 1, id, True, Base64DecodeString(arg(1)), Base64DecodeString(arg(2)))
+    gid = groups(UBound(groups)).id
+    AddMember groups(UBound(groups)).LeaderName, groups(UBound(groups)).id, UBound(groups)
+    Dim w As Winsock
+    For Each w In Winsock
+        If w.State = 7 Then w.SendData "addgroup;" & id & ";" & arg(1) & ";" & arg(2) & ";" & gid & vbCrLf & "addmember;" & Base64EncodeString(arg(2)) & ";" & id & ";" & gid & vbCrLf
+    Next
 End Sub
