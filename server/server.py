@@ -246,7 +246,7 @@ def main(argv):
 
 			try:
 				with socketserver.TCPServer((HOST, PORT), TCPServer) as server:
-					print("已开启服务器...")
+					print("已开启服务器..." + HOST)
 					server.serve_forever()
 		
 			except KeyboardInterrupt:

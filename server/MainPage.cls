@@ -35,6 +35,7 @@ ReDraw:
         ReleaseCapture
     End If
     
+    If selectIndex > UBound(groups) Then selectIndex = UBound(groups)
     If Not groups(selectIndex).isJoin Then mode = 1
     
     For i = 1 To UBound(groups)
@@ -46,13 +47,26 @@ ReDraw:
         If Len(tip) > 12 Then tip = Left(tip, 10) & "..."
         If tip = ":" Then tip = "(暂无消息)"
         Page.Writes tip, 30, (i - 1) * 70 + 60 + 33 - sideY, 18, argb(200, 255, 255, 255)
-        If m = 3 Then selectIndex = i: scrBottom = True: mode = 0
+        If m = 3 Then
+            If Mouse.button = 1 Then
+                selectIndex = i: scrBottom = True: mode = 0
+            ElseIf Mouse.button = 2 And i <> 1 Then
+                MenuWindow.groupid = i: Mouse.button = 0
+                Server.PopupMenu MenuWindow.groupMenu
+            End If
+        End If
         If groups(i).unreadTick > 0 Then
             Page.Paint 2, 230, (i - 1) * 70 + 60 + 20 - sideY, 50, 30, argb(255, 251, 77, 63), 100
             Page.Writes IIf(groups(i).unreadTick = 100, "99+", groups(i).unreadTick), 230 + 25, (i - 1) * 70 + 60 + 21 - sideY, 18, argb(255, 255, 255, 255), align:=StringAlignmentCenter, style:=FontStyleBold
         End If
         If selectIndex = i Then groups(i).unreadTick = 0
     Next
+
+    If realSize <> 0 Then
+        ReDim Preserve groups(realSize)
+        realSize = 0
+    End If
+
     Dim maxScr As Long
     If (i - 1) * 70 + 60 > GH - 30 Then
         maxScr = (i - 1) * 70 + 60 - GH + 30
@@ -61,13 +75,15 @@ ReDraw:
     End If
     If sideY > maxScr Then sideY = maxScr: GoTo ReDraw
     If sideY < 0 Then sideY = 0: GoTo ReDraw
-        
+
+    If selectIndex > UBound(groups) Then selectIndex = UBound(groups)
     Page.Writes groups(selectIndex).Name & "(" & UBound(groups(selectIndex).members) & ")", 20 + 300, 15, 20, argb(255, 0, 0, 0), style:=FontStyleBold
     
     Dim disbledToolbar As Boolean
     If Not groups(selectIndex).isJoin Then
         Page.Paint 2, 300 + (GW - 300) / 2, GH / 2, 450, 250, argb(120, 0, 0, 0), 20, pos:=posOnCenter
         Page.Writes "您尚未加入该讨论组", 300 + (GW - 300) / 2, GH / 2 - 70, 20, argb(255, 255, 255, 255), align:=StringAlignmentCenter, style:=FontStyleBold
+        Page.Writes "组长：" & groups(selectIndex).LeaderName, 300 + (GW - 300) / 2, GH / 2 - 30, 20, argb(255, 255, 255, 255), align:=StringAlignmentCenter
         If Page.ShowColorButton(2, 300 + (GW - 300) / 2 - 100, GH - 250, 200, 40, "申请加入", argb(255, 255, 255, 255), argb(220, 84, 223, 143), argb(255, 84, 223, 143), 99, size:=20) = mMouseUp Then
             ' 申请加入的代码放置此处
         End If
@@ -101,6 +117,7 @@ ReDraw:
                             tw = scroll.Width - 60
                         End If
                         Page.Paint 2, drx, dry + 25, tw + 20, th + 20, IIf(.id = userId, argb(255, 84, 223, 143), argb(255, 232, 232, 232)), 16
+                        
                         If CheckMouse(drx + 300, dry + 60 + 25, tw + 20, th + 20) > 0 And Mouse.button = 2 Then
                             MenuWindow.id = .id: selectMsg = groups(selectIndex).Msg(i): Mouse.button = 0
                             MenuWindow.banMsg.Visible = (.id <> userId And (userId = groups(selectIndex).leader Or userId = -2))
@@ -283,7 +300,13 @@ SkipTab2:
     Page.Paint 1, 255, 15, 30, 30, argb(IIf(m, 255, 100), 180, 180, 180)
     Page.Writes "+", 260, 16, 18, argb(255, 0, 0, 0), style:=FontStyleBold
     If m = mMouseUp Then
-        Call Server.createGrp
+        Dim grName As String
+reinput:
+        grName = InputBox("给新建的组起个名字吧~")
+        If grName = "" Then MsgBox "名字不能为空。", 48: GoTo reinput
+        Dim cmd() As String
+        cmd = Split("creategroup;" & Base64EncodeString(grName) & ";" & Base64EncodeString(userName), ";")
+        Server.ProcessCreateGroup cmd, userId
     End If
     
 End Sub

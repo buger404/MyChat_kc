@@ -39,7 +39,7 @@ Begin VB.Form MenuWindow
    Begin VB.Menu groupMenu 
       Caption         =   "组菜单"
       Begin VB.Menu quitGroup 
-         Caption         =   "退出组"
+         Caption         =   "解散"
       End
    End
 End
@@ -56,6 +56,9 @@ Private Sub copyMsg_Click()
     Clipboard.SetText selectMsg.Content
 End Sub
 
-Private Sub Form_Load()
-
+Private Sub quitGroup_Click()
+    DeleteGroup groups(groupid).id
+    For Each w In Server.Winsock
+        If w.State = 7 Then w.SendData "deletegroup;" & groups(groupid).id & vbCrLf
+    Next
 End Sub

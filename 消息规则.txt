@@ -7,6 +7,8 @@ picmsg;groupid;name;id;content(base64)
 grouplist;count;groupid1;group1name(base64);leader1name(base64);leader1id;IsInGroup1;groupid2;group2name(base64);leader2name(base64);leader2id;IsInGroup2;....
 4.有新的组被创建（服务端->客户端）
 newgroup;groupid;groupname(base64);leadername(base64);leaderid
+sever->leader
+newleader;groupid;groupname(base64);leaderid
 5.申请加入组（客户端->服务端）
 addgroup;groupid
 6.同意申请（客户端->服务端）

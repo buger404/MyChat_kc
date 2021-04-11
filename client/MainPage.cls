@@ -36,6 +36,7 @@ ReDraw:
     End If
     
     If UBound(groups) = 0 Then Exit Sub
+    If selectIndex > UBound(groups) Then selectIndex = UBound(groups)
     If Not groups(selectIndex).isJoin Then mode = 1
     
     For i = 1 To UBound(groups)
@@ -47,7 +48,16 @@ ReDraw:
         If Len(tip) > 12 Then tip = Left(tip, 10) & "..."
         If tip = ":" Then tip = "(暂无消息)"
         Page.Writes tip, 30, (i - 1) * 70 + 60 + 33 - sideY, 18, argb(200, 255, 255, 255)
-        If m = 3 Then selectIndex = i: scrBottom = True: mode = 0
+        If m = 3 Then
+            If Mouse.button = 1 Then
+                selectIndex = i: scrBottom = True: mode = 0
+            ElseIf Mouse.button = 2 And i > 1 Then
+                MenuWindow.groupId = i
+                Mouse.button = 0
+                MenuWindow.quitGroup.Caption = IIf(groups(i).leader = userId, "解散", "退出")
+                Client.PopupMenu MenuWindow.groupMenu
+            End If
+        End If
         If groups(i).unreadTick > 0 Then
             Page.Paint 2, 230, (i - 1) * 70 + 60 + 20 - sideY, 50, 30, argb(255, 251, 77, 63), 100
             Page.Writes IIf(groups(i).unreadTick = 100, "99+", groups(i).unreadTick), 230 + 25, (i - 1) * 70 + 60 + 21 - sideY, 18, argb(255, 255, 255, 255), align:=StringAlignmentCenter, style:=FontStyleBold
@@ -71,8 +81,10 @@ ReDraw:
     If Not groups(selectIndex).isJoin Then
         Page.Paint 2, 300 + (GW - 300) / 2, GH / 2, 450, 250, argb(120, 0, 0, 0), 20, pos:=posOnCenter
         Page.Writes "您尚未加入该讨论组", 300 + (GW - 300) / 2, GH / 2 - 70, 20, argb(255, 255, 255, 255), align:=StringAlignmentCenter, style:=FontStyleBold
+        Page.Writes "组长：" & groups(selectIndex).LeaderName, 300 + (GW - 300) / 2, GH / 2 - 30, 20, argb(255, 255, 255, 255), align:=StringAlignmentCenter
         If Page.ShowColorButton(2, 300 + (GW - 300) / 2 - 100, GH - 250, 200, 40, "申请加入", argb(255, 255, 255, 255), argb(220, 84, 223, 143), argb(255, 84, 223, 143), 99, size:=20) = mMouseUp Then
             ' 申请加入的代码放置此处
+            Client.Winsock1.SendData "addgrouprequest;" & Base64EncodeString(userName) & ";" & userId & ";" & groups(selectIndex).id & vbCrLf
         End If
         disbledToolbar = True
         GoTo nomsg
@@ -150,7 +162,7 @@ ReDraw:
     For i = 1 To UBound(bans)
         Dim span As Date, tickspan As Long
         If i > UBound(bans) Then Exit For
-        If bans(i).groupid = groups(selectIndex).id And bans(i).id = userId Then
+        If bans(i).groupId = groups(selectIndex).id And bans(i).id = userId Then
             span = Now - bans(i).StartTime
             tickspan = Minute(span) * 60 + Second(span) + Hour(span) * 60 * 60
             If tickspan < bans(i).Duration Then
@@ -189,24 +201,24 @@ nomsg:
     '底部发送框
     Dim TextV As Boolean
     TextV = (pro = 1)
-    If Not (Client.Text1.Visible Or Client.Picture2.Visible) Then TextV = False
+    If Not (Client.Text1.Enabled Or Client.Picture2.Visible) Then TextV = False
     If Client.Text2.Visible <> TextV Then Client.Text2.Visible = TextV
 
     If Not disbledToolbar Then Page.Paint 0, 300, GH - 82, GW, 83, argb(255, 232, 232, 232)
     
     If pro = 0 Or disbledToolbar Then GoTo SkipTab1
     
-    If Client.Text1.Visible Or Client.Picture2.Visible Then
+    If Client.Text1.Enabled Or Client.Picture2.Visible Then
         Page.Paint 2, 33 + 300, GH - (82 - 18) * pro + 40 * dpro, GW - 250 - 300 + 70, 42, argb(255 * pro, 255, 255, 255), Radius:=42
         Page.DrawImage "send.png", 630 + 300, GH - 40 * pro + 40 * dpro, Alpha:=0, pos:=posOnCenter
         m = CheckMouse2
         Page.DrawImage "send.png", 630 + 300, GH - 40 * pro + 40 * dpro, Alpha:=IIf(Client.Command2.Enabled, IIf(m, 1, 0.8), 0.3) * pro, pos:=posOnCenter
         ECore.TipMsg "发送消息", 0
-        If m = mMouseDown And Mouse.button = 1 And Client.Text1.Visible Then Client.SendMsg: Mouse.button = 0
+        If m = mMouseDown And Mouse.button = 1 And Client.Text1.Enabled Then Client.SendMsg: Mouse.button = 0
     End If
     
     Dim ClearEn As Boolean
-    ClearEn = ClearEn Or (Client.Command3.Enabled And Client.Text1.Text <> "" And Client.Text1.Visible)
+    ClearEn = ClearEn Or (Client.Command3.Enabled And Client.Text1.Text <> "" And Client.Text1.Enabled)
     ClearEn = ClearEn Or (Client.Picture2.Visible)
     ClearEn = ClearEn Or (Client.Picture1.Visible)
     ClearEn = ClearEn Or (Client.Text5.Text <> "" And Client.Text5.Visible)
@@ -216,7 +228,7 @@ nomsg:
     Page.DrawImage "clear.png", 690 + 300, GH - 40 * pro + 40 * dpro, Alpha:=IIf(ClearEn, IIf(m, 1, 0.8), 0.3) * pro, pos:=posOnCenter
     ECore.TipMsg "清空", 0
     If m = mMouseDown And Mouse.button = 1 Then
-        If Client.Text1.Visible Then Client.Command3_Click
+        If Client.Text1.Enabled Then Client.Command3_Click
         If Client.Text5.Visible Then Client.Text5.Text = ""
         If Client.Picture2.Visible Then Client.Picture2.Cls
         If Client.Picture1.Visible Then Client.Command4_Click
@@ -255,9 +267,9 @@ nomsg:
 SkipTab1:
     If pro = 1 Or disbledToolbar Then GoTo SkipTab2
 
-    Page.DrawImage "chat" & IIf(Not Client.Text1.Visible, "d", "") & ".png", 50 + 300, GH - 40 * dpro + 40 * pro, Alpha:=0, pos:=posOnCenter
+    Page.DrawImage "chat" & IIf(Not Client.Text1.Enabled, "d", "") & ".png", 50 + 300, GH - 40 * dpro + 40 * pro, Alpha:=0, pos:=posOnCenter
     m = CheckMouse2
-    Page.DrawImage "chat" & IIf(Not Client.Text1.Visible, "d", "") & ".png", 50 + 300, GH - 40 * dpro + 40 * pro, Alpha:=1 * dpro, pos:=posOnCenter
+    Page.DrawImage "chat" & IIf(Not Client.Text1.Enabled, "d", "") & ".png", 50 + 300, GH - 40 * dpro + 40 * pro, Alpha:=1 * dpro, pos:=posOnCenter
     ECore.TipMsg "聊天模式", 0
     If m = mMouseDown And Mouse.button = 1 Then Client.Option3_Click: Mouse.button = 0
     Page.DrawImage "notepad" & IIf(Not Client.Text5.Visible, "d", "") & ".png", 110 + 300, GH - 40 * dpro + 40 * pro, Alpha:=0, pos:=posOnCenter
@@ -294,7 +306,7 @@ SkipTab1:
         Page.DrawImage "save.png", 572 + 300, GH - 40 * dpro + 40 * pro, Alpha:=1 * dpro, pos:=posOnCenter
         ECore.TipMsg "保存文件", 0
         If m = mMouseDown And Mouse.button = 1 Then
-            If Client.Text1.Visible Then Client.save3_Click
+            If Client.Text1.Enabled Then Client.save3_Click
             If Client.Text5.Visible Then Client.save2_Click
             If Client.Picture1.Visible Then Client.saveDrawing
             Mouse.button = 0
@@ -318,7 +330,11 @@ SkipTab2:
     Page.Paint 1, 255, 15, 30, 30, argb(IIf(m, 255, 100), 180, 180, 180)
     Page.Writes "+", 260, 16, 18, argb(255, 0, 0, 0), style:=FontStyleBold
     If m = mMouseUp Then
-        Call Server.createGrp
+        Dim grName As String
+reinput:
+        grName = InputBox("给新建的组起个名字吧~")
+        If grName = "" Then MsgBox "名字不能为空。", 48: GoTo reinput
+        Client.Winsock1.SendData "creategroup;" & Base64EncodeString(grName) & ";" & Base64EncodeString(userName) & vbCrLf
     End If
 End Sub
 Public Sub Wheel(Direction As Integer, Depth As Single)

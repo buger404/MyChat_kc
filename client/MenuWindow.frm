@@ -36,13 +36,19 @@ Begin VB.Form MenuWindow
          Caption         =   "移出群聊"
       End
    End
+   Begin VB.Menu groupMenu 
+      Caption         =   "组菜单"
+      Begin VB.Menu quitGroup 
+         Caption         =   "退出该组"
+      End
+   End
 End
 Attribute VB_Name = "MenuWindow"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
-Public id As Integer
+Public id As Integer, groupId As Integer
 
 Private Sub copyMsg_Click()
     On Error Resume Next
@@ -50,6 +56,8 @@ Private Sub copyMsg_Click()
     Clipboard.SetText selectMsg.Content
 End Sub
 
-Private Sub Form_Load()
-
+Private Sub quitGroup_Click()
+    If ECore.SimpleMsg("您确定要执行此操作？此操作不可逆。", quitGroup.Caption & "组“" & groups(groupId).Name & "”", StrArray("确定", "取消")) = 0 Then
+        Client.Winsock1.SendData "quitgroup;" & groups(groupId).id & vbCrLf
+    End If
 End Sub

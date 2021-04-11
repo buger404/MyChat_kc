@@ -1,20 +1,20 @@
 Attribute VB_Name = "GroupCore"
 Public Type Messages
     id As Integer
-    name As String
+    Name As String
     Content As String
     time As Date
 End Type
 Public Type Member
     id As Integer
-    name As String
+    Name As String
 End Type
 Public Type group
     id As Integer
     leader As Integer
     LeaderName As String
     isJoin As Boolean
-    name As String
+    Name As String
     Msg() As Messages
     unreadTick As Integer
     members() As Member
@@ -29,7 +29,7 @@ Public Type dump
     groups() As group
     bans() As MsgBan
 End Type
-Public userId As Integer, userName As String
+Public userId As Integer, userName As String, realSize As Long
 Public MainPage As MainPage, selectMsg As Messages
 Public groups() As group, bans() As MsgBan
 Public Sub DumpFile()
@@ -40,14 +40,14 @@ Public Sub DumpFile()
     Put #1, , dump
     Close #1
 End Sub
-Public Sub AddGroup(id As Integer, leader As Integer, isJoin As Boolean, name As String, LeaderName As String)
+Public Sub AddGroup(id As Integer, leader As Integer, isJoin As Boolean, Name As String, LeaderName As String)
     ReDim Preserve groups(UBound(groups) + 1)
     With groups(UBound(groups))
         .id = id
         .isJoin = isJoin
-        .name = name
+        .Name = Name
         .leader = leader
-        .LeaderName = .LeaderName
+        .LeaderName = LeaderName
         ReDim .Msg(0)
         ReDim .members(0)
     End With
@@ -59,20 +59,20 @@ Public Sub DeleteGroup(id As Integer)
             For j = i To UBound(groups) - 1
                 groups(j) = groups(j + 1)
             Next
-            ReDim Preserve groups(UBound(groups) - 1)
             Exit For
         End If
     Next
+    realSize = UBound(groups) - 1
     Call DumpFile
 End Sub
-Public Sub AddMessage(id As Integer, memberid As Integer, name As String, Content As String)
+Public Sub AddMessage(id As Integer, memberid As Integer, Name As String, Content As String)
     For i = 1 To UBound(groups)
         If groups(i).id = id Then
             ReDim Preserve groups(i).Msg(UBound(groups(i).Msg) + 1)
             With groups(i).Msg(UBound(groups(i).Msg))
                 .Content = Content
                 .id = memberid
-                .name = name
+                .Name = Name
                 .time = Now
             End With
             groups(i).unreadTick = groups(i).unreadTick + 1
@@ -90,12 +90,12 @@ Public Sub SetJoinState(id As Integer, isJoin As Boolean)
         End If
     Next
 End Sub
-Public Sub AddMember(name As String, id As Integer, group As Integer)
+Public Sub AddMember(Name As String, id As Integer, group As Integer)
     For i = 1 To UBound(groups)
-        If groups(i).id = id Then
+        If groups(i).id = group Then
             ReDim Preserve groups(i).members(UBound(groups(i).members) + 1)
             With groups(i).members(UBound(groups(i).members))
-                .name = name
+                .Name = Name
                 .id = id
             End With
             Exit For
@@ -105,7 +105,7 @@ Public Sub AddMember(name As String, id As Integer, group As Integer)
 End Sub
 Public Sub DeleteMember(id As Integer, group As Integer)
     For i = 1 To UBound(groups)
-        If groups(i).id = id Then
+        If groups(i).id = group Then
             For j = 1 To UBound(groups(i).members)
                 If groups(i).members(j).id = id Then
                     groups(i).members(j) = groups(i).members(UBound(groups(i).members))
