@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "MSWINSCK.OCX"
+Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "mswinsck.ocx"
 Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
 Begin VB.Form Client 
    Appearance      =   0  'Flat
@@ -274,7 +274,7 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Dim grpId As Integer
 Dim i As Single, p As Single, q As Single, dr As Single
-Dim MainPage As MainPage, IPPage As IPPage
+Dim IPPage As IPPage
 Public LBtnColor As Long, RBtnColor As Long
 Public DotMode As Boolean
 Dim DrawX As Single, DrawY As Single
@@ -389,20 +389,8 @@ End Sub
 
 Private Sub Form_Load()
     ReDim groups(0): ReDim bans(0)
-    '测试用
-    AddGroup 1, 1, True, "大厅"
-    AddGroup 2, 1, False, "未加入测试"
-    AddGroup 3, 1, True, "测试讨论组2"
-    AddGroup 4, 1, True, "testtest"
-    AddGroup 5, 1, True, "hash"
-    AddMessage 1, 1, "测试组员", "这是一条超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长但是就是不换行的消息"
-    AddMessage 1, 2, "测试组员", "我还能换行" & vbCrLf & "乌拉乌拉"
-    AddMessage 1, -1, "系统消息", "您被禁言，才怪。"
-    AddMessage 1, -2, "老师", "不要乱发消息"
-    For i = 1 To 20
-        AddMessage 1, -2, "老师", "身为老师要以身作则带头刷屏，而且要刷那种很长很长的屏，不仅如此，我还要..."
-    Next
-    '这里和服务端不一样是动态的，需要获取。
+    
+    '这里和服务端不一样是动态的，需要获取，包括包含的组。
     'userId = -2: userName = "老师"
     
     Call InitEmeraldFramework
@@ -440,7 +428,6 @@ Private Sub Form_Load()
     
     If Winsock1.RemoteHost <> "" Then logBtn_Click
 
-    Call AddGroup(0, -1, True, "公共 ")
     grpId = 0
     
     '精准控制坐标

@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "MSWINSCK.OCX"
+Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "mswinsck.ocx"
 Begin VB.Form Server 
    Appearance      =   0  'Flat
    BackColor       =   &H80000005&
@@ -204,7 +204,7 @@ Dim State As Boolean, pop As Single
 Dim pypid
 Dim grpid As Integer
 Dim g As String, q As Single, m As Single
-Dim MainPage As MainPage, IPPage As IPPage
+Dim IPPage As IPPage
 
 Public Sub Command1_Click()
     Dim C As Single
@@ -374,19 +374,16 @@ End Sub
 
 Private Sub Form_Load()
     ReDim groups(0): ReDim bans(0)
-    '测试用
-    AddGroup 1, 1, True, "大厅"
-    AddGroup 2, 1, False, "未加入测试"
-    AddGroup 3, 1, True, "测试讨论组2"
-    AddGroup 4, 1, True, "testtest"
-    AddGroup 5, 1, True, "hash"
-    AddMessage 1, 1, "测试组员", "这是一条超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长但是就是不换行的消息"
-    AddMessage 1, 2, "测试组员", "我还能换行" & vbCrLf & "乌拉乌拉"
-    AddMessage 1, -1, "系统消息", "您被禁言，才怪。"
-    AddMessage 1, -2, "老师", "不要乱发消息"
-    For i = 1 To 20
-        AddMessage 1, -2, "老师", "身为老师要以身作则带头刷屏，而且要刷那种很长很长的屏，不仅如此，我还要..."
-    Next
+    If Dir(App.path & "\groups.bin") <> "" Then
+        Dim dump As dump
+        Open App.path & "\groups.bin" For Binary As #1
+        Get #1, , dump
+        Close #1
+        groups = dump.groups
+        bans = dump.bans
+    Else
+        AddGroup 1, 1, True, "大厅"
+    End If
     userId = -2: userName = "老师"
     
     Call InitEmeraldFramework
@@ -404,7 +401,6 @@ Private Sub Form_Load()
     
     pypid = Shell("python """ & App.path & "\" & "server.py"" -o " & lis.LocalIP, 6)
     
-    Call AddGroup(0, -2, True, "公共")
     Text3.Visible = False: Text4.Visible = True
     Command5.Enabled = False
     State = False

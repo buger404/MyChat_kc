@@ -4,7 +4,7 @@ Begin VB.Form MenuWindow
    Caption         =   "∑≈÷√≤Àµ•"
    ClientHeight    =   3135
    ClientLeft      =   150
-   ClientTop       =   795
+   ClientTop       =   780
    ClientWidth     =   4680
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
@@ -43,4 +43,10 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Public id As Integer
+
+Private Sub copyMsg_Click()
+    On Error Resume Next
+    Clipboard.Clear
+    Clipboard.SetText selectMsg.Content
+End Sub
 
