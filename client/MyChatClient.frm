@@ -304,12 +304,12 @@ End Sub
 
 
 
-Private Sub logBtn_Click()
+Private Sub logIn()
     'If Dir("id_info.txt") <> "" Then Kill ("id_info.txt")
     'If Dir("id_info.txt") <> "" Then Kill "id_info.txt"
-    If Dir("face.png") <> "" Then Kill "face.png"
+    'If Dir("face.png") <> "" Then Kill "face.png"
     
-    'ShellEx "python """ & App.path & "\" & "client.py"" -l " & Winsock1.RemoteHost
+    ShellEx "python """ & App.path & "\" & "client.py"" -l " & Winsock1.RemoteHost
     If Dir("id_info.txt") = "" Then MsgBox "查无此人，考虑注册？", 16, "登陆失败": End
     Open "id_info.txt" For Input As 1
     A = StrConv(InputB(FileLen("id_info.txt"), 1), vbUnicode)
@@ -319,7 +319,7 @@ Private Sub logBtn_Click()
     Me.Caption = S(0)
     
     'If Dir("id_info.txt") <> "" Then Kill "id_info.txt"
-    If Dir("face.png") <> "" Then Kill "face.png"
+    'If Dir("face.png") <> "" Then Kill "face.png"
     
     Winsock1.RemotePort = 2001
     If Winsock1.State = sckClosed Then
@@ -391,17 +391,6 @@ Private Sub Form_Load()
     ReDim groups(0): ReDim bans(0)
     '测试用
     AddGroup 1, 1, True, "大厅"
-    AddGroup 2, 1, False, "未加入测试"
-    AddGroup 3, 1, True, "测试讨论组2"
-    AddGroup 4, 1, True, "testtest"
-    AddGroup 5, 1, True, "hash"
-    AddMessage 1, 1, "测试组员", "这是一条超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长但是就是不换行的消息"
-    AddMessage 1, 2, "测试组员", "我还能换行" & vbCrLf & "乌拉乌拉"
-    AddMessage 1, -1, "系统消息", "您被禁言，才怪。"
-    AddMessage 1, -2, "老师", "不要乱发消息"
-    For i = 1 To 20
-        AddMessage 1, -2, "老师", "身为老师要以身作则带头刷屏，而且要刷那种很长很长的屏，不仅如此，我还要..."
-    Next
     '这里和服务端不一样是动态的，需要获取。
     'userId = -2: userName = "老师"
     
@@ -438,10 +427,7 @@ Private Sub Form_Load()
         DoEvents
     Loop Until Winsock1.RemoteHost <> ""
     
-    If Winsock1.RemoteHost <> "" Then logBtn_Click
-
-    Call AddGroup(0, -1, True, "公共 ")
-    grpId = 0
+    If Winsock1.RemoteHost <> "" Then logIn
     
     '精准控制坐标
     Text5.Move 0, 60, Me.ScaleWidth, Me.ScaleHeight - 60 - 120
@@ -612,15 +598,24 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
     Dim strdata As String
     Dim strSplit
     Dim MsgType As String
-    Dim grpId As String
-    Dim Name As String
-    Dim MsgContent As String
     Winsock1.GetData strdata
     
     strSplit = Split(strdata, ";")
     MsgType = strSplit(0)
-    Name = strSplit(2)
-    MsgContent = strSplit(4)
-    MsgContent = Base64DecodeString(MsgContent)
-    Text1.Text = Name + ":" + MsgContent + vbCrLf + Text1.Text
+    
+    Select Case MsgType
+    Case "msg"
+        Dim grpId As Integer
+        Dim id As Integer
+        Dim Name As String
+        Dim MsgContent As String
+        grpId = Int(strSplit(1))
+        id = Int(strSplit(3))
+        Name = strSplit(2)
+        MsgContent = strSplit(4)
+        MsgContent = Base64DecodeString(MsgContent)
+        'Text1.Text = Name + ":" + MsgContent + vbCrLf + Text1.Text
+        Call AddMessage(grpId, id, Name, MsgContent)
+    
+    End Select
 End Sub

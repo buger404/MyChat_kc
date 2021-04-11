@@ -203,6 +203,7 @@ Attribute VB_Exposed = False
 Dim State As Boolean, pop As Single
 Dim pypid
 Dim grpid As Integer
+Dim grpidSend As Integer
 Dim g As String, q As Single, m As Single
 Dim MainPage As MainPage, IPPage As IPPage
 
@@ -280,8 +281,9 @@ Public Sub SendMsg()
     S = 1
     Do While (S <= Winsock.UBound)
         If Winsock(S).State = 7 Then
-            Call AddMessage(0, userId, userName, Text4.Text)
-            Winsock(S).SendData "msg;" + "0;" + userName + ";" + Str(userId) + ";" + Base64EncodeString(Text4.Text) + ";"
+            Call AddMessage(grpidSend, userId, userName, Text4.Text)
+            MsgBox Str(grpidSend)
+            Winsock(S).SendData "msg;" + Str(grpidSend) + ";" + userName + ";" + Str(userId) + ";" + Base64EncodeString(Text4.Text) + ";"
             DoEvents
         End If
         S = S + 1
@@ -289,6 +291,9 @@ Public Sub SendMsg()
     
     Text4.Text = ""
 
+End Sub
+Public Sub changeGrp(id As Integer)
+    grpidSend = id
 End Sub
 
 Public Sub createGrp()
@@ -376,18 +381,6 @@ Private Sub Form_Load()
     ReDim groups(0): ReDim bans(0)
     '测试用
     AddGroup 1, 1, True, "大厅"
-    AddGroup 2, 1, False, "未加入测试"
-    AddGroup 3, 1, True, "测试讨论组2"
-    AddGroup 4, 1, True, "testtest"
-    AddGroup 5, 1, True, "hash"
-    AddMessage 1, 1, "测试组员", "这是一条超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长但是就是不换行的消息"
-    AddMessage 1, 2, "测试组员", "我还能换行" & vbCrLf & "乌拉乌拉"
-    AddMessage 1, -1, "系统消息", "您被禁言，才怪。"
-    AddMessage 1, -2, "老师", "不要乱发消息"
-    For i = 1 To 20
-        AddMessage 1, -2, "老师", "身为老师要以身作则带头刷屏，而且要刷那种很长很长的屏，不仅如此，我还要..."
-    Next
-    userId = -2: userName = "老师"
     
     Call InitEmeraldFramework
     Set Shadow = New aShadow
@@ -403,8 +396,7 @@ Private Sub Form_Load()
     Me.Show
     
     pypid = Shell("python """ & App.path & "\" & "server.py"" -o " & lis.LocalIP, 6)
-    
-    Call AddGroup(0, -2, True, "公共")
+        
     Text3.Visible = False: Text4.Visible = True
     Command5.Enabled = False
     State = False
@@ -477,16 +469,6 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
     Dim strData As String
     Winsock(index).GetData strData
     
-    Dim S As Single
-    S = 1
-    Do While (S <= Winsock.UBound)
-        If Winsock(S).State = 7 Then
-            Winsock(S).SendData strData
-            DoEvents
-        End If
-        S = S + 1
-    Loop
-    
     strSplit = Split(strData, ";")
     id = index
     MsgType = strSplit(0)
@@ -502,11 +484,24 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
         MsgContent = Base64DecodeString(MsgContent)
         Call AddMessage(Int(grpid), id, Name, MsgContent)
         'Text3.Text = Name + ":" + MsgContent + "   #" + Str(id) + "#" + Str(grpId) + "#" + vbCrLf + Text3.Text
+        
+        strData = MsgType + ";" + Str(grpid) + ";" + Name + ";" + Str(id) + ";" + Base64EncodeString(MsgContent)
+        Dim S As Single
+        S = 1
+        Do While (S <= Winsock.UBound)
+            If Winsock(S).State = 7 Then
+                Winsock(S).SendData strData
+                DoEvents
+            End If
+            S = S + 1
+        Loop
+        
     Case "picmsg"
     Case "addgroup"
         grpid = Int(srtSplit(1))
         Dim leader As Integer
         leader = groups(grpid)
+        
     Case "okgroup"
     
     Case "creategroup"

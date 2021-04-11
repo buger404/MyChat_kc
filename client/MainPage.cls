@@ -20,7 +20,7 @@ Attribute VB_Exposed = False
 '======================================
 
 Public Sub Update()
-redraw:
+ReDraw:
     Page.Clear '清空画布
     '标题栏
     Dim m As MButtonState
@@ -51,6 +51,7 @@ redraw:
         If selectIndex = i Then groups(i).unreadTick = 0
     Next
     
+    If selectIndex <= 1 Then selectIndex = 1
     Page.Writes "MyChat · 学生端", 20, 15, 20, argb(160, 255, 255, 255)
     Page.Writes groups(selectIndex).Name, 20 + 300, 15, 20, argb(255, 0, 0, 0), style:=FontStyleBold
     
@@ -100,7 +101,7 @@ redraw:
         If scrBottom Then
             scrBottom = False
             scrollY = maxScr
-            GoTo redraw
+            GoTo ReDraw
         End If
         If maxScr = 0 Then maxScr = 1
         dry = 20 + (scroll.Height - 20 - 40) * (scrollY / maxScr)
@@ -115,8 +116,8 @@ redraw:
         ElseIf preY <> 0 Then
             preY = 0
         End If
-        If scrollY > maxScr Then scrollY = maxScr: GoTo redraw
-        If scrollY < 0 Then scrollY = 0: GoTo redraw
+        If scrollY > maxScr Then scrollY = maxScr: GoTo ReDraw
+        If scrollY < 0 Then scrollY = 0: GoTo ReDraw
         
     EndScrollArea Page, 300, 60, 0, 0
 
