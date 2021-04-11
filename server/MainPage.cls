@@ -40,7 +40,7 @@ ReDraw:
         Page.Paint 0, 0, (i - 1) * 70 + 60 - sideY, 301, 71, argb(IIf(selectIndex = i, 60, IIf(m > 0, 30, 0)), 0, 0, 0)
         Page.Writes groups(i).Name, 30, (i - 1) * 70 + 60 + 5 - sideY, 20, argb(255, 255, 255, 255), style:=FontStyleBold
         Dim tip As String
-        tip = groups(i).msg(UBound(groups(i).msg)).Name & ":" & groups(i).msg(UBound(groups(i).msg)).Content
+        tip = groups(i).Msg(UBound(groups(i).Msg)).Name & ":" & groups(i).Msg(UBound(groups(i).Msg)).Content
         If Len(tip) > 12 Then tip = Left(tip, 10) & "..."
         If tip = ":" Then tip = "(暂无消息)"
         Page.Writes tip, 30, (i - 1) * 70 + 60 + 33 - sideY, 18, argb(200, 255, 255, 255)
@@ -51,11 +51,7 @@ ReDraw:
         End If
         If selectIndex = i Then groups(i).unreadTick = 0
     Next
-<<<<<<< HEAD
     
-    selectIndex = 1
-    Page.Writes "MyChat · 教师端", 20, 15, 20, argb(160, 255, 255, 255)
-=======
     Dim maxScr As Long
     If (i - 1) * 70 + 60 > GH - 30 Then
         maxScr = (i - 1) * 70 + 60 - GH + 30
@@ -64,17 +60,15 @@ ReDraw:
     End If
     If sideY > maxScr Then sideY = maxScr: GoTo ReDraw
     If sideY < 0 Then sideY = 0: GoTo ReDraw
-        
->>>>>>> 8b7aab802c921ba27326cb41107737418ab87cff
+    
     Page.Writes groups(selectIndex).Name, 20 + 300, 15, 20, argb(255, 0, 0, 0), style:=FontStyleBold
-    Call Server.changeGrp(selectIndex)
     
     StartScrollArea Page, scroll
         Page.Clear argb(0, 0, 0, 0)
         Dim drx As Long, dry As Long, tw As Long, th As Long, ory As Long
         dry = 20 - scrollY: ory = dry
-        For i = 1 To UBound(groups(selectIndex).msg)
-            With groups(selectIndex).msg(i)
+        For i = 1 To UBound(groups(selectIndex).Msg)
+            With groups(selectIndex).Msg(i)
                 drx = IIf(.id = userId, scroll.Width - 20, 20)
                 
                 tw = EF.GetWidth(Page.GG, .Content, 18, StringAlignmentNear, FontStyleRegular)
@@ -94,7 +88,7 @@ ReDraw:
                         End If
                         Page.Paint 2, drx, dry + 25, tw + 20, th + 20, IIf(.id = userId, argb(255, 84, 223, 143), argb(255, 232, 232, 232)), 16
                         If CheckMouse(drx + 300, dry + 60, tw + 20, th + 20) > 0 And Mouse.button = 2 Then
-                            MenuWindow.id = .id: selectMsg = groups(selectIndex).msg(i): Mouse.button = 0
+                            MenuWindow.id = .id: selectMsg = groups(selectIndex).Msg(i): Mouse.button = 0
                             Server.PopupMenu MenuWindow.msgMenu
                         End If
                         Page.Writes .Content, drx + 10, dry + 25 + 10, 18, IIf(.id = userId, argb(255, 255, 255, 255), argb(255, 0, 0, 0)), tw + 1, th
@@ -262,7 +256,7 @@ Public Sub Wheel(Direction As Integer, Depth As Single)
         scrollY = scrollY - Direction * Depth * 100
     End If
 End Sub
-Public Sub AnimationMsg(id As String, msg As String)
+Public Sub AnimationMsg(id As String, Msg As String)
     '动画消息接收
 End Sub
 Public Sub Enter()

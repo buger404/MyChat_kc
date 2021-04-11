@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "mswinsck.ocx"
+Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "MSWINSCK.OCX"
 Begin VB.Form Server 
    Appearance      =   0  'Flat
    BackColor       =   &H80000005&
@@ -203,7 +203,6 @@ Attribute VB_Exposed = False
 Dim State As Boolean, pop As Single
 Dim pypid
 Dim grpid As Integer
-Dim grpidSend As Integer
 Dim g As String, q As Single, m As Single
 Dim IPPage As IPPage
 
@@ -281,9 +280,9 @@ Public Sub SendMsg()
     S = 1
     Do While (S <= Winsock.UBound)
         If Winsock(S).State = 7 Then
-            Call AddMessage(grpidSend, userId, userName, Text4.Text)
-            MsgBox Str(grpidSend)
-            Winsock(S).SendData "msg;" + Str(grpidSend) + ";" + userName + ";" + Str(userId) + ";" + Base64EncodeString(Text4.Text) + ";"
+            Call AddMessage(MainPage.selectIndex, userId, userName, Text4.Text)
+            MsgBox Str(MainPage.selectIndex)
+            Winsock(S).SendData "msg;" + Str(MainPage.selectIndex) + ";" + userName + ";" + Str(userId) + ";" + Base64EncodeString(Text4.Text) + ";"
             DoEvents
         End If
         S = S + 1
@@ -292,18 +291,21 @@ Public Sub SendMsg()
     Text4.Text = ""
 
 End Sub
-Public Sub changeGrp(id As Integer)
-    grpidSend = id
-End Sub
 
 Public Sub createGrp()
     Dim id As Integer, leader As Integer, isJoin As Boolean, Name As String
-    id = InputBox("id")
-    leader = InputBox("leader")
-    isJoin = True
-    Name = InputBox("Name")
-    Call AddGroup(Int(id), Int(leader), isJoin, Name)
-    
+    id = UBound(groups) + 1
+    leader = Int(InputBox("leader"))
+    If leader >= -2 And Winsock.UBound Then
+    MsgBox Str(Winsock.UBound)
+        isJoin = True
+        Name = InputBox("Name")
+        Call AddGroup(id, leader, isJoin, Name)
+        Call AddMember(leader, id)
+        Winsock(leader).SendData "newleader;" + Str(id) + ";" + Base64EncodeString(Name) + ";" + Str(leader) + ";"
+    Else
+        MsgBox "学生不存在。"
+    End If
 End Sub
 
 Public Sub Command3_Click()
@@ -379,10 +381,8 @@ End Sub
 
 Private Sub Form_Load()
     ReDim groups(0): ReDim bans(0)
-<<<<<<< HEAD
     '测试用
     AddGroup 1, 1, True, "大厅"
-=======
     If Dir(App.path & "\groups.bin") <> "" Then
         Dim dump As dump
         Open App.path & "\groups.bin" For Binary As #1
@@ -394,7 +394,6 @@ Private Sub Form_Load()
         AddGroup 1, 1, True, "大厅"
     End If
     userId = -2: userName = "老师"
->>>>>>> 8b7aab802c921ba27326cb41107737418ab87cff
     
     Call InitEmeraldFramework
     Set Shadow = New aShadow
@@ -410,11 +409,7 @@ Private Sub Form_Load()
     Me.Show
     
     pypid = Shell("python """ & App.path & "\" & "server.py"" -o " & lis.LocalIP, 6)
-<<<<<<< HEAD
-        
-=======
-    
->>>>>>> 8b7aab802c921ba27326cb41107737418ab87cff
+    Call AddMessage(1, -1, "系统消息", "服务端ip：" + lis.LocalIP)
     Text3.Visible = False: Text4.Visible = True
     Command5.Enabled = False
     State = False
@@ -450,10 +445,8 @@ Private Sub lis_ConnectionRequest(ByVal requestID As Long)
         Winsock(m).Accept requestID
     End If
     
-    Call SetJoinState(0, True)
-    
     Me.Caption = lis.LocalIP & " - " & "已连接" & pop & "人"
-    
+    Call AddMessage(1, -1, "系统消息", "已连接：" + Str(pop) + " 人")
     m = m + 1
 End Sub
 
@@ -475,7 +468,7 @@ End Sub
 
 Private Sub Winsock_Close(index As Integer)
     pop = pop - 1
-    Me.Caption = lis.LocalIP & " - " & "已连接" & pop & "人"
+    Call AddMessage(1, -1, "系统消息", "")
 End Sub
 
 Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
@@ -500,10 +493,9 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
         grpid = strSplit(1)
         MsgContent = strSplit(4)
         MsgContent = Base64DecodeString(MsgContent)
-        Call AddMessage(Int(grpid), id, Name, MsgContent)
-        'Text3.Text = Name + ":" + MsgContent + "   #" + Str(id) + "#" + Str(grpId) + "#" + vbCrLf + Text3.Text
+        Call AddMessage(Str(MainPage.selectIndex), id, Name, MsgContent)
         
-        strData = MsgType + ";" + Str(grpid) + ";" + Name + ";" + Str(id) + ";" + Base64EncodeString(MsgContent)
+        strData = MsgType + ";" + Str(MainPage.selectIndex) + ";" + Name + ";" + Str(id) + ";" + Base64EncodeString(MsgContent)
         Dim S As Single
         S = 1
         Do While (S <= Winsock.UBound)
@@ -516,10 +508,7 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
         
     Case "picmsg"
     Case "addgroup"
-        grpid = Int(srtSplit(1))
-        Dim leader As Integer
-        leader = groups(grpid)
-        
+
     Case "okgroup"
     
     Case "creategroup"

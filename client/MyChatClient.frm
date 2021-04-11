@@ -305,11 +305,10 @@ End Sub
 
 
 Private Sub logIn()
-    'If Dir("id_info.txt") <> "" Then Kill ("id_info.txt")
     'If Dir("id_info.txt") <> "" Then Kill "id_info.txt"
     'If Dir("face.png") <> "" Then Kill "face.png"
     
-    ShellEx "python """ & App.path & "\" & "client.py"" -l " & Winsock1.RemoteHost
+    If Dir("id_info.txt") = "" Then ShellEx "python """ & App.path & "\" & "client.py"" -l " & Winsock1.RemoteHost
     If Dir("id_info.txt") = "" Then MsgBox "²éÎÞ´ËÈË£¬¿¼ÂÇ×¢²á£¿", 16, "µÇÂ½Ê§°Ü": End
     Open "id_info.txt" For Input As 1
     A = StrConv(InputB(FileLen("id_info.txt"), 1), vbUnicode)
@@ -325,9 +324,9 @@ Private Sub logIn()
     If Winsock1.State = sckClosed Then
         Winsock1.Connect
     End If
-    
-    Text1.Text = "welcome," & Me.Caption & "!"
 End Sub
+
+
 
 Public Sub OCR_Click()
     ShellEx "python """ & App.path & "\" & "client.py"" -o "
@@ -618,6 +617,17 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
         MsgContent = Base64DecodeString(MsgContent)
         'Text1.Text = Name + ":" + MsgContent + vbCrLf + Text1.Text
         Call AddMessage(grpId, id, Name, MsgContent)
-    
+    Case "newleader"
+        Dim leaderId As Integer
+        Dim grpName As String
+        grpName = strSplit(2)
+        grpName = Base64DecodeString(grpName)
+        leaderId = strSplit(3)
+        grpId = strSplit(1)
+        Call SetJoinState(grpId, True)
+        Call AddGroup(grpId, leaderId, True, grpName)
+    Case "newgroup"
+        
+    Case "newmember"
     End Select
 End Sub
