@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "MSWINSCK.OCX"
+Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "mswinsck.ocx"
 Begin VB.Form Server 
    Appearance      =   0  'Flat
    BackColor       =   &H80000005&
@@ -205,7 +205,7 @@ Dim pypid
 Dim grpid As Integer
 Dim grpidSend As Integer
 Dim g As String, q As Single, m As Single
-Dim MainPage As MainPage, IPPage As IPPage
+Dim IPPage As IPPage
 
 Public Sub Command1_Click()
     Dim C As Single
@@ -379,8 +379,22 @@ End Sub
 
 Private Sub Form_Load()
     ReDim groups(0): ReDim bans(0)
+<<<<<<< HEAD
     '测试用
     AddGroup 1, 1, True, "大厅"
+=======
+    If Dir(App.path & "\groups.bin") <> "" Then
+        Dim dump As dump
+        Open App.path & "\groups.bin" For Binary As #1
+        Get #1, , dump
+        Close #1
+        groups = dump.groups
+        bans = dump.bans
+    Else
+        AddGroup 1, 1, True, "大厅"
+    End If
+    userId = -2: userName = "老师"
+>>>>>>> 8b7aab802c921ba27326cb41107737418ab87cff
     
     Call InitEmeraldFramework
     Set Shadow = New aShadow
@@ -396,7 +410,11 @@ Private Sub Form_Load()
     Me.Show
     
     pypid = Shell("python """ & App.path & "\" & "server.py"" -o " & lis.LocalIP, 6)
+<<<<<<< HEAD
         
+=======
+    
+>>>>>>> 8b7aab802c921ba27326cb41107737418ab87cff
     Text3.Visible = False: Text4.Visible = True
     Command5.Enabled = False
     State = False

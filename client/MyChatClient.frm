@@ -274,7 +274,7 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Dim grpId As Integer
 Dim i As Single, p As Single, q As Single, dr As Single
-Dim MainPage As MainPage, IPPage As IPPage
+Dim IPPage As IPPage
 Public LBtnColor As Long, RBtnColor As Long
 Public DotMode As Boolean
 Dim DrawX As Single, DrawY As Single
@@ -427,7 +427,9 @@ Private Sub Form_Load()
         DoEvents
     Loop Until Winsock1.RemoteHost <> ""
     
+
     If Winsock1.RemoteHost <> "" Then logIn
+    grpId = 1
     
     '精准控制坐标
     Text5.Move 0, 60, Me.ScaleWidth, Me.ScaleHeight - 60 - 120
