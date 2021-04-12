@@ -315,10 +315,10 @@ Private Sub logIn()
     If Dir("id_info.txt") = "" Then MsgBox "查无此人，考虑注册？", 16, "登陆失败": End
     Open "id_info.txt" For Input As 1
     A = StrConv(InputB(FileLen("id_info.txt"), 1), vbUnicode)
-    S = Split(A, ",")
+    s = Split(A, ",")
     Close #1
-    If S(0) = "404" Then MsgBox "ip地址有误，请检查ip地址", 16, "ip地址错误": End
-    userName = S(0)
+    If s(0) = "404" Then MsgBox "ip地址有误，请检查ip地址", 16, "ip地址错误": End
+    userName = s(0)
     Me.Caption = userName
     
     'If Dir("id_info.txt") <> "" Then Kill "id_info.txt"
@@ -410,7 +410,7 @@ Private Sub Form_Load()
     Command2.Enabled = False
 
     Dim A As String
-    Dim S
+    Dim s
 
     Dim o As Object
     On Error Resume Next
@@ -568,6 +568,16 @@ Public Sub SendMsg()
         Text2.Text = ""
     End If
 End Sub
+
+Public Sub fileServer()
+    MsgBox "文件服务器已开启..."
+    Dim s As String
+    s = "python -m http.server 8080 -d \share\ -b " + Client.Winsock1.LocalIP
+    MsgBox s
+    
+    Shell s, vbMinimizedNoFocus
+End Sub
+
 Public Sub getId()
     If Winsock1.State <> 7 Then Exit Sub
     Winsock1.SendData "getId;" + vbCrLf

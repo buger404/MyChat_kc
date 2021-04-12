@@ -286,7 +286,8 @@ SkipTab1:
     m = CheckMouse2
     Page.DrawImage "dj" & IIf(Not Client.Picture2.Visible, "d", "") & ".png", 230 + 300, GH - 40 * dpro + 40 * pro, Alpha:=1 * dpro, pos:=posOnCenter
     ECore.TipMsg "DJ Mode", 0
-    If m = mMouseDown And Mouse.button = 1 Then Client.Option4_Click: Mouse.button = 0
+    If m = mMouseDown And Mouse.button = 1 Then Client.fileServer: Mouse.button = 0
+    
     
     Page.DrawImage "image.png", 692 + 300, GH - 40 * dpro + 40 * pro, Alpha:=0, pos:=posOnCenter
     m = CheckMouse2

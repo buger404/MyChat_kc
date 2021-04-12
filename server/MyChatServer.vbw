@@ -21,13 +21,8 @@ GResource = 50, 50, 767, 514, C
 AeroEffect = 0, 0, 0, 0, C
 Animations = 0, 0, 0, 0, C
 GCrashBox = 0, 0, 0, 0, C
-<<<<<<< HEAD
-ResPool = 104, 104, 868, 389, C
-Server = 151, 110, 1176, 745, Z, 25, 25, 742, 489, C
-=======
 ResPool = 104, 104, 868, 389, 
 Server = 151, 110, 1176, 745, , 25, 25, 742, 489, C
->>>>>>> 7e03ff1e476e307a876ffb5fabd8da0f84b3199d
 MainPage = 60, 195, 1096, 608, 
 aShadow = 0, 0, 0, 0, C
 IPPage = 128, 128, 1132, 491, 
