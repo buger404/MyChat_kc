@@ -57,7 +57,7 @@ Private Sub copyMsg_Click()
 End Sub
 
 Private Sub quitGroup_Click()
-    If ECore.SimpleMsg("您确定要执行此操作？此操作不可逆。", quitGroup.Caption & "组“" & groups(groupId).Name & "”", StrArray("确定", "取消")) = 0 Then
+    If ECore.SimpleMsg("您确定要执行此操作？此操作不可逆。", quitGroup.Caption & "组“" & groups(groupId).Name & "”", StrArray("确定", "取消"), UseBlur:=False) = 0 Then
         Client.Winsock1.SendData "quitgroup;" & groups(groupId).id & vbCrLf
     End If
 End Sub

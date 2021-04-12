@@ -2,7 +2,7 @@ Attribute VB_Name = "GroupCore"
 Public Type Messages
     id As Integer
     Name As String
-    Content As String
+    content As String
     time As Date
 End Type
 Public Type Member
@@ -65,12 +65,12 @@ Public Sub DeleteGroup(id As Integer)
     realSize = UBound(groups) - 1
     Call DumpFile
 End Sub
-Public Sub AddMessage(id As Integer, memberid As Integer, Name As String, Content As String)
+Public Sub AddMessage(id As Integer, memberid As Integer, Name As String, ByVal content As String)
     For i = 1 To UBound(groups)
         If groups(i).id = id Then
             ReDim Preserve groups(i).Msg(UBound(groups(i).Msg) + 1)
             With groups(i).Msg(UBound(groups(i).Msg))
-                .Content = Content
+                .content = content
                 .id = memberid
                 .Name = Name
                 .time = Now
@@ -80,6 +80,19 @@ Public Sub AddMessage(id As Integer, memberid As Integer, Name As String, Conten
             Exit For
         End If
     Next
+    
+    If memberid <> -4 And (Not Robots Is Nothing) Then
+        For i = 1 To UBound(machine)
+            Robots.currentRobot = MenuWindow.robotBtn(i).Caption
+            On Error GoTo sth
+            machine(i).Run "Process", content, id, memberid
+sth:
+            If Err.Number <> 0 Then
+                Robots.SendMessage id, "机器人“" & Robots.currentRobot & "”发生问题，请联系机器人制作者：" & vbCrLf & "第" & machine(i).Error.Line & "行：" & machine(i).Error.Description & vbCrLf & "错误码：" & machine(i).Error.Number
+                Err.Clear
+            End If
+        Next
+    End If
 End Sub
 Public Sub SetJoinState(id As Integer, isJoin As Boolean)
     '仅客户端使用！！！服务端忽视加入状态！

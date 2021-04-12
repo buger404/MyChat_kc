@@ -1,4 +1,5 @@
 VERSION 5.00
+Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
 Begin VB.Form MenuWindow 
    BorderStyle     =   1  'Fixed Single
    Caption         =   "放置菜单"
@@ -12,6 +13,15 @@ Begin VB.Form MenuWindow
    ScaleHeight     =   3135
    ScaleWidth      =   4680
    StartUpPosition =   3  '窗口缺省
+   Begin MSComDlg.CommonDialog FileOpens 
+      Left            =   2400
+      Top             =   1440
+      _ExtentX        =   847
+      _ExtentY        =   847
+      _Version        =   393216
+      DialogTitle     =   "导入机器人"
+      Filter          =   "机器人脚本|*.vbs|"
+   End
    Begin VB.Menu msgMenu 
       Caption         =   "消息菜单"
       Begin VB.Menu copyMsg 
@@ -42,6 +52,13 @@ Begin VB.Form MenuWindow
          Caption         =   "解散"
       End
    End
+   Begin VB.Menu robotMenu 
+      Caption         =   "机器人菜单"
+      Begin VB.Menu robotBtn 
+         Caption         =   "导入机器人..."
+         Index           =   0
+      End
+   End
 End
 Attribute VB_Name = "MenuWindow"
 Attribute VB_GlobalNameSpace = False
@@ -57,8 +74,25 @@ Private Sub copyMsg_Click()
 End Sub
 
 Private Sub quitGroup_Click()
+    If ECore.SimpleMsg("您确定要执行此操作？此操作不可逆。", quitGroup.Caption & "组“" & groups(groupid).name & "”", StrArray("确定", "取消"), UseBlur:=False) <> 0 Then Exit Sub
     DeleteGroup groups(groupid).id
     For Each w In Server.Winsock
         If w.State = 7 Then w.SendData "deletegroup;" & groups(groupid).id & vbCrLf
     Next
+End Sub
+
+Private Sub robotBtn_Click(index As Integer)
+    If index = 0 Then
+        FileOpens.ShowOpen
+        If FileOpens.FileName <> "" Then
+            Dim name As String, t() As String
+            t = Split(FileOpens.FileName, "\")
+            name = t(UBound(t))
+            FileCopy FileOpens.FileName, App.path & "\robots\" & name
+            Robots.ImportRobot name
+            MsgBox "导入成功！", 64
+        End If
+    Else
+        MsgBox "使用帮助：" & vbCrLf & vbCrLf & machine(index).Eval("Guidence"), 64, robotBtn(index).Caption
+    End If
 End Sub

@@ -315,10 +315,10 @@ Private Sub logIn()
     If Dir("id_info.txt") = "" Then MsgBox "查无此人，考虑注册？", 16, "登陆失败": End
     Open "id_info.txt" For Input As 1
     A = StrConv(InputB(FileLen("id_info.txt"), 1), vbUnicode)
-    s = Split(A, ",")
+    S = Split(A, ",")
     Close #1
-    If s(0) = "404" Then MsgBox "ip地址有误，请检查ip地址", 16, "ip地址错误": End
-    userName = s(0)
+    If S(0) = "404" Then MsgBox "ip地址有误，请检查ip地址", 16, "ip地址错误": End
+    userName = S(0)
     Me.Caption = userName
     
     'If Dir("id_info.txt") <> "" Then Kill "id_info.txt"
@@ -410,7 +410,7 @@ Private Sub Form_Load()
     Command2.Enabled = False
 
     Dim A As String
-    Dim s
+    Dim S
 
     Dim o As Object
     On Error Resume Next
@@ -429,7 +429,7 @@ Private Sub Form_Load()
     grpId = 1
     
     '精准控制坐标
-    Text5.Move 0, 60, Me.ScaleWidth, Me.ScaleHeight - 60 - 120
+    Text5.Move 300, 60, Me.ScaleWidth - 300, Me.ScaleHeight - 60 - 120
     Text1.Move Text5.Left, Text5.Top, Text5.Width, Text5.Height
     Picture1.Move Text5.Left, Text5.Top, Text5.Width, Text5.Height
     Picture2.Move Text5.Left, Text5.Top, Text5.Width, Text5.Height
@@ -446,12 +446,14 @@ Private Sub Form_Load()
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
+    On Error Resume Next
     For i = 2 To UBound(groups)
         Winsock1.SendData "quitgroup;" & groups(i).id & vbCrLf
     Next
     Client.save3_Click
     Set Shadow = Nothing
     Call UnloadEmeraldFramework
+    End
 End Sub
 
 Public Sub Option1_Click()
@@ -466,7 +468,7 @@ Public Sub Option1_Click()
     Picture2.Visible = False
 End Sub
 Public Sub Option2_Click()
-    save2.Visible = True
+    save2.Visible = False
     save3.Visible = False
     
     Command4.Visible = False
@@ -478,7 +480,7 @@ Public Sub Option2_Click()
 End Sub
 Public Sub Option3_Click()
     save2.Visible = False
-    save3.Visible = True
+    save3.Visible = False
     
     Command4.Visible = False
     
@@ -562,8 +564,8 @@ Public Sub SendMsg()
     If Text2.Text = "" Then
         VBA.Beep
     Else
-        Call AddMessage(MainPage.selectIndex, -2, "我", Text2.Text)
-        Winsock1.SendData "msg;" + Str(MainPage.selectIndex) + ";" + userName + ";" + Str(id) + ";" + Base64EncodeString(MsgContent)
+        Call AddMessage(MainPage.selectIndex, userId, "我", Text2.Text)
+        Winsock1.SendData "msg;" + Str(MainPage.selectIndex) + ";" + Base64EncodeString(userName) + ";" + Str(userId) + ";" + Base64EncodeString(Text2.Text) & vbCrLf
         'Winsock1.SendData Text2.Text
         Text2.Text = ""
     End If
@@ -571,11 +573,11 @@ End Sub
 
 Public Sub fileServer()
     MsgBox "文件服务器已开启..."
-    Dim s As String
-    s = "python -m http.server 8080 -d \share\ -b " + Client.Winsock1.LocalIP
-    MsgBox s
+    Dim S As String
+    S = "python -m http.server 8080 -d \share -b " + Client.Winsock1.LocalIP
+    MsgBox S
     
-    Shell s, vbMinimizedNoFocus
+    Shell S, vbMinimizedNoFocus
 End Sub
 
 Public Sub getId()
@@ -637,7 +639,7 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
         Case "msg"
             grpId = Int(strSplit(1))
             id = Int(strSplit(3))
-            Name = strSplit(2)
+            Name = Base64DecodeString(strSplit(2))
             MsgContent = strSplit(4)
             MsgContent = Base64DecodeString(MsgContent)
             'Text1.Text = Name + ":" + MsgContent + vbCrLf + Text1.Text
@@ -649,13 +651,15 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
             userId = Val(strSplit(1))
             Winsock1.SendData "addgrouprequest;" & Base64EncodeString(userName) & ";" & userId & ";" & 1 & vbCrLf
         Case "grouprequest"
-            If MsgBox(Base64DecodeString(strSplit(1)) & "(#" & Val(strSplit(2)) & ") 申请加入 " & groups(Val(strSplit(3))).Name & "，是否同意？", 48 + vbYesNo) = vbYes Then
+            Me.SetFocus
+            If MsgBox(Base64DecodeString(strSplit(1)) & "(#" & Val(strSplit(2)) & ") 申请加入组“" & groups(Val(strSplit(3))).Name & "”，是否同意？", 48 + vbYesNo) = vbYes Then
                 AddMember Base64DecodeString(strSplit(1)), Val(strSplit(2)), Val(strSplit(3))
                 Winsock1.SendData "broadcast;addmember;" & strSplit(1) & ";" & strSplit(2) & ";" & strSplit(3) & vbCrLf
             End If
         Case "addmember"
             If Val(strSplit(2)) = userId Then SetJoinState Val(strSplit(3)), True
             AddMember Base64DecodeString(strSplit(1)), Val(strSplit(2)), Val(strSplit(3))
+            AddMessage Val(strSplit(3)), -1, "系统消息", Base64DecodeString(strSplit(1)) & "加入了本讨论组"
         Case "addgroup"
             Call AddGroup(Val(strSplit(4)), Val(strSplit(1)), Val(strSplit(1)) = userId, Base64DecodeString(strSplit(2)), Base64DecodeString(strSplit(3)))
         Case "deletegroup"

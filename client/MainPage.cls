@@ -47,6 +47,7 @@ ReDraw:
         tip = groups(i).Msg(UBound(groups(i).Msg)).Name & ":" & groups(i).Msg(UBound(groups(i).Msg)).Content
         If Len(tip) > 12 Then tip = Left(tip, 10) & "..."
         If tip = ":" Then tip = "(暂无消息)"
+        If Not groups(i).isJoin Then tip = "（尚未加入）"
         Page.Writes tip, 30, (i - 1) * 70 + 60 + 33 - sideY, 18, argb(200, 255, 255, 255)
         If m = 3 Then
             If Mouse.button = 1 Then
@@ -58,11 +59,12 @@ ReDraw:
                 Client.PopupMenu MenuWindow.groupMenu
             End If
         End If
+        If (Not groups(i).isJoin) And groups(i).unreadTick > 0 Then groups(i).unreadTick = 0
         If groups(i).unreadTick > 0 Then
             Page.Paint 2, 230, (i - 1) * 70 + 60 + 20 - sideY, 50, 30, argb(255, 251, 77, 63), 100
             Page.Writes IIf(groups(i).unreadTick = 100, "99+", groups(i).unreadTick), 230 + 25, (i - 1) * 70 + 60 + 21 - sideY, 18, argb(255, 255, 255, 255), align:=StringAlignmentCenter, style:=FontStyleBold
         End If
-        If selectIndex = i Then groups(i).unreadTick = 0
+        If selectIndex = i And groups(i).unreadTick > 0 Then groups(i).unreadTick = 0: scrBottom = True
     Next
 
     Page.Writes "MyChat · 学生端", 20, 15, 20, argb(160, 255, 255, 255)
@@ -267,9 +269,9 @@ nomsg:
 SkipTab1:
     If pro = 1 Or disbledToolbar Then GoTo SkipTab2
 
-    Page.DrawImage "chat" & IIf(Not Client.Text1.Enabled, "d", "") & ".png", 50 + 300, GH - 40 * dpro + 40 * pro, Alpha:=0, pos:=posOnCenter
+    Page.DrawImage "chat" & IIf(Client.Text5.Visible Or Client.Picture1.Visible Or Client.Picture2.Visible, "d", "") & ".png", 50 + 300, GH - 40 * dpro + 40 * pro, Alpha:=0, pos:=posOnCenter
     m = CheckMouse2
-    Page.DrawImage "chat" & IIf(Not Client.Text1.Enabled, "d", "") & ".png", 50 + 300, GH - 40 * dpro + 40 * pro, Alpha:=1 * dpro, pos:=posOnCenter
+    Page.DrawImage "chat" & IIf(Client.Text5.Visible Or Client.Picture1.Visible Or Client.Picture2.Visible, "d", "") & ".png", 50 + 300, GH - 40 * dpro + 40 * pro, Alpha:=1 * dpro, pos:=posOnCenter
     ECore.TipMsg "聊天模式", 0
     If m = mMouseDown And Mouse.button = 1 Then Client.Option3_Click: Mouse.button = 0
     Page.DrawImage "notepad" & IIf(Not Client.Text5.Visible, "d", "") & ".png", 110 + 300, GH - 40 * dpro + 40 * pro, Alpha:=0, pos:=posOnCenter
