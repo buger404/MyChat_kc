@@ -1,29 +1,29 @@
 VERSION 5.00
-Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "mswinsck.ocx"
+Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "MSWINSCK.OCX"
 Object = "{0E59F1D2-1FBE-11D0-8FF2-00A0D10038BC}#1.0#0"; "msscript.ocx"
 Begin VB.Form Server 
    Appearance      =   0  'Flat
    BackColor       =   &H80000005&
    BorderStyle     =   0  'None
    Caption         =   "服务端"
-   ClientHeight    =   4995
+   ClientHeight    =   4992
    ClientLeft      =   0
    ClientTop       =   0
-   ClientWidth     =   7545
+   ClientWidth     =   7544
    Icon            =   "MyChatServer.frx":0000
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   333
+   ScaleHeight     =   624
    ScaleMode       =   3  'Pixel
-   ScaleWidth      =   503
+   ScaleWidth      =   943
    StartUpPosition =   2  '屏幕中心
    Begin MSScriptControlCtl.ScriptControl vbs 
       Index           =   0
       Left            =   6600
       Top             =   0
-      _ExtentX        =   1005
-      _ExtentY        =   1005
+      _ExtentX        =   998
+      _ExtentY        =   998
    End
    Begin VB.Timer DrawTimer 
       Enabled         =   0   'False
@@ -158,16 +158,16 @@ Begin VB.Form Server
    Begin MSWinsockLib.Winsock lis 
       Left            =   6960
       Top             =   480
-      _ExtentX        =   741
-      _ExtentY        =   741
+      _ExtentX        =   423
+      _ExtentY        =   423
       _Version        =   393216
    End
    Begin MSWinsockLib.Winsock Winsock 
       Index           =   0
       Left            =   6480
       Top             =   480
-      _ExtentX        =   741
-      _ExtentY        =   741
+      _ExtentX        =   423
+      _ExtentY        =   423
       _Version        =   393216
    End
    Begin VB.TextBox Text1 
@@ -284,18 +284,18 @@ Public Sub SendMsg()
 
     If Text4.Text = "" Then VBA.Beep: Exit Sub
     
-    Call AddMessage(MainPage.selectIndex, userId, userName, Text4.Text)
-    
     Dim S As Single
     S = 1
     Do While (S <= Winsock.UBound)
         If Winsock(S).State = 7 Then
             'MsgBox Str(MainPage.selectIndex)
-            Winsock(S).SendData "msg;" + Str(MainPage.selectIndex) + ";" + Base64EncodeString(userName) + ";" + Str(userId) + ";" + Base64EncodeString(Text4.Text) + ";" + vbCrLf
+            Winsock(S).SendData "msg;" + Str(groups(MainPage.selectIndex).id) + ";" + Base64EncodeString(userName) + ";" + Str(userId) + ";" + Base64EncodeString(Text4.Text) + ";" + vbCrLf
             DoEvents
         End If
         S = S + 1
     Loop
+    
+    Call AddMessage(groups(MainPage.selectIndex).id, userId, userName, Text4.Text)
     
     Text4.Text = ""
 
@@ -537,6 +537,7 @@ skipNotify:
                     AddMember Base64DecodeString(strSplit(1)), Val(strSplit(2)), Val(strSplit(3))
                     For Each w In Winsock
                         If w.State = 7 Then w.SendData "addmember;" & strSplit(1) & ";" & strSplit(2) & ";" & strSplit(3) & vbCrLf
+                        DoEvents
                     Next
                 End If
             Else
@@ -549,6 +550,7 @@ skipNotify:
             Next
             For Each w In Winsock
                 If w.State = 7 And w.index <> index Then w.SendData newcmd & vbCrLf
+                DoEvents
             Next
         Case "addmember"
             AddMember Base64DecodeString(strSplit(1)), Val(strSplit(2)), Val(strSplit(3))
@@ -561,14 +563,18 @@ skipNotify:
                 DeleteGroup Val(strSplit(1))
                 For Each w In Winsock
                     If w.State = 7 Then w.SendData "deletegroup;" & Val(strSplit(1)) & vbCrLf
+                    DoEvents
                 Next
             Else
                 '退群处理
                 DeleteMember index, Val(strSplit(1))
                 For Each w In Winsock
                     If w.State = 7 Then w.SendData "deletemember;" & Val(strSplit(1)) & ";" & index & vbCrLf
+                    DoEvents
                 Next
             End If
+        Case "addban"
+            ProcessBan Val(strSplit(1)), Val(strSplit(3)), Val(strSplit(2))
         End Select
     Next
 End Sub
@@ -579,7 +585,20 @@ Public Sub ProcessCreateGroup(arg() As String, id As Integer)
     AddMember groups(UBound(groups)).LeaderName, groups(UBound(groups)).id, UBound(groups)
     Dim w As Winsock
     For Each w In Winsock
-        If w.State = 7 Then w.SendData "addgroup;" & id & ";" & arg(1) & ";" & arg(2) & ";" & gid & vbCrLf & "addmember;" & Base64EncodeString(arg(2)) & ";" & id & ";" & gid & vbCrLf
+        If w.State = 7 Then w.SendData "addgroup;" & id & ";" & arg(1) & ";" & arg(2) & ";" & gid & vbCrLf & "addmember;" & arg(2) & ";" & id & ";" & gid & vbCrLf
+        DoEvents
     Next
 End Sub
-
+Public Sub ProcessBan(group As Integer, id As Integer, duration As Long)
+    Dim bname As String
+    bname = Robots.GetMemberName(group, Robots.GetMemberIndex(group, id))
+    bname = bname & "(#" & id & ")"
+    AddMessage group, -1, "系统消息", bname & "被禁言" & Round(duration / 60) & "分钟"
+    For Each w In Winsock
+        If w.State = 7 Then
+            If w.index = id Then w.SendData "addban;" & group & ";" & duration & vbCrLf
+            w.SendData "msg;" & group & ";" & Base64EncodeString("系统消息") & ";-1;" & Base64EncodeString(bname & "被禁言" & Round(duration / 60) & "分钟") & vbCrLf
+        End If
+        DoEvents
+    Next
+End Sub

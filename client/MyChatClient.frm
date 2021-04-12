@@ -1,12 +1,12 @@
 VERSION 5.00
-Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "mswinsck.ocx"
+Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "MSWINSCK.OCX"
 Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
 Begin VB.Form Client 
    Appearance      =   0  'Flat
    BackColor       =   &H00FFFFFF&
    BorderStyle     =   0  'None
    Caption         =   "Form1"
-   ClientHeight    =   6165
+   ClientHeight    =   6168
    ClientLeft      =   0
    ClientTop       =   0
    ClientWidth     =   8760
@@ -15,9 +15,9 @@ Begin VB.Form Client
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   411
+   ScaleHeight     =   771
    ScaleMode       =   3  'Pixel
-   ScaleWidth      =   584
+   ScaleWidth      =   1095
    StartUpPosition =   2  '屏幕中心
    Begin MSComDlg.CommonDialog ColorPad 
       Left            =   1248
@@ -254,8 +254,8 @@ Begin VB.Form Client
    Begin MSWinsockLib.Winsock Winsock1 
       Left            =   780
       Top             =   936
-      _ExtentX        =   741
-      _ExtentY        =   741
+      _ExtentX        =   423
+      _ExtentY        =   423
       _Version        =   393216
    End
 End
@@ -435,7 +435,8 @@ Private Sub Form_Load()
     Picture2.Move Text5.Left, Text5.Top, Text5.Width, Text5.Height
     Text2.Move 300 + 50, Me.ScaleHeight - 80 + 25, Me.ScaleWidth - 245 - 300, 80 - 50
     
-    Text1.Visible = False
+    Text1.Visible = True
+    Text1.Move -90, -90, 1, 1
     Text5.Visible = False
     Picture1.Visible = False
     Picture2.Visible = False
@@ -460,7 +461,7 @@ Public Sub Option1_Click()
     save2.Visible = False
     save3.Visible = False
     
-    Command4.Visible = True
+    Command4.Visible = False
     
     Picture1.Visible = True
     Text1.Visible = False
@@ -564,8 +565,8 @@ Public Sub SendMsg()
     If Text2.Text = "" Then
         VBA.Beep
     Else
-        Call AddMessage(MainPage.selectIndex, userId, "我", Text2.Text)
-        Winsock1.SendData "msg;" + Str(MainPage.selectIndex) + ";" + Base64EncodeString(userName) + ";" + Str(userId) + ";" + Base64EncodeString(Text2.Text) & vbCrLf
+        Call AddMessage(groups(MainPage.selectIndex).id, userId, "我", Text2.Text)
+        Winsock1.SendData "msg;" + Str(groups(MainPage.selectIndex).id) + ";" + Base64EncodeString(userName) + ";" + Str(userId) + ";" + Base64EncodeString(Text2.Text) & vbCrLf
         'Winsock1.SendData Text2.Text
         Text2.Text = ""
     End If
@@ -656,6 +657,8 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
             DeleteGroup Val(strSplit(1))
         Case "deletemember"
             DeleteMember Val(strSplit(1)), Val(strSplit(2))
+        Case "addban"
+            AddBan userId, Val(strSplit(1)), Val(strSplit(2))
         End Select
     Next
 

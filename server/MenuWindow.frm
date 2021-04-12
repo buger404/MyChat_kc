@@ -3,14 +3,14 @@ Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
 Begin VB.Form MenuWindow 
    BorderStyle     =   1  'Fixed Single
    Caption         =   "放置菜单"
-   ClientHeight    =   3135
-   ClientLeft      =   150
-   ClientTop       =   780
+   ClientHeight    =   3128
+   ClientLeft      =   80
+   ClientTop       =   672
    ClientWidth     =   4680
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   3135
+   ScaleHeight     =   3128
    ScaleWidth      =   4680
    StartUpPosition =   3  '窗口缺省
    Begin MSComDlg.CommonDialog FileOpens 
@@ -73,8 +73,33 @@ Private Sub copyMsg_Click()
     Clipboard.SetText selectMsg.Content
 End Sub
 
+Private Sub customban_Click()
+    Dim w As String, du As Long
+    On Error GoTo reinput
+reinput:
+    w = InputBox("您想要禁言对方多长时间？（秒数）", , 60)
+    du = Val(w)
+    If du <= 0 Then
+        MsgBox "请输入正确的数字！", 48
+        GoTo reinput
+    End If
+    Server.ProcessBan groups(MainPage.selectIndex).id, id, du
+End Sub
+
+Private Sub min10ban_Click()
+    Server.ProcessBan groups(MainPage.selectIndex).id, id, 600
+End Sub
+
+Private Sub min1ban_Click()
+    Server.ProcessBan groups(MainPage.selectIndex).id, id, 60
+End Sub
+
+Private Sub min5ban_Click()
+    Server.ProcessBan groups(MainPage.selectIndex).id, id, 300
+End Sub
+
 Private Sub quitGroup_Click()
-    If ECore.SimpleMsg("您确定要执行此操作？此操作不可逆。", quitGroup.Caption & "组“" & groups(groupid).name & "”", StrArray("确定", "取消"), UseBlur:=False) <> 0 Then Exit Sub
+    If ECore.SimpleMsg("您确定要执行此操作？此操作不可逆。", quitGroup.Caption & "组“" & groups(groupid).Name & "”", StrArray("确定", "取消"), UseBlur:=False) <> 0 Then Exit Sub
     DeleteGroup groups(groupid).id
     For Each w In Server.Winsock
         If w.State = 7 Then w.SendData "deletegroup;" & groups(groupid).id & vbCrLf
@@ -84,12 +109,12 @@ End Sub
 Private Sub robotBtn_Click(index As Integer)
     If index = 0 Then
         FileOpens.ShowOpen
-        If FileOpens.FileName <> "" Then
-            Dim name As String, t() As String
-            t = Split(FileOpens.FileName, "\")
-            name = t(UBound(t))
-            FileCopy FileOpens.FileName, App.path & "\robots\" & name
-            Robots.ImportRobot name
+        If FileOpens.filename <> "" Then
+            Dim Name As String, t() As String
+            t = Split(FileOpens.filename, "\")
+            Name = t(UBound(t))
+            FileCopy FileOpens.filename, App.path & "\robots\" & Name
+            Robots.ImportRobot Name
             MsgBox "导入成功！", 64
         End If
     Else

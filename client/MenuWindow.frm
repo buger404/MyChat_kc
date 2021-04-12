@@ -2,14 +2,14 @@ VERSION 5.00
 Begin VB.Form MenuWindow 
    BorderStyle     =   1  'Fixed Single
    Caption         =   "放置菜单"
-   ClientHeight    =   3135
-   ClientLeft      =   150
-   ClientTop       =   780
+   ClientHeight    =   3128
+   ClientLeft      =   80
+   ClientTop       =   672
    ClientWidth     =   4680
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   3135
+   ScaleHeight     =   3128
    ScaleWidth      =   4680
    StartUpPosition =   3  '窗口缺省
    Begin VB.Menu msgMenu 
@@ -54,6 +54,32 @@ Private Sub copyMsg_Click()
     On Error Resume Next
     Clipboard.Clear
     Clipboard.SetText selectMsg.Content
+End Sub
+
+Private Sub customban_Click()
+    Dim w As String, du As Long
+    On Error GoTo reinput
+reinput:
+    w = InputBox("您想要禁言对方多长时间？（秒数）", , 60)
+    du = Val(w)
+    If du <= 0 Then
+        MsgBox "请输入正确的数字！", 48
+        GoTo reinput
+    End If
+    Client.Winsock1.SendData "addban;" & groups(MainPage.selectIndex).id & ";" & du & ";" & id & vbCrLf
+End Sub
+
+
+Private Sub min10ban_Click()
+    Client.Winsock1.SendData "addban;" & groups(MainPage.selectIndex).id & ";600;" & id & vbCrLf
+End Sub
+
+Private Sub min1ban_Click()
+    Client.Winsock1.SendData "addban;" & groups(MainPage.selectIndex).id & ";60;" & id & vbCrLf
+End Sub
+
+Private Sub min5ban_Click()
+    Client.Winsock1.SendData "addban;" & groups(MainPage.selectIndex).id & ";300;" & id & vbCrLf
 End Sub
 
 Private Sub quitGroup_Click()

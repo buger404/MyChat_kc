@@ -17,9 +17,16 @@ Attribute VB_Exposed = False
     Dim ProTime As Long, mode As Integer
     Public selectIndex As Integer
     Dim scroll As ScrollArea, scrollY As Long, preY As Long, scrBottom As Boolean, sideY As Long
+    Dim willPop As Object
 '======================================
 
 Public Sub Update()
+    If Not willPop Is Nothing Then
+        Server.PopupMenu willPop
+        Set willPop = Nothing
+        Mouse.button = 0
+    End If
+    
 ReDraw:
     Page.Clear '清空画布
     '标题栏
@@ -103,6 +110,11 @@ ReDraw:
                 
                 tw = EF.GetWidth(Page.GG, .Content, 18, StringAlignmentNear, FontStyleRegular)
                 th = EF.GetHeight(Page.GG, .Content, 18, StringAlignmentNear, FontStyleRegular)
+                If tw > scroll.Width - 60 Then
+                    th = th + (tw - scroll.Width + 60) / 18 / 0.75 - 3
+                    tw = scroll.Width - 60
+                End If
+
                 If dry >= -(th + 40 + 20) And dry <= scroll.Height Then
                     If .id = -1 Then
                         Page.Paint 2, scroll.Width / 2, dry + 30, tw + 40, 40, argb(255, 212, 212, 212), 100, pos:=posOnCenter
@@ -112,17 +124,13 @@ ReDraw:
                         Page.Writes .Name & IIf(id > 0, "(#" & .id & ")", "") & "   " & format(.time, "hh:MM:ss"), drx, dry, 18, IIf(.id > 0, argb(255, 168, 168, 168), argb(255, 0, 176, 240)), align:=IIf(.id = userId, StringAlignmentFar, StringAlignmentNear)
                         Page.Writes .Name & IIf(id > 0, "(#" & .id & ")", "") & "   " & format(.time, "hh:MM:ss"), drx, dry, 18, IIf(.id > 0 And .id <> userId, argb(255, 168, 168, 168), argb(255, 84, 223, 143)), align:=IIf(.id = userId, StringAlignmentFar, StringAlignmentNear)
                         If .id = userId Then drx = drx - tw - 20
-                        If tw > scroll.Width - 60 Then
-                            th = th + (tw - scroll.Width + 60) / 18 / 0.75 - 3
-                            tw = scroll.Width - 60
-                        End If
                         Page.Paint 2, drx, dry + 25, tw + 20, th + 20, IIf(.id = userId, argb(255, 84, 223, 143), argb(255, 232, 232, 232)), 16
                         
                         If CheckMouse(drx + 300, dry + 60 + 25, tw + 20, th + 20) > 0 And Mouse.button = 2 Then
                             MenuWindow.id = .id: selectMsg = groups(selectIndex).Msg(i): Mouse.button = 0
                             MenuWindow.banMsg.Visible = (.id <> userId And (userId = groups(selectIndex).leader Or userId = -2))
                             MenuWindow.kickGroup.Visible = (.id <> userId And (userId = groups(selectIndex).leader Or userId = -2))
-                            Server.PopupMenu MenuWindow.msgMenu
+                            Set willPop = MenuWindow.msgMenu
                         End If
                         Page.Writes .Content, drx + 10, dry + 25 + 10, 18, IIf(.id = userId, argb(255, 255, 255, 255), argb(255, 0, 0, 0)), tw + 1, th
                         
@@ -169,11 +177,11 @@ ReDraw:
         If bans(i).groupid = groups(selectIndex).id And bans(i).id = userId Then
             span = Now - bans(i).StartTime
             tickspan = Minute(span) * 60 + Second(span) + Hour(span) * 60 * 60
-            If tickspan < bans(i).Duration Then
+            If tickspan < bans(i).duration Then
                 mode = 1
                 Page.Paint 2, 300 + (GW - 300) / 2, GH / 2, 450, 250, argb(100, 0, 0, 0), 20, pos:=posOnCenter
                 Page.Writes "您正被禁言，无法发言", 300 + (GW - 300) / 2, GH / 2 - 70, 20, argb(255, 255, 255, 255), align:=StringAlignmentCenter, style:=FontStyleBold
-                Page.Writes Int((bans(i).Duration - tickspan) / 60) & ":" & format((bans(i).Duration - tickspan) Mod 60, "00"), 300 + (GW - 300) / 2, GH / 2 - 0, 36, argb(255, 255, 255, 255), align:=StringAlignmentCenter, style:=FontStyleBold
+                Page.Writes Int((bans(i).duration - tickspan) / 60) & ":" & format((bans(i).duration - tickspan) Mod 60, "00"), 300 + (GW - 300) / 2, GH / 2 - 0, 36, argb(255, 255, 255, 255), align:=StringAlignmentCenter, style:=FontStyleBold
                 disbledToolbar = True
                 Exit For
             Else

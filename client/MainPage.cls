@@ -16,10 +16,17 @@ Attribute VB_Exposed = False
     Dim Page As GPage
     Dim ProTime As Long, mode As Integer
     Public selectIndex As Integer
+    Dim willPop As Object
     Dim scroll As ScrollArea, scrollY As Long, preY As Long, scrBottom As Boolean, sideY As Long
 '======================================
 
 Public Sub Update()
+    If Not willPop Is Nothing Then
+        Client.PopupMenu willPop
+        Set willPop = Nothing
+        Mouse.button = 0
+    End If
+
 ReDraw:
     Page.Clear '清空画布
     '标题栏
@@ -102,6 +109,11 @@ ReDraw:
                 
                 tw = EF.GetWidth(Page.GG, .Content, 18, StringAlignmentNear, FontStyleRegular)
                 th = EF.GetHeight(Page.GG, .Content, 18, StringAlignmentNear, FontStyleRegular)
+                If tw > scroll.Width - 60 Then
+                    th = th + (tw - scroll.Width + 60) / 18 / 0.75 - 3
+                    tw = scroll.Width - 60
+                End If
+
                 If dry >= -(th + 40 + 20) And dry <= scroll.Height Then
                     If .id = -1 Then
                         Page.Paint 2, scroll.Width / 2, dry + 30, tw + 40, 40, argb(255, 212, 212, 212), 100, pos:=posOnCenter
@@ -111,16 +123,13 @@ ReDraw:
                         Page.Writes .Name & IIf(id > 0, "(#" & .id & ")", "") & "   " & format(.time, "hh:MM:ss"), drx, dry, 18, IIf(.id > 0, argb(255, 168, 168, 168), argb(255, 0, 176, 240)), align:=IIf(.id = userId, StringAlignmentFar, StringAlignmentNear)
                         Page.Writes .Name & IIf(id > 0, "(#" & .id & ")", "") & "   " & format(.time, "hh:MM:ss"), drx, dry, 18, IIf(.id > 0 And .id <> userId, argb(255, 168, 168, 168), argb(255, 84, 223, 143)), align:=IIf(.id = userId, StringAlignmentFar, StringAlignmentNear)
                         If .id = userId Then drx = drx - tw - 20
-                        If tw > scroll.Width - 60 Then
-                            th = th + (tw - scroll.Width + 60) / 18 / 0.75 - 3
-                            tw = scroll.Width - 60
-                        End If
                         Page.Paint 2, drx, dry + 25, tw + 20, th + 20, IIf(.id = userId, argb(255, 84, 223, 143), argb(255, 232, 232, 232)), 16
+                        
                         If CheckMouse(drx + 300, dry + 60 + 25, tw + 20, th + 20) > 0 And Mouse.button = 2 Then
                             MenuWindow.id = .id: selectMsg = groups(selectIndex).Msg(i): Mouse.button = 0
                             MenuWindow.banMsg.Visible = (.id <> userId And (userId = groups(selectIndex).leader Or userId = -2))
                             MenuWindow.kickGroup.Visible = (.id <> userId And (userId = groups(selectIndex).leader Or userId = -2))
-                            Client.PopupMenu MenuWindow.msgMenu
+                            Set willPop = MenuWindow.msgMenu
                         End If
                         Page.Writes .Content, drx + 10, dry + 25 + 10, 18, IIf(.id = userId, argb(255, 255, 255, 255), argb(255, 0, 0, 0)), tw + 1, th
                         
@@ -203,24 +212,24 @@ nomsg:
     '底部发送框
     Dim TextV As Boolean
     TextV = (pro = 1)
-    If Not (Client.Text1.Enabled Or Client.Picture2.Visible) Then TextV = False
+    If Not (Client.Text1.Visible Or Client.Picture2.Visible) Then TextV = False
     If Client.Text2.Visible <> TextV Then Client.Text2.Visible = TextV
 
     If Not disbledToolbar Then Page.Paint 0, 300, GH - 82, GW, 83, argb(255, 232, 232, 232)
     
     If pro = 0 Or disbledToolbar Then GoTo SkipTab1
     
-    If Client.Text1.Enabled Or Client.Picture2.Visible Then
+    If Client.Text1.Visible Or Client.Picture2.Visible Then
         Page.Paint 2, 33 + 300, GH - (82 - 18) * pro + 40 * dpro, GW - 250 - 300 + 70, 42, argb(255 * pro, 255, 255, 255), Radius:=42
         Page.DrawImage "send.png", 630 + 300, GH - 40 * pro + 40 * dpro, Alpha:=0, pos:=posOnCenter
         m = CheckMouse2
         Page.DrawImage "send.png", 630 + 300, GH - 40 * pro + 40 * dpro, Alpha:=IIf(Client.Command2.Enabled, IIf(m, 1, 0.8), 0.3) * pro, pos:=posOnCenter
         ECore.TipMsg "发送消息", 0
-        If m = mMouseDown And Mouse.button = 1 And Client.Text1.Enabled Then Client.SendMsg: Mouse.button = 0
+        If m = mMouseDown And Mouse.button = 1 And Client.Text1.Visible Then Client.SendMsg: Mouse.button = 0
     End If
     
     Dim ClearEn As Boolean
-    ClearEn = ClearEn Or (Client.Command3.Enabled And Client.Text1.Text <> "" And Client.Text1.Enabled)
+    ClearEn = ClearEn Or (Client.Command3.Enabled And Client.Text1.Text <> "" And Client.Text1.Visible)
     ClearEn = ClearEn Or (Client.Picture2.Visible)
     ClearEn = ClearEn Or (Client.Picture1.Visible)
     ClearEn = ClearEn Or (Client.Text5.Text <> "" And Client.Text5.Visible)
@@ -230,7 +239,7 @@ nomsg:
     Page.DrawImage "clear.png", 690 + 300, GH - 40 * pro + 40 * dpro, Alpha:=IIf(ClearEn, IIf(m, 1, 0.8), 0.3) * pro, pos:=posOnCenter
     ECore.TipMsg "清空", 0
     If m = mMouseDown And Mouse.button = 1 Then
-        If Client.Text1.Enabled Then Client.Command3_Click
+        If Client.Text1.Visible Then Client.Command3_Click
         If Client.Text5.Visible Then Client.Text5.Text = ""
         If Client.Picture2.Visible Then Client.Picture2.Cls
         If Client.Picture1.Visible Then Client.Command4_Click
@@ -308,7 +317,7 @@ SkipTab1:
         Page.DrawImage "save.png", 572 + 300, GH - 40 * dpro + 40 * pro, Alpha:=1 * dpro, pos:=posOnCenter
         ECore.TipMsg "保存文件", 0
         If m = mMouseDown And Mouse.button = 1 Then
-            If Client.Text1.Enabled Then Client.save3_Click
+            If Client.Text1.Visible Then Client.save3_Click
             If Client.Text5.Visible Then Client.save2_Click
             If Client.Picture1.Visible Then Client.saveDrawing
             Mouse.button = 0
