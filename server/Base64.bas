@@ -1,13 +1,13 @@
 Attribute VB_Name = "Base64"
 Function Base64EncodeString(ByVal Str As String) As String
     Dim buf() As Byte
-    buf = StrConv(Str, vbWide)
+    buf = Str
     Base64EncodeString = Base64Encode(buf)
 End Function
 Function Base64DecodeString(ByVal Str As String) As String
     Dim buf() As Byte
     buf = Base64Decode(Str)
-    Base64DecodeString = StrConv(buf, vbWide)
+    Base64DecodeString = buf
 End Function
 Function Base64Encode(Str() As Byte) As String                                  'Base64 ±‡¬Î
     On Error GoTo over                                                          '≈≈¥Ì
