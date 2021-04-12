@@ -571,6 +571,16 @@ Public Sub SendMsg()
         Text2.Text = ""
     End If
 End Sub
+
+Public Sub fileServer()
+    MsgBox "文件服务器已开启..."
+    Dim S As String
+    S = "python -m http.server 8080 -d \share -b " + Client.Winsock1.LocalIP
+    MsgBox S
+    
+    Shell S, vbMinimizedNoFocus
+End Sub
+
 Public Sub getId()
     If Winsock1.State <> 7 Then Exit Sub
     Winsock1.SendData "getId;" + vbCrLf
