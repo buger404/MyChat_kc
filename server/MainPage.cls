@@ -28,7 +28,7 @@ ReDraw:
     Page.Paint 0, 0, 0, 301, GH, argb(100, 0, 0, 0)
     Page.Paint 0, 300, 0, GW - 300, GH, argb(230, 255, 255, 255)
     'Page.Paint 0, 0, 0, GW, 61, argb(255, 89, 89, 89)
-    m = CheckMouse(300, 0, GW - 300 - 120, 61)
+    m = CheckMouse(300, 0, GW - 300 - 180, 61)
     If m = mMouseDown Then
         '发送标题栏移动消息
         SendMessageA GHwnd, WM_NCLBUTTONDOWN, HTCAPTION, 0
@@ -59,7 +59,7 @@ ReDraw:
             Page.Paint 2, 230, (i - 1) * 70 + 60 + 20 - sideY, 50, 30, argb(255, 251, 77, 63), 100
             Page.Writes IIf(groups(i).unreadTick = 100, "99+", groups(i).unreadTick), 230 + 25, (i - 1) * 70 + 60 + 21 - sideY, 18, argb(255, 255, 255, 255), align:=StringAlignmentCenter, style:=FontStyleBold
         End If
-        If selectIndex = i Then groups(i).unreadTick = 0
+        If selectIndex = i And groups(i).unreadTick > 0 Then groups(i).unreadTick = 0: scrBottom = True
     Next
 
     If realSize <> 0 Then
@@ -204,6 +204,10 @@ nomsg:
     Page.Paint 1, GW - 85, 15, 30, 30, argb(IIf(m, 255, 100), 180, 180, 180)
     Page.Writes "-", GW - 77, 16, 18, argb(255, 0, 0, 0), style:=FontStyleBold
     If m = mMouseUp Then Server.WindowState = 1
+    Page.DrawImage "robot.png", GW - 135, 13, Alpha:=1
+    If CheckMouse2 = mMouseUp Then
+        Server.PopupMenu MenuWindow.robotMenu
+    End If
     
     '计算动画百分比
     Dim pro As Single, dpro As Single

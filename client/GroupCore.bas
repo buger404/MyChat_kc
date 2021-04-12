@@ -132,4 +132,3 @@ End Sub
 Public Sub DeleteBan(id As Integer, group As Integer)
 
 End Sub
-

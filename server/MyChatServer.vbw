@@ -15,22 +15,18 @@ GDebug = 250, 250, 1176, 821,
 Debuginfo = 0, 0, 0, 0, C, 128, 128, 1164, 459, C
 EmeraldWindow = 0, 0, 0, 0, C, 32, 32, 1068, 363, C
 GSysPage = 0, 0, 717, 464, 
-Core = 160, 160, 1164, 523, CI
+Core = 160, 160, 1164, 523, 
 AboutMe = 125, 125, 842, 589, 
 GResource = 50, 50, 767, 514, C
 AeroEffect = 0, 0, 0, 0, C
 Animations = 0, 0, 0, 0, C
 GCrashBox = 0, 0, 0, 0, C
-<<<<<<< HEAD
-ResPool = 104, 104, 868, 389, C
-Server = 151, 110, 1176, 745, Z, 25, 25, 742, 489, C
-=======
 ResPool = 104, 104, 868, 389, 
 Server = 151, 110, 1176, 745, , 25, 25, 742, 489, C
->>>>>>> 7e03ff1e476e307a876ffb5fabd8da0f84b3199d
 MainPage = 60, 195, 1096, 608, 
 aShadow = 0, 0, 0, 0, C
 IPPage = 128, 128, 1132, 491, 
 Base64 = 0, 0, 717, 464, 
 GroupCore = 25, 25, 1088, 540, 
-MenuWindow = 156, 156, 799, 540, , 130, 130, 773, 514, C
+MenuWindow = 156, 156, 799, 540, Z, 130, 130, 773, 514, C
+RobotCore = 0, 0, 1062, 515, 

@@ -1,5 +1,6 @@
 VERSION 5.00
-Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "MSWINSCK.OCX"
+Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "mswinsck.ocx"
+Object = "{0E59F1D2-1FBE-11D0-8FF2-00A0D10038BC}#1.0#0"; "msscript.ocx"
 Begin VB.Form Server 
    Appearance      =   0  'Flat
    BackColor       =   &H80000005&
@@ -17,6 +18,13 @@ Begin VB.Form Server
    ScaleMode       =   3  'Pixel
    ScaleWidth      =   503
    StartUpPosition =   2  '屏幕中心
+   Begin MSScriptControlCtl.ScriptControl vbs 
+      Index           =   0
+      Left            =   6600
+      Top             =   0
+      _ExtentX        =   1005
+      _ExtentY        =   1005
+   End
    Begin VB.Timer DrawTimer 
       Enabled         =   0   'False
       Interval        =   16
@@ -276,13 +284,14 @@ Public Sub SendMsg()
 
     If Text4.Text = "" Then VBA.Beep: Exit Sub
     
+    Call AddMessage(MainPage.selectIndex, userId, userName, Text4.Text)
+    
     Dim S As Single
     S = 1
     Do While (S <= Winsock.UBound)
         If Winsock(S).State = 7 Then
-            Call AddMessage(MainPage.selectIndex, userId, userName, Text4.Text)
-            MsgBox Str(MainPage.selectIndex)
-            Winsock(S).SendData "msg;" + Str(MainPage.selectIndex) + ";" + userName + ";" + Str(userId) + ";" + Base64EncodeString(Text4.Text) + ";" + vbCrLf
+            'MsgBox Str(MainPage.selectIndex)
+            Winsock(S).SendData "msg;" + Str(MainPage.selectIndex) + ";" + Base64EncodeString(userName) + ";" + Str(userId) + ";" + Base64EncodeString(Text4.Text) + ";" + vbCrLf
             DoEvents
         End If
         S = S + 1
@@ -367,6 +376,7 @@ End Sub
 
 Private Sub Form_Load()
     ReDim groups(0): ReDim bans(0)
+    Set Robots = New RobotCore
     AddGroup 1, -2, True, "大厅", "老师"
     userId = -2: userName = "老师"
     
@@ -400,6 +410,18 @@ Private Sub Form_Load()
     Me.Caption = lis.LocalIP & " - " & "已连接" & pop & "人"
     
     ECore.NewTransform , , "MainPage"
+    
+    Dim ttt As String, code As String
+    Open App.path & "\robots\random.vbs" For Input As #1
+    Do While Not EOF(1)
+        Line Input #1, ttt
+        code = code & ttt & vbCrLf
+    Loop
+    Close #1
+    
+    'vbs.AddCode code
+    'vbs.Run "Process", "hhhhh"
+    'MsgBox vbs.Eval("Guidence")
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
@@ -446,23 +468,23 @@ Private Sub Text4_Change()
     End If
 End Sub
 
-Private Sub Winsock_Close(Index As Integer)
+Private Sub Winsock_Close(index As Integer)
     pop = pop - 1
-    Call AddMessage(1, -1, "系统消息", "")
-    DeleteMember Index, 1
+    'Call AddMessage(1, -1, "系统消息", "")
+    DeleteMember index, 1
     For Each w In Winsock
-        If w.State = 7 Then w.SendData "deletemember;" & Index & ";" & 1 & vbCrLf
+        If w.State = 7 Then w.SendData "deletemember;" & index & ";" & 1 & vbCrLf
     Next
 End Sub
 
-Private Sub Winsock_DataArrival(Index As Integer, ByVal bytesTotal As Long)
+Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
     If State = True Then Exit Sub
     
     Dim strSplit() As String
     Dim id As Integer
     Dim MsgType As String
     Dim strData As String
-    Winsock(Index).GetData strData
+    Winsock(index).GetData strData
     
     Dim S As Single
   '  S = 1
@@ -479,7 +501,7 @@ Private Sub Winsock_DataArrival(Index As Integer, ByVal bytesTotal As Long)
     
     For k = 0 To UBound(cmds) - 1
         strSplit = Split(cmds(k), ";")
-        id = Index
+        id = index
         MsgType = strSplit(0)
     
         Select Case MsgType
@@ -488,17 +510,17 @@ Private Sub Winsock_DataArrival(Index As Integer, ByVal bytesTotal As Long)
         Case "msg"
             Dim Name As String
             Dim MsgContent As String
-            Name = strSplit(2)
+            Name = Base64DecodeString(strSplit(2))
             grpid = strSplit(1)
             MsgContent = strSplit(4)
             MsgContent = Base64DecodeString(MsgContent)
             Call AddMessage(Int(grpid), id, Name, MsgContent)
             
-            strData = MsgType + ";" + grpid + ";" + Name + ";" + Str(id) + ";" + Base64EncodeString(MsgContent)
+            strData = MsgType + ";" + Str(grpid) + ";" + Base64EncodeString(Name) + ";" + Str(id) + ";" + Base64EncodeString(MsgContent) & vbCrLf
     
             S = 1
             Do While (S <= Winsock.UBound)
-                If Winsock(S).State = 7 Then
+                If Winsock(S).State = 7 And S <> id Then
                     Winsock(S).SendData strData
                     DoEvents
                 End If
@@ -509,7 +531,8 @@ Private Sub Winsock_DataArrival(Index As Integer, ByVal bytesTotal As Long)
         Case "addgrouprequest"
             If groups(Val(strSplit(3))).leader = -2 Then
                 If Val(strSplit(3)) = 1 Then GoTo skipNotify
-                If MsgBox(Base64DecodeString(strSplit(1)) & "(#" & Val(strSplit(2)) & ") 申请加入 " & groups(Val(strSplit(3))).Name & "，是否同意？", 48 + vbYesNo) = vbYes Then
+                Me.SetFocus
+                If MsgBox(Base64DecodeString(strSplit(1)) & "(#" & Val(strSplit(2)) & ") 申请加入组“" & groups(Val(strSplit(3))).Name & "”，是否同意？", 48 + vbYesNo) = vbYes Then
 skipNotify:
                     AddMember Base64DecodeString(strSplit(1)), Val(strSplit(2)), Val(strSplit(3))
                     For Each w In Winsock
@@ -525,14 +548,15 @@ skipNotify:
                 newcmd = newcmd & strSplit(i) & IIf(i < UBound(strSplit), ";", "")
             Next
             For Each w In Winsock
-                If w.State = 7 And w.Index <> Index Then w.SendData newcmd & vbCrLf
+                If w.State = 7 And w.index <> index Then w.SendData newcmd & vbCrLf
             Next
         Case "addmember"
             AddMember Base64DecodeString(strSplit(1)), Val(strSplit(2)), Val(strSplit(3))
+            AddMessage Val(strSplit(3)), -1, "系统消息", Base64DecodeString(strSplit(1)) & "加入了本讨论组"
         Case "creategroup"
             ProcessCreateGroup strSplit, id
         Case "quitgroup"
-            If Index = groups(Val(strSplit(1))).leader Then
+            If index = groups(Val(strSplit(1))).leader Then
                 '解散处理
                 DeleteGroup Val(strSplit(1))
                 For Each w In Winsock
@@ -540,9 +564,9 @@ skipNotify:
                 Next
             Else
                 '退群处理
-                DeleteMember Index, Val(strSplit(1))
+                DeleteMember index, Val(strSplit(1))
                 For Each w In Winsock
-                    If w.State = 7 Then w.SendData "deletemember;" & Val(strSplit(1)) & ";" & Index & vbCrLf
+                    If w.State = 7 Then w.SendData "deletemember;" & Val(strSplit(1)) & ";" & index & vbCrLf
                 Next
             End If
         End Select
