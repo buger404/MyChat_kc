@@ -35,7 +35,7 @@ ReDraw:
     Page.Paint 0, 0, 0, 301, GH, argb(100, 0, 0, 0)
     Page.Paint 0, 300, 0, GW - 300, GH, argb(230, 255, 255, 255)
     'Page.Paint 0, 0, 0, GW, 61, argb(255, 89, 89, 89)
-    m = CheckMouse(300, 0, GW - 300 - 180, 61)
+    m = CheckMouse(300, 0, GW - 300 - 210, 61)
     If m = mMouseDown Then
         '发送标题栏移动消息
         SendMessageA GHwnd, WM_NCLBUTTONDOWN, HTCAPTION, 0
@@ -84,7 +84,6 @@ ReDraw:
     If sideY < 0 Then sideY = 0: GoTo ReDraw
 
     If selectIndex > UBound(groups) Then selectIndex = UBound(groups)
-    Page.Writes groups(selectIndex).Name & "(" & UBound(groups(selectIndex).members) & ")", 20 + 300, 15, 20, argb(255, 0, 0, 0), style:=FontStyleBold
     
     Dim disbledToolbar As Boolean
     If Not groups(selectIndex).isJoin Then
@@ -98,7 +97,13 @@ ReDraw:
         GoTo nomsg
     End If
 
-    Page.Writes groups(selectIndex).Name, 20 + 300, 15, 20, argb(255, 0, 0, 0), style:=FontStyleBold
+    If mode = 3 Then
+        Page.Writes "窗口黑名单", 20 + 300, 15, 20, argb(255, 0, 0, 0), style:=FontStyleBold
+    Else
+        Page.Writes groups(selectIndex).Name & "(" & UBound(groups(selectIndex).members) & ")", 20 + 300, 15, 20, argb(255, 0, 0, 0), style:=FontStyleBold
+    End If
+    
+    If mode = 3 Then disbledToolbar = True: GoTo nomsg
     
     StartScrollArea Page, scroll
         Page.Clear argb(0, 0, 0, 0)
@@ -177,11 +182,11 @@ ReDraw:
         If bans(i).groupid = groups(selectIndex).id And bans(i).id = userId Then
             span = Now - bans(i).StartTime
             tickspan = Minute(span) * 60 + Second(span) + Hour(span) * 60 * 60
-            If tickspan < bans(i).duration Then
+            If tickspan < bans(i).Duration Then
                 mode = 1
                 Page.Paint 2, 300 + (GW - 300) / 2, GH / 2, 450, 250, argb(100, 0, 0, 0), 20, pos:=posOnCenter
                 Page.Writes "您正被禁言，无法发言", 300 + (GW - 300) / 2, GH / 2 - 70, 20, argb(255, 255, 255, 255), align:=StringAlignmentCenter, style:=FontStyleBold
-                Page.Writes Int((bans(i).duration - tickspan) / 60) & ":" & format((bans(i).duration - tickspan) Mod 60, "00"), 300 + (GW - 300) / 2, GH / 2 - 0, 36, argb(255, 255, 255, 255), align:=StringAlignmentCenter, style:=FontStyleBold
+                Page.Writes Int((bans(i).Duration - tickspan) / 60) & ":" & format((bans(i).Duration - tickspan) Mod 60, "00"), 300 + (GW - 300) / 2, GH / 2 - 0, 36, argb(255, 255, 255, 255), align:=StringAlignmentCenter, style:=FontStyleBold
                 disbledToolbar = True
                 Exit For
             Else
@@ -216,6 +221,11 @@ nomsg:
     If CheckMouse2 = mMouseUp Then
         Server.PopupMenu MenuWindow.robotMenu
     End If
+    Page.DrawImage "black.png", GW - 175, 14, Alpha:=1
+    If CheckMouse2 = mMouseUp Then
+        mode = 3
+        'Server.PopupMenu MenuWindow.robotMenu
+    End If
     
     '计算动画百分比
     Dim pro As Single, dpro As Single
@@ -227,12 +237,12 @@ nomsg:
     
     '底部发送框
     Dim TextV As Boolean
-    TextV = (pro = 1)
+    TextV = (pro = 1) And mode = 0
     If Server.Text4.Visible <> TextV Then Server.Text4.Visible = TextV
 
     If Not disbledToolbar Then Page.Paint 0, 300, GH - 82, GW, 83, argb(255, 232, 232, 232)
     
-    If pro = 0 Or disbledToolbar Then GoTo SkipTab1
+    If pro = 0 Or disbledToolbar Or mode = 3 Then GoTo SkipTab1
     
     Page.Paint 2, 300 + 33, GH - (82 - 18) * pro + 40 * dpro, GW - 250 - 300 + 70, 42, argb(255 * pro, 255, 255, 255), Radius:=42
     Page.DrawImage "send.png", 300 + 630, GH - 40 * pro + 40 * dpro, Alpha:=0, pos:=posOnCenter
@@ -261,7 +271,7 @@ nomsg:
     End If
 
 SkipTab1:
-    If pro = 1 Or disbledToolbar Then GoTo SkipTab2
+    If pro = 1 Or disbledToolbar Or mode = 3 Then GoTo SkipTab2
     
     Page.DrawImage "disconnect.png", 300 + 50, GH - 40 * dpro + 40 * pro, Alpha:=0, pos:=posOnCenter
     m = CheckMouse2
