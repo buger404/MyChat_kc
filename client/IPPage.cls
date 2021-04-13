@@ -75,7 +75,7 @@ Public Sub Wheel(Direction As Integer, Depth As Single)
     '鼠标滚轮事件
     'Direction:方向，Depth：深度
 End Sub
-Public Sub AnimationMsg(id As String, msg As String)
+Public Sub AnimationMsg(id As String, Msg As String)
     '动画消息接收
 End Sub
 Public Sub Enter()

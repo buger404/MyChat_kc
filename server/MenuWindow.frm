@@ -3,14 +3,14 @@ Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
 Begin VB.Form MenuWindow 
    BorderStyle     =   1  'Fixed Single
    Caption         =   "放置菜单"
-   ClientHeight    =   3128
-   ClientLeft      =   80
-   ClientTop       =   672
+   ClientHeight    =   3120
+   ClientLeft      =   150
+   ClientTop       =   780
    ClientWidth     =   4680
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   3128
+   ScaleHeight     =   3120
    ScaleWidth      =   4680
    StartUpPosition =   3  '窗口缺省
    Begin MSComDlg.CommonDialog FileOpens 
@@ -21,6 +21,14 @@ Begin VB.Form MenuWindow
       _Version        =   393216
       DialogTitle     =   "导入机器人"
       Filter          =   "机器人脚本|*.vbs|"
+   End
+   Begin VB.Label Formater 
+      Caption         =   "Label1"
+      Height          =   15
+      Left            =   960
+      TabIndex        =   0
+      Top             =   720
+      Width           =   1095
    End
    Begin VB.Menu msgMenu 
       Caption         =   "消息菜单"
@@ -103,6 +111,7 @@ Private Sub quitGroup_Click()
     DeleteGroup groups(groupid).id
     For Each w In Server.Winsock
         If w.State = 7 Then w.SendData "deletegroup;" & groups(groupid).id & vbCrLf
+        DoEvents
     Next
 End Sub
 

@@ -2,16 +2,24 @@ VERSION 5.00
 Begin VB.Form MenuWindow 
    BorderStyle     =   1  'Fixed Single
    Caption         =   "放置菜单"
-   ClientHeight    =   3128
-   ClientLeft      =   80
-   ClientTop       =   672
+   ClientHeight    =   3120
+   ClientLeft      =   150
+   ClientTop       =   780
    ClientWidth     =   4680
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   3128
+   ScaleHeight     =   3120
    ScaleWidth      =   4680
    StartUpPosition =   3  '窗口缺省
+   Begin VB.Label Formater 
+      Caption         =   "Label1"
+      Height          =   975
+      Left            =   960
+      TabIndex        =   0
+      Top             =   360
+      Width           =   1575
+   End
    Begin VB.Menu msgMenu 
       Caption         =   "消息菜单"
       Begin VB.Menu copyMsg 

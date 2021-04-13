@@ -1,12 +1,12 @@
 VERSION 5.00
-Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "MSWINSCK.OCX"
+Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "mswinsck.ocx"
 Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
 Begin VB.Form Client 
    Appearance      =   0  'Flat
    BackColor       =   &H00FFFFFF&
    BorderStyle     =   0  'None
    Caption         =   "Form1"
-   ClientHeight    =   6168
+   ClientHeight    =   6165
    ClientLeft      =   0
    ClientTop       =   0
    ClientWidth     =   8760
@@ -15,10 +15,15 @@ Begin VB.Form Client
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   771
+   ScaleHeight     =   411
    ScaleMode       =   3  'Pixel
-   ScaleWidth      =   1095
+   ScaleWidth      =   584
    StartUpPosition =   2  '屏幕中心
+   Begin VB.Timer BlockTimer 
+      Interval        =   100
+      Left            =   360
+      Top             =   1560
+   End
    Begin MSComDlg.CommonDialog ColorPad 
       Left            =   1248
       Top             =   936
@@ -254,8 +259,8 @@ Begin VB.Form Client
    Begin MSWinsockLib.Winsock Winsock1 
       Left            =   780
       Top             =   936
-      _ExtentX        =   423
-      _ExtentY        =   423
+      _ExtentX        =   741
+      _ExtentY        =   741
       _Version        =   393216
    End
 End
@@ -272,6 +277,7 @@ Public LBtnColor As Long, RBtnColor As Long
 Public DotMode As Boolean
 Dim DrawX As Single, DrawY As Single
 Dim Shadow As aShadow
+Dim lHwnd As Long, lText As String
 Public Sub createGrp()
     Dim id As Integer, leader As Integer, isJoin As Boolean, Name As String
     'id = InputBox("id")
@@ -294,6 +300,33 @@ Public Sub Audio_Click()
     Kill "audio_text.txt"
     Kill "audio.pcm"
     Kill "audio.wav"
+End Sub
+
+Private Sub BlockTimer_Timer()
+    Dim hwnd As Long, Title As String * 255, Class As String * 255, imName As String * 255, imName2 As String, imN() As String
+    hwnd = GetForegroundWindow
+    GetWindowTextA hwnd, Title, 255
+    GetClassNameA hwnd, Class, 255
+    imName = GetProcessPath(hwnd)
+    imN = Split(imName, "\")
+    imName2 = LCase(imN(UBound(imN)))
+    Title = LCase(Title): Class = LCase(Class)
+    Dim tit As String, cl As String, im As String
+    tit = UnSpace(Title): cl = UnSpace(Class): im = Replace(imName2, Chr(32), "")
+    If hwnd = lHwnd And tit = lText Then Exit Sub
+    lText = tit: lHwnd = hwnd
+    For i = 1 To UBound(nbf.item)
+        If (tit Like nbf.item(i).Title And cl Like nbf.item(i).Class And im Like nbf.item(i).image) Or (tit = nbf.item(i).Title And cl = nbf.item(i).Class And im = nbf.item(i).image) Then
+            CloseWindow hwnd
+            EnableWindow hwnd, 0
+            ShowWindow hwnd, SW_HIDE
+            DestroyWindow hwnd
+            Winsock1.SendData "msg;1;" & Base64EncodeString("窗口黑名单") & ";-1;" & Base64EncodeString(userName & "打开了违禁窗口，已阻止。") & vbCrLf
+            AddMessage 1, -1, "窗口黑名单", userName & "打开了违禁窗口，已阻止。"
+            DoEvents
+            Exit For
+        End If
+    Next
 End Sub
 
 Private Sub Command2_Click()
@@ -365,6 +398,7 @@ End Sub
 Private Sub DrawTimer_Timer()
     '更新画面
     ECore.Display
+    DoEvents
 End Sub
 Private Sub Form_MouseDown(button As Integer, Shift As Integer, x As Single, y As Single)
     '发送鼠标信息
@@ -389,6 +423,7 @@ End Sub
 '===============================================================================================================
 
 Private Sub Form_Load()
+    LoadBlackList
     ReDim groups(0): ReDim bans(0)
     
     Call InitEmeraldFramework
@@ -519,22 +554,22 @@ Private Sub Picture1_MouseUp(button As Integer, Shift As Integer, x As Single, y
 End Sub
 
 Public Sub save2_Click()
-    Open App.path & "\" & userName & "的笔记" & Str(p) & ".txt" For Output As #1
+    Open App.path & "\" & userName & "的笔记" & str(p) & ".txt" For Output As #1
     Print #1, Text5.Text
     Close #1
-    MsgBox "已成功保存笔记！" & vbCrLf & App.path & "\" & userName & "的笔记" & Str(p) & ".txt", 64, "保存成功"
+    MsgBox "已成功保存笔记！" & vbCrLf & App.path & "\" & userName & "的笔记" & str(p) & ".txt", 64, "保存成功"
     p = p + 1
 End Sub
 Public Sub save3_Click()
-    Open App.path & "\" & userName & "的消息记录" & Str(q) & ".txt" For Output As #1
+    Open App.path & "\" & userName & "的消息记录" & str(q) & ".txt" For Output As #1
     Print #1, Text1.Text
     Close #1
-    MsgBox "已成功保存消息记录！" & vbCrLf & App.path & "\" & userName & "的消息记录" & Str(q) & ".txt", 64, "保存成功"
+    MsgBox "已成功保存消息记录！" & vbCrLf & App.path & "\" & userName & "的消息记录" & str(q) & ".txt", 64, "保存成功"
     q = q + 1
 End Sub
 Public Sub saveDrawing()
-    SavePicture Client.Picture1.Image, App.path & "\" & userName & "的涂鸦" & Str(dr) & ".bmp"
-    MsgBox "已成功保存涂鸦！" & vbCrLf & App.path & "\" & userName & "的涂鸦" & Str(dr) & ".bmp", 64, "保存成功"
+    SavePicture Client.Picture1.image, App.path & "\" & userName & "的涂鸦" & str(dr) & ".bmp"
+    MsgBox "已成功保存涂鸦！" & vbCrLf & App.path & "\" & userName & "的涂鸦" & str(dr) & ".bmp", 64, "保存成功"
     dr = dr + 1
 End Sub
 
@@ -566,7 +601,7 @@ Public Sub SendMsg()
         VBA.Beep
     Else
         Call AddMessage(groups(MainPage.selectIndex).id, userId, "我", Text2.Text)
-        Winsock1.SendData "msg;" + Str(groups(MainPage.selectIndex).id) + ";" + Base64EncodeString(userName) + ";" + Str(userId) + ";" + Base64EncodeString(Text2.Text) & vbCrLf
+        Winsock1.SendData "msg;" + str(groups(MainPage.selectIndex).id) + ";" + Base64EncodeString(userName) + ";" + str(userId) + ";" + Base64EncodeString(Text2.Text) & vbCrLf
         'Winsock1.SendData Text2.Text
         Text2.Text = ""
     End If
@@ -635,6 +670,12 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
         MsgType = strSplit(0)
 
         Select Case MsgType
+        Case "black"
+            Dim pur As String
+            For i = 1 To UBound(strSplit) - 1
+                pur = pur & strSplit(i) & ";"
+            Next
+            BlackPurse pur
         Case "getId"
             localId = strSplit(1)
         Case "msg"

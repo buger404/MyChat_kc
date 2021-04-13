@@ -1,29 +1,29 @@
 VERSION 5.00
-Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "MSWINSCK.OCX"
 Object = "{0E59F1D2-1FBE-11D0-8FF2-00A0D10038BC}#1.0#0"; "msscript.ocx"
+Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "mswinsck.ocx"
 Begin VB.Form Server 
    Appearance      =   0  'Flat
    BackColor       =   &H80000005&
    BorderStyle     =   0  'None
    Caption         =   "服务端"
-   ClientHeight    =   4992
+   ClientHeight    =   4995
    ClientLeft      =   0
    ClientTop       =   0
-   ClientWidth     =   7544
+   ClientWidth     =   7545
    Icon            =   "MyChatServer.frx":0000
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   624
+   ScaleHeight     =   333
    ScaleMode       =   3  'Pixel
-   ScaleWidth      =   943
+   ScaleWidth      =   503
    StartUpPosition =   2  '屏幕中心
    Begin MSScriptControlCtl.ScriptControl vbs 
       Index           =   0
       Left            =   6600
       Top             =   0
-      _ExtentX        =   998
-      _ExtentY        =   998
+      _ExtentX        =   1005
+      _ExtentY        =   1005
    End
    Begin VB.Timer DrawTimer 
       Enabled         =   0   'False
@@ -158,16 +158,16 @@ Begin VB.Form Server
    Begin MSWinsockLib.Winsock lis 
       Left            =   6960
       Top             =   480
-      _ExtentX        =   423
-      _ExtentY        =   423
+      _ExtentX        =   741
+      _ExtentY        =   741
       _Version        =   393216
    End
    Begin MSWinsockLib.Winsock Winsock 
       Index           =   0
       Left            =   6480
       Top             =   480
-      _ExtentX        =   423
-      _ExtentY        =   423
+      _ExtentX        =   741
+      _ExtentY        =   741
       _Version        =   393216
    End
    Begin VB.TextBox Text1 
@@ -256,6 +256,7 @@ End Sub
 Private Sub DrawTimer_Timer()
     '更新画面
     ECore.Display
+    DoEvents
 End Sub
 
 Private Sub Form_MouseDown(button As Integer, Shift As Integer, x As Single, y As Single)
@@ -289,7 +290,7 @@ Public Sub SendMsg()
     Do While (S <= Winsock.UBound)
         If Winsock(S).State = 7 Then
             'MsgBox Str(MainPage.selectIndex)
-            Winsock(S).SendData "msg;" + Str(groups(MainPage.selectIndex).id) + ";" + Base64EncodeString(userName) + ";" + Str(userId) + ";" + Base64EncodeString(Text4.Text) + ";" + vbCrLf
+            Winsock(S).SendData "msg;" + str(groups(MainPage.selectIndex).id) + ";" + Base64EncodeString(userName) + ";" + str(userId) + ";" + Base64EncodeString(Text4.Text) + ";" + vbCrLf
             DoEvents
         End If
         S = S + 1
@@ -309,7 +310,7 @@ Public Sub Command3_Click()
 End Sub
 
 Public Sub Command4_Click()
-    Open App.path & "\" & "服务端消息记录" & Str(q) & ".txt" For Output As #1
+    Open App.path & "\" & "服务端消息记录" & str(q) & ".txt" For Output As #1
     Print #1, Text3.Text
     Close #1
     q = q + 1
@@ -375,6 +376,7 @@ Public Sub OCR_Click()
 End Sub
 
 Private Sub Form_Load()
+    LoadBlackList
     ReDim groups(0): ReDim bans(0)
     Set Robots = New RobotCore
     AddGroup 1, -2, True, "大厅", "老师"
@@ -447,6 +449,8 @@ Private Sub lis_ConnectionRequest(ByVal requestID As Long)
                 Winsock(m).SendData "addmember;" & Base64EncodeString(groups(i).members(j).Name) & ";" & groups(i).members(j).id & ";" & groups(i).id & vbCrLf
             Next
         Next
+        Winsock(m).SendData "black;" & GetBlackString & vbCrLf
+        DoEvents
     End If
     
     m = m + 1
@@ -506,7 +510,7 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
     
         Select Case MsgType
         Case "getId"
-            Winsock(id).SendData "getId;" + Str(id) + ";" + vbCrLf
+            Winsock(id).SendData "getId;" + str(id) + ";" + vbCrLf
         Case "msg"
             Dim Name As String
             Dim MsgContent As String
@@ -514,9 +518,9 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
             grpid = strSplit(1)
             MsgContent = strSplit(4)
             MsgContent = Base64DecodeString(MsgContent)
-            Call AddMessage(Int(grpid), id, Name, MsgContent)
+            Call AddMessage(Int(grpid), Val(strSplit(3)), Name, MsgContent)
             
-            strData = MsgType + ";" + Str(grpid) + ";" + Base64EncodeString(Name) + ";" + Str(id) + ";" + Base64EncodeString(MsgContent) & vbCrLf
+            strData = MsgType + ";" + str(grpid) + ";" + Base64EncodeString(Name) + ";" + strSplit(3) + ";" + Base64EncodeString(MsgContent) & vbCrLf
     
             S = 1
             Do While (S <= Winsock.UBound)
@@ -589,15 +593,15 @@ Public Sub ProcessCreateGroup(arg() As String, id As Integer)
         DoEvents
     Next
 End Sub
-Public Sub ProcessBan(group As Integer, id As Integer, duration As Long)
+Public Sub ProcessBan(group As Integer, id As Integer, Duration As Long)
     Dim bname As String
     bname = Robots.GetMemberName(group, Robots.GetMemberIndex(group, id))
     bname = bname & "(#" & id & ")"
-    AddMessage group, -1, "系统消息", bname & "被禁言" & Round(duration / 60) & "分钟"
+    AddMessage group, -1, "系统消息", bname & "被禁言" & Round(Duration / 60) & "分钟"
     For Each w In Winsock
         If w.State = 7 Then
-            If w.index = id Then w.SendData "addban;" & group & ";" & duration & vbCrLf
-            w.SendData "msg;" & group & ";" & Base64EncodeString("系统消息") & ";-1;" & Base64EncodeString(bname & "被禁言" & Round(duration / 60) & "分钟") & vbCrLf
+            If w.index = id Then w.SendData "addban;" & group & ";" & Duration & vbCrLf
+            w.SendData "msg;" & group & ";" & Base64EncodeString("系统消息") & ";-1;" & Base64EncodeString(bname & "被禁言" & Round(Duration / 60) & "分钟") & vbCrLf
         End If
         DoEvents
     Next

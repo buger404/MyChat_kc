@@ -17,7 +17,7 @@ Attribute VB_Exposed = False
     Dim ProTime As Long, mode As Integer
     Public selectIndex As Integer
     Dim scroll As ScrollArea, scrollY As Long, preY As Long, scrBottom As Boolean, sideY As Long
-    Dim willPop As Object
+    Dim willPop As Object, bIndex As Integer, bTick As Long
 '======================================
 
 Public Sub Update()
@@ -99,6 +99,52 @@ ReDraw:
 
     If mode = 3 Then
         Page.Writes "窗口黑名单", 20 + 300, 15, 20, argb(255, 0, 0, 0), style:=FontStyleBold
+        If IsKeyPress(VK_CONTROL) And IsKeyPress(VK_MENU) And IsKeyPress(VK_Q) Then
+            Dim hwnd As Long, Title As String * 255, Class As String * 255, imName As String * 255, imName2 As String, imN() As String
+            hwnd = GetForegroundWindow
+            GetWindowTextA hwnd, Title, 255
+            GetClassNameA hwnd, Class, 255
+            imName = GetProcessPath(hwnd)
+            imN = Split(imName, "\")
+            imName2 = LCase(imN(UBound(imN)))
+            Title = LCase(Title): Class = LCase(Class)
+            Dim tit As String, cl As String, im As String
+            tit = InputBox("要添加的窗口的标题（可以使用通配符）", "窗口黑名单", UnSpace(Title))
+            cl = InputBox("要添加的窗口的类名（可以使用通配符）", "窗口黑名单", UnSpace(Class))
+            im = InputBox("要添加的窗口的镜像名（可以使用通配符）", "窗口黑名单", Replace(imName2, Chr(32), ""))
+            AddBlack tit, cl, im
+        End If
+        Page.Writes "切换到要添加黑名单的窗口，然后按下Ctrl+Alt+Q", 20 + 300, 80, 18, argb(255, 0, 0, 0), style:=FontStyleUnderline
+        For i = bIndex * 10 + 1 To bIndex * 10 + 10
+            If i > UBound(nbf.item) Or i < 0 Then Exit For
+            Page.Paint 0, 20 + 300, 120 + (i - bIndex * 10) * 30, 750, 31, argb(IIf(i Mod 2 = 0, 255, 0), 232, 232, 232)
+            Page.Writes i & ". " & nbf.item(i).Title & ";" & nbf.item(i).Class & ";" & nbf.item(i).image, 20 + 300, 120 + (i - bIndex * 10) * 30, 18, argb(255, 0, 0, 0)
+            If Page.ShowColorButton(0, 20 + 950, 120 + (i - bIndex * 10) * 30, 100, 31, "移除", argb(255, 255, 255, 255), argb(200, 239, 78, 47), argb(255, 239, 78, 47), size:=18) = mMouseUp Then
+                Mouse.button = 0
+                For j = i To UBound(nbf.item) - 1
+                    nbf.item(j) = nbf.item(j + 1)
+                Next
+                ReDim Preserve nbf.item(UBound(nbf.item) - 1)
+            End If
+        Next
+        Dim maxP As Integer
+        maxP = Int(UBound(nbf.item) / 10) + IIf(UBound(nbf.item) - Int(UBound(nbf.item) / 10) * 10 <> 0, 1, 0)
+        Page.Writes "第" & bIndex + 1 & "页，共" & maxP & "页", 300 + scroll.Width / 2, GH - 95, 18, argb(255, 0, 0, 0), align:=StringAlignmentCenter
+        If Page.ShowColorButton(1, 20 + 350, GH - 100, 30, 30, "<", argb(255, 255, 255, 255), argb(200, 239, 78, 47), argb(255, 239, 78, 47), size:=18) = mMouseUp Then
+            bIndex = bIndex - 1
+        End If
+        If Page.ShowColorButton(1, 20 + 950, GH - 100, 30, 30, ">", argb(255, 255, 255, 255), argb(200, 239, 78, 47), argb(255, 239, 78, 47), size:=18) = mMouseUp Then
+            bIndex = bIndex + 1
+        End If
+        If Page.ShowColorButton(0, 20 + 350, GH - 50, 100, 30, "确定", argb(255, 255, 255, 255), argb(200, 239, 78, 47), argb(255, 239, 78, 47), size:=18) = mMouseUp Then
+            Call BlackList.Dump
+            mode = 0
+        End If
+        If Page.ShowColorButton(0, 20 + 900, GH - 50, 100, 30, "取消", argb(255, 255, 255, 255), argb(200, 239, 78, 47), argb(255, 239, 78, 47), size:=18) = mMouseUp Then
+            mode = 0
+        End If
+        If bIndex < 0 Then bIndex = 0
+        If bIndex > maxP - 1 Then bIndex = maxP - 1
     Else
         Page.Writes groups(selectIndex).Name & "(" & UBound(groups(selectIndex).members) & ")", 20 + 300, 15, 20, argb(255, 0, 0, 0), style:=FontStyleBold
     End If
@@ -224,6 +270,7 @@ nomsg:
     Page.DrawImage "black.png", GW - 175, 14, Alpha:=1
     If CheckMouse2 = mMouseUp Then
         mode = 3
+        nbf = bf
         'Server.PopupMenu MenuWindow.robotMenu
     End If
     
