@@ -8,7 +8,7 @@ Attribute VB_Name = "GCore"
     Public Type MState
         State As Integer
         button As Integer
-        X As Single
+        x As Single
         y As Single
     End Type
     Public Enum PlayStateMark
@@ -61,7 +61,7 @@ Attribute VB_Name = "GCore"
     Public Type GMem
         GIF As GGIF
         Kind As Integer
-        Hwnd As Long
+        hwnd As Long
         ImgHwnd As Long
         Imgs(3) As Long
         Name As String
@@ -84,7 +84,7 @@ Attribute VB_Name = "GCore"
         DirHorizontalVertical = 3
     End Enum
     Public Type GraphicsBound
-        X As Single
+        x As Single
         y As Single
         Width As Single
         Height As Single
@@ -117,7 +117,7 @@ Attribute VB_Name = "GCore"
         Width As Long
         Height As Long
         Graphics As Long
-        DC As Long
+        dc As Long
     End Type
     Public SGS() As Suggestion, SGTime As Long
     Public ColorLists() As ColorCollection
@@ -164,37 +164,37 @@ Attribute VB_Name = "GCore"
         strBuf = Left(strBuf, InStr(strBuf, Chr(0)))
         ReadINI = strBuf
     End Function
-    Public Sub OutPutDebug(Str As String)
+    Public Sub OutPutDebug(str As String)
         Open App.path & "\debug.txt" For Append As #1
-        Print #1, Now & "    " & Str
+        Print #1, Now & "    " & str
         Close #1
     End Sub
 '================================================================================
 '   Init
-    Public Function StrArray(ParamArray Members()) As String()
-        Dim I As Integer, R() As String
-        ReDim R(UBound(Members))
-        For I = 0 To UBound(Members)
-            R(I) = Members(I)
+    Public Function StrArray(ParamArray members()) As String()
+        Dim i As Integer, r() As String
+        ReDim r(UBound(members))
+        For i = 0 To UBound(members)
+            r(i) = members(i)
         Next
-        StrArray = R
+        StrArray = r
     End Function
     Public Sub ShowSuggestion()
         If UBound(SGS) = 0 Then
             MsgBox "没有任何建议。", 48, "Emerald 建议中心"
         Else
-            Dim Ret As String, sRet As String
-            Ret = "共 " & UBound(SGS) & " 项建议。" & vbCrLf & vbCrLf
-            For I = 1 To UBound(SGS)
-                Select Case SGS(I).Deepth
+            Dim ret As String, sRet As String
+            ret = "共 " & UBound(SGS) & " 项建议。" & vbCrLf & vbCrLf
+            For i = 1 To UBound(SGS)
+                Select Case SGS(i).Deepth
                     Case 0: sRet = "(无关紧要)"
                     Case 1: sRet = "(需要留意)"
                     Case 2: sRet = "(*紧急)"
                     Case 3: sRet = "(*非常紧急*)"
                 End Select
-                Ret = Ret & sRet & "    " & SGS(I).Content & vbCrLf
+                ret = ret & sRet & "    " & SGS(i).Content & vbCrLf
             Next
-            MsgBox Ret, 48, "Emerald 建议中心"
+            MsgBox ret, 48, "Emerald 建议中心"
         End If
     End Sub
     Public Sub SaveSettings(Data As GSaving)
@@ -204,8 +204,8 @@ Attribute VB_Name = "GCore"
     End Sub
     Public Function CreateScrollArea(ByVal Width As Long, ByVal Height As Long) As ScrollArea
         With CreateScrollArea
-            .DC = CreateCDC(Width, Height)
-            PoolCreateFromHdc .DC, .Graphics
+            .dc = CreateCDC(Width, Height)
+            PoolCreateFromHdc .dc, .Graphics
             .Width = Width
             .Height = Height
             GdipSetSmoothingMode .Graphics, SmoothingModeAntiAlias
@@ -215,15 +215,15 @@ Attribute VB_Name = "GCore"
     Public Sub StartScrollArea(Page As GPage, Area As ScrollArea)
         If Page.ScrollMode Then Suggest "请先结束上一个卷轴区域。", ClearOnUpdate, 1: Exit Sub
         Page.OODC = Page.CDC: Page.OOGG = Page.GG
-        Page.CDC = Area.DC: Page.GG = Area.Graphics
+        Page.CDC = Area.dc: Page.GG = Area.Graphics
         Page.ScrollWidth = Area.Width: Page.ScrollHeight = Area.Height
         Page.ScrollMode = True
     End Sub
-    Public Sub EndScrollArea(Page As GPage, ByVal X As Long, ByVal y As Long, ByVal cx As Long, ByVal cy As Long, Optional ByVal Width As Long = -1, Optional ByVal Height As Long = -1, Optional ByVal alpha As Single = 1)
+    Public Sub EndScrollArea(Page As GPage, ByVal x As Long, ByVal y As Long, ByVal cx As Long, ByVal cy As Long, Optional ByVal Width As Long = -1, Optional ByVal Height As Long = -1, Optional ByVal Alpha As Single = 1)
         If Not Page.ScrollMode Then Suggest "请先启动一个卷轴区域。", ClearOnUpdate, 1: Exit Sub
         If Width = -1 Then Width = Page.ScrollWidth
         If Height = -1 Then Height = Page.ScrollHeight
-        PaintDC Page.CDC, Page.OODC, X, y, cx, cy, Width, Height, alpha
+        PaintDC Page.CDC, Page.OODC, x, y, cx, cy, Width, Height, Alpha
         Page.CDC = Page.OODC: Page.GG = Page.OOGG
         Page.ScrollMode = False
     End Sub
@@ -267,7 +267,7 @@ Attribute VB_Name = "GCore"
         ReleaseDC GHwnd, GDC
         GDC = GetDC(GHwnd)
     End Sub
-    Public Sub StartEmerald(Hwnd As Long, w As Long, h As Long, Optional DPIPolicy As Boolean = True)
+    Public Sub StartEmerald(hwnd As Long, w As Long, h As Long, Optional DPIPolicy As Boolean = True)
         If w >= Screen.Width / Screen.TwipsPerPixelX * 0.9 And h >= Screen.Height / Screen.TwipsPerPixelY * 0.9 Then
             Dim Win As EmeraldWindow, FSPer As Integer
             Set Win = New EmeraldWindow
@@ -310,18 +310,18 @@ Attribute VB_Name = "GCore"
         
         InitGDIPlus
         
-        GHwnd = Hwnd: GW = w: GH = h
+        GHwnd = hwnd: GW = w: GH = h
         RGW = GW: RGH = GH
         Dim DPI As Long
         DPI = 1440 / Screen.TwipsPerPixelX
-        If (GetWindowLongA(Hwnd, GWL_STYLE) And WS_CAPTION) = WS_CAPTION Then
-            SetWindowPos Hwnd, 0, 0, 0, w + 3 * Int(DPI / 96), h + 26 * Int(DPI / 96), SWP_NOMOVE Or SWP_NOZORDER
+        If (GetWindowLongA(hwnd, GWL_STYLE) And WS_CAPTION) = WS_CAPTION Then
+            SetWindowPos hwnd, 0, 0, 0, w + 3 * Int(DPI / 96), h + 26 * Int(DPI / 96), SWP_NOMOVE Or SWP_NOZORDER
         Else
-            SetWindowPos Hwnd, 0, 0, 0, w - 2 * Int(DPI / 96), h - 2 * Int(DPI / 96), SWP_NOMOVE Or SWP_NOZORDER
+            SetWindowPos hwnd, 0, 0, 0, w - 2 * Int(DPI / 96), h - 2 * Int(DPI / 96), SWP_NOMOVE Or SWP_NOZORDER
         End If
         
-        GDC = GetDC(Hwnd)
-        If App.LogMode <> 0 Then Wndproc = SetWindowLongA(Hwnd, GWL_WNDPROC, AddressOf Process)
+        GDC = GetDC(hwnd)
+        If App.LogMode <> 0 Then Wndproc = SetWindowLongA(hwnd, GWL_WNDPROC, AddressOf Process)
         
         Set EAni = New GAnimation
         Set SysPage = New GSysPage
@@ -375,7 +375,7 @@ Attribute VB_Name = "GCore"
     Public Function ToTime(time) As String
         ToTime = Int(time / 60) & ":" & format(time Mod 60, "00")
     End Function
-    Public Function Process(ByVal Hwnd As Long, ByVal uMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+    Public Function Process(ByVal hwnd As Long, ByVal uMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
         On Error GoTo sth
 
         If uMsg = WM_MOUSEWHEEL Then
@@ -395,7 +395,7 @@ Attribute VB_Name = "GCore"
         End If
         
 last:
-        Process = CallWindowProcA(Wndproc, Hwnd, uMsg, wParam, lParam)
+        Process = CallWindowProcA(Wndproc, hwnd, uMsg, wParam, lParam)
 sth:
 
     End Function
@@ -412,26 +412,26 @@ sth:
         
         GetWinNTVersion = Left(strOSversion, 3)
     End Function
-    Public Sub BlurTo(DC As Long, srcDC As Long, buffWin As Form, Optional Radius As Long = 60)
-        If XPMode Then BitBlt DC, 0, 0, GW, GH, srcDC, 0, 0, vbSrcCopy: Exit Sub
+    Public Sub BlurTo(dc As Long, srcDC As Long, buffWin As Form, Optional Radius As Long = 60)
+        If XPMode Then BitBlt dc, 0, 0, GW, GH, srcDC, 0, 0, vbSrcCopy: Exit Sub
         
-        Dim I As Long, g As Long, e As Long, B As BlurParams, w As Long, h As Long
+        Dim i As Long, g As Long, e As Long, B As BlurParams, w As Long, h As Long
         '粘贴到缓冲窗口
         buffWin.AutoRedraw = True
         BitBlt buffWin.hdc, 0, 0, GW, GH, srcDC, 0, 0, vbSrcCopy: buffWin.Refresh
         
         '创建Bitmap
-        GdipCreateBitmapFromHBITMAP buffWin.Image.handle, buffWin.Image.hpal, I
+        GdipCreateBitmapFromHBITMAP buffWin.image.Handle, buffWin.image.hpal, i
         
         '模糊操作
         PoolCreateEffect2 GdipEffectType.Blur, e: B.Radius = Radius: GdipSetEffectParameters e, B, LenB(B)
-        GdipGetImageWidth I, w: GdipGetImageHeight I, h
-        GdipBitmapApplyEffect I, e, NewRectL(0, 0, w, h), 0, 0, 0
+        GdipGetImageWidth i, w: GdipGetImageHeight i, h
+        GdipBitmapApplyEffect i, e, NewRectL(0, 0, w, h), 0, 0, 0
         
         '画~
-        PoolCreateFromHdc DC, g
-        GdipDrawImage g, I, 0, 0
-        PoolDisposeImage I: PoolDeleteGraphics g: PoolDeleteEffect e '垃圾处理
+        PoolCreateFromHdc dc, g
+        GdipDrawImage g, i, 0, 0
+        PoolDisposeImage i: PoolDeleteGraphics g: PoolDeleteEffect e '垃圾处理
         buffWin.AutoRedraw = False
     End Sub
     Public Sub BlurImg(img As Long, Radius As Long)
@@ -448,34 +448,34 @@ sth:
         '画~
         PoolDeleteEffect e '垃圾处理
     End Sub
-    Public Sub PaintDC2(DC As Long, destDC As Long, X As Long, y As Long, w As Long, h As Long, cx As Long, cy As Long, CW As Long, ch As Long, alpha As Single)
+    Public Sub PaintDC2(dc As Long, destDC As Long, x As Long, y As Long, w As Long, h As Long, cx As Long, cy As Long, CW As Long, ch As Long, Alpha As Single)
         Dim B As BLENDFUNCTION, index As Integer, bl As Long
         
-        If Not IsMissing(alpha) Then
-            If alpha < 0 Then alpha = 0
-            If alpha > 1 Then alpha = 1
+        If Not IsMissing(Alpha) Then
+            If Alpha < 0 Then Alpha = 0
+            If Alpha > 1 Then Alpha = 1
             With B
                 .AlphaFormat = &H1
                 .BlendFlags = &H0
                 .BlendOp = 0
-                .SourceConstantAlpha = Int(alpha * 255)
+                .SourceConstantAlpha = Int(Alpha * 255)
             End With
             CopyMemory bl, B, 4
         End If
         
-        AlphaBlend destDC, X, y, w, h, DC, cx, cy, CW, ch, bl
+        AlphaBlend destDC, x, y, w, h, dc, cx, cy, CW, ch, bl
     End Sub
-    Public Sub PaintDC(DC As Long, destDC As Long, Optional X As Long = 0, Optional y As Long = 0, Optional cx As Long = 0, Optional cy As Long = 0, Optional CW, Optional ch, Optional alpha)
+    Public Sub PaintDC(dc As Long, destDC As Long, Optional x As Long = 0, Optional y As Long = 0, Optional cx As Long = 0, Optional cy As Long = 0, Optional CW, Optional ch, Optional Alpha)
         Dim B As BLENDFUNCTION, index As Integer, bl As Long
         
-        If Not IsMissing(alpha) Then
-            If alpha < 0 Then alpha = 0
-            If alpha > 1 Then alpha = 1
+        If Not IsMissing(Alpha) Then
+            If Alpha < 0 Then Alpha = 0
+            If Alpha > 1 Then Alpha = 1
             With B
                 .AlphaFormat = &H1
                 .BlendFlags = &H0
                 .BlendOp = 0
-                .SourceConstantAlpha = Int(alpha * 255)
+                .SourceConstantAlpha = Int(Alpha * 255)
             End With
             CopyMemory bl, B, 4
         End If
@@ -483,10 +483,10 @@ sth:
         If IsMissing(CW) Then CW = RGW - cx
         If IsMissing(ch) Then ch = RGH - cy
         
-        If IsMissing(alpha) Then
-            BitBlt destDC, X, y, CW, ch, DC, cx, cy, vbSrcCopy
+        If IsMissing(Alpha) Then
+            BitBlt destDC, x, y, CW, ch, dc, cx, cy, vbSrcCopy
         Else
-            AlphaBlend destDC, X, y, CW, ch, DC, cx, cy, CW, ch, bl
+            AlphaBlend destDC, x, y, CW, ch, dc, cx, cy, CW, ch, bl
         End If
     End Sub
     Function Cubic(t As Single, arg0 As Single, arg1 As Single, arg2 As Single, arg3 As Single) As Single
@@ -497,36 +497,36 @@ sth:
     End Function
 '========================================================
 '   Mouse
-    Public Sub UpdateMouse(X As Single, y As Single, State As Long, button As Integer)
+    Public Sub UpdateMouse(x As Single, y As Single, State As Long, button As Integer)
         With Mouse
-            .X = X
+            .x = x
             .y = y
             .State = State
             .button = button
         End With
     End Sub
-    Public Function CheckMouse(ByVal X As Long, ByVal y As Long, ByVal w As Long, ByVal h As Long) As MButtonState
+    Public Function CheckMouse(ByVal x As Long, ByVal y As Long, ByVal w As Long, ByVal h As Long) As MButtonState
         'Return Value:0=none,1=in,2=down,3=up
         If Scales <> 1 Then
-            X = X * Scales: y = y * Scales
+            x = x * Scales: y = y * Scales
             w = w * Scales
             h = h * Scales
         End If
         If Debug_mouse Then
             GdipSetSolidFillColor ECore.pB, argb(20, 255, 0, 0)
-            GdipFillRectangle ECore.UPage.GG, ECore.pB, X, y, w, h
+            GdipFillRectangle ECore.UPage.GG, ECore.pB, x, y, w, h
         End If
         If ECore.LockPage <> "" Then
             If ECore.LockPage <> ECore.UpdatingPage Then Exit Function
         End If
-        If Mouse.X >= X And Mouse.y >= y And Mouse.X <= X + w And Mouse.y <= y + h Then
+        If Mouse.x >= x And Mouse.y >= y And Mouse.x <= x + w And Mouse.y <= y + h Then
             If ECore.FreezeMode Then ECore.FreezeResetBegin = True
             If Debug_mouse Then
                 GdipSetSolidFillColor ECore.pB, argb(255, 27, 27, 27)
-                GdipFillEllipse ECore.UPage.GG, ECore.pB, X - 10, y - 10, 20, 20
+                GdipFillEllipse ECore.UPage.GG, ECore.pB, x - 10, y - 10, 20, 20
                 GdipSetSolidFillColor ECore.pB, argb(80, 255, 0, 0)
-                GdipFillRectangle ECore.UPage.GG, ECore.pB, X, y, w, h
-                EF.Writes Mouse.State + 1, X - 10, y - 7, ECore.UPage.GG, argb(255, 255, 255, 255), 14, 20, 0, StringAlignmentCenter, FontStyleBold
+                GdipFillRectangle ECore.UPage.GG, ECore.pB, x, y, w, h
+                EF.Writes Mouse.State + 1, x - 10, y - 7, ECore.UPage.GG, argb(255, 255, 255, 255), 14, 20, 0, StringAlignmentCenter, FontStyleBold
             End If
             CheckMouse = Mouse.State + 1
             If Mouse.State = 2 Then Mouse.State = 0
@@ -536,36 +536,36 @@ sth:
         'Return Value:0=none,1=in,2=down,3=up
         If Debug_mouse Then
             GdipSetSolidFillColor ECore.pB, argb(20, 0, 0, 255)
-            GdipFillRectangle ECore.UPage.GG, ECore.pB, DrawF.X, DrawF.y, DrawF.Width, DrawF.Height
+            GdipFillRectangle ECore.UPage.GG, ECore.pB, DrawF.x, DrawF.y, DrawF.Width, DrawF.Height
         End If
         If ECore.LockPage <> "" Then
             If ECore.LockPage <> ECore.UpdatingPage Then Exit Function
         End If
-        If Mouse.X >= DrawF.X And Mouse.y >= DrawF.y And Mouse.X <= DrawF.X + DrawF.Width And Mouse.y <= DrawF.y + DrawF.Height Then
+        If Mouse.x >= DrawF.x And Mouse.y >= DrawF.y And Mouse.x <= DrawF.x + DrawF.Width And Mouse.y <= DrawF.y + DrawF.Height Then
             If ECore.FreezeMode Then ECore.FreezeResetBegin = True
             If Debug_mouse Then
                 GdipSetSolidFillColor ECore.pB, argb(255, 27, 27, 27)
-                GdipFillEllipse ECore.UPage.GG, ECore.pB, DrawF.X - 10, DrawF.y - 10, 20, 20
+                GdipFillEllipse ECore.UPage.GG, ECore.pB, DrawF.x - 10, DrawF.y - 10, 20, 20
                 GdipSetSolidFillColor ECore.pB, argb(80, 0, 0, 255)
-                GdipFillRectangle ECore.UPage.GG, ECore.pB, DrawF.X, DrawF.y, DrawF.Width, DrawF.Height
-                EF.Writes Mouse.State + 1, DrawF.X - 10, DrawF.y - 7, ECore.UPage.GG, argb(255, 255, 255, 255), 14, 20, 0, StringAlignmentCenter, FontStyleBold
+                GdipFillRectangle ECore.UPage.GG, ECore.pB, DrawF.x, DrawF.y, DrawF.Width, DrawF.Height
+                EF.Writes Mouse.State + 1, DrawF.x - 10, DrawF.y - 7, ECore.UPage.GG, argb(255, 255, 255, 255), 14, 20, 0, StringAlignmentCenter, FontStyleBold
             End If
             CheckMouse2 = Mouse.State + 1
-            If DrawF.CrashIndex <> 0 Then
-                If ColorLists(DrawF.CrashIndex).IsAlpha((Mouse.X - DrawF.X) * DrawF.WSc, (Mouse.y - DrawF.y) * DrawF.HSc) = False Then CheckMouse2 = mMouseOut: Exit Function
-            End If
+            'If DrawF.CrashIndex <> 0 Then
+              '  If ColorLists(DrawF.CrashIndex).IsAlpha((Mouse.x - DrawF.x) * DrawF.WSc, (Mouse.y - DrawF.y) * DrawF.HSc) = False Then CheckMouse2 = mMouseOut: Exit Function
+            'End If
             If Mouse.State = 2 Then Mouse.State = 0
         End If
     End Function
 '========================================================
 '   KeyBoard
-    Public Function IsKeyPress(Code As Long) As Boolean
-        IsKeyPress = (GetAsyncKeyState(Code) < 0)
+    Public Function IsKeyPress(code As Long) As Boolean
+        IsKeyPress = (GetAsyncKeyState(code) < 0)
     End Function
-    Public Function IsKeyUp(Code As Long) As Boolean
+    Public Function IsKeyUp(code As Long) As Boolean
         Dim t As Boolean
         t = LastKeyUpRet
-        LastKeyUpRet = (GetAsyncKeyState(Code) < 0)
+        LastKeyUpRet = (GetAsyncKeyState(code) < 0)
         If t = True And LastKeyUpRet = False Then IsKeyUp = True
     End Function
 '========================================================
@@ -588,19 +588,19 @@ sth:
     End Function
     Public Function FindAssetsTree(path As String, arg1 As Variant, arg2 As Variant) As Integer
         On Error Resume Next
-        For I = 1 To UBound(AssetsTrees)
-            If AssetsTrees(I).path = path And AssetsTrees(I).arg1 = arg1 And AssetsTrees(I).arg2 = arg2 Then
+        For i = 1 To UBound(AssetsTrees)
+            If AssetsTrees(i).path = path And AssetsTrees(i).arg1 = arg1 And AssetsTrees(i).arg2 = arg2 Then
                 If Err.Number <> 0 Then
                     Err.Clear
                 Else
-                    FindAssetsTree = I: Exit For
+                    FindAssetsTree = i: Exit For
                 End If
             End If
         Next
     End Function
     Public Function GetAssetsTree(path As String) As AssetsTree
-        For I = 1 To UBound(AssetsTrees)
-            If AssetsTrees(I).path = path Then GetAssetsTree = AssetsTrees(I): Exit For
+        For i = 1 To UBound(AssetsTrees)
+            If AssetsTrees(i).path = path Then GetAssetsTree = AssetsTrees(i): Exit For
         Next
     End Function
 '========================================================

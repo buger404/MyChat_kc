@@ -53,6 +53,8 @@ Public IsSystem As Boolean
         PoolCreateSolidFill 0, brush
         PoolCreatePen1 0, 1, UnitPixel, Pen
         PoolCreatePath FillModeWinding, path
+        
+        NoLoadCrash = True
     End Sub
     Public Sub Dispose()
         Exit Sub
@@ -122,24 +124,24 @@ Public IsSystem As Boolean
             f = Dir()
         Loop
     End Sub
-    Private Function FindAnimation(name As String) As EAnimation
+    Private Function FindAnimation(Name As String) As EAnimation
         For i = 1 To UBound(AniCollection)
-            If AniCollection(i).name = name Then FindAnimation = AniCollection(i): Exit For
+            If AniCollection(i).Name = Name Then FindAnimation = AniCollection(i): Exit For
         Next
     End Function
     Private Function GetPlayAnimation(playname As String) As Integer
         For i = 1 To UBound(PlayAni)
-            If PlayAni(i).name = playname Then GetPlayAnimation = i: Exit For
+            If PlayAni(i).Name = playname Then GetPlayAnimation = i: Exit For
         Next
     End Function
-    Public Sub CreatePlayAnimation(name As String, playname As String, channel As String)
+    Public Sub CreatePlayAnimation(Name As String, playname As String, channel As String)
         ReDim Preserve PlayAni(UBound(PlayAni) + 1)
-        PlayAni(UBound(PlayAni)) = FindAnimation(name)
-        PlayAni(UBound(PlayAni)).name = playname
+        PlayAni(UBound(PlayAni)) = FindAnimation(Name)
+        PlayAni(UBound(PlayAni)).Name = playname
         PlayAni(UBound(PlayAni)).tick = GetTickCount
         For i = 1 To UBound(PlayAni(UBound(PlayAni)).channel)
             PlayAni(UBound(PlayAni)).channel(i).CurrentFrame = 1
-            If PlayAni(UBound(PlayAni)).channel(i).name = channel Then PlayAni(UBound(PlayAni)).CurrentChannel = i
+            If PlayAni(UBound(PlayAni)).channel(i).Name = channel Then PlayAni(UBound(PlayAni)).CurrentChannel = i
         Next
     End Sub
     Public Sub DisposePlayAnimation(playname As String)
@@ -155,7 +157,7 @@ Public IsSystem As Boolean
         End If
         
         For i = 1 To UBound(PlayAni(S).channel)
-            If PlayAni(S).channel(i).name = channel Then
+            If PlayAni(S).channel(i).Name = channel Then
                 PlayAni(S).channel(i).CurrentFrame = 1
                 PlayAni(S).CurrentChannel = i
                 PlayAni(S).tick = GetTickCount
@@ -824,7 +826,7 @@ ReShape:
 '========================================================
     'Control
     Public Function ShowEdit(Text As String, Shape As Integer, x As Single, y As Single, w As Single, h As Single, TextColor As Long, Color As Long, HoverColor As Long, LineColor As Long, Optional Radius As Long = 0, Optional ShapeStyle As Integer = 0, Optional size As Long = 14, Optional style As FontStyle = FontStyleRegular) As MButtonState
-        Dim m As Integer, R As RECT
+        Dim m As Integer, r As RECT
 
         m = CheckMouse(x, y, w - IIf(TextHandle = VarPtr(Text), h, 0), h)
         Paint Shape, x, y, w, h, IIf(m <> 0 Or TextHandle = VarPtr(Text), HoverColor, Color), Radius, style:=ShapeStyle

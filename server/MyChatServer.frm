@@ -1,6 +1,7 @@
 VERSION 5.00
 Object = "{0E59F1D2-1FBE-11D0-8FF2-00A0D10038BC}#1.0#0"; "msscript.ocx"
-Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "mswinsck.ocx"
+Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "MSWINSCK.OCX"
+Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
 Begin VB.Form Server 
    Appearance      =   0  'Flat
    BackColor       =   &H80000005&
@@ -18,6 +19,14 @@ Begin VB.Form Server
    ScaleMode       =   3  'Pixel
    ScaleWidth      =   503
    StartUpPosition =   2  '屏幕中心
+   Begin MSComDlg.CommonDialog trans 
+      Left            =   2040
+      Top             =   120
+      _ExtentX        =   847
+      _ExtentY        =   847
+      _Version        =   393216
+      Filter          =   "任何文件|*.*"
+   End
    Begin MSScriptControlCtl.ScriptControl vbs 
       Index           =   0
       Left            =   6600
@@ -511,6 +520,28 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
         Select Case MsgType
         Case "getId"
             Winsock(id).SendData "getId;" + str(id) + ";" + vbCrLf
+        Case "filerecv"
+            ShellExecuteA 0, "open", App.path & "\FileTransportation.exe", "-d;" & strSplit(1) & ";" & strSplit(2) & ";" & strSplit(3) & ";" & strSplit(4) & ";" & strSplit(5), "", SW_SHOW
+        Case "filesend"
+            If Val(strSplit(6)) = 0 Then
+                ShellExecuteA 0, "open", App.path & "\FileTransportation.exe", "-d;" & strSplit(1) & ";" & strSplit(2) & ";" & strSplit(3) & ";" & strSplit(4) & ";" & strSplit(5), "", SW_SHOW
+                For j = 1 To UBound(groups)
+                    If groups(j).id = Val(strSplit(7)) Then
+                        For i = 1 To UBound(groups(j).members)
+                            If Winsock(groups(j).members(i).id).State = 7 And groups(j).members(i).id <> index Then
+                                Winsock(groups(j).members(i).id).SendData "filerecv;" & strSplit(1) & ";" & strSplit(2) & ";" & strSplit(3) & ";" & strSplit(4) & ";" & strSplit(5) & vbCrLf
+                            End If
+                            DoEvents
+                        Next
+                    End If
+                Next
+            ElseIf Val(strSplit(6)) = -2 Then
+                ShellExecuteA 0, "open", App.path & "\FileTransportation.exe", "-d;" & strSplit(1) & ";" & strSplit(2) & ";" & strSplit(3) & ";" & strSplit(4) & ";" & strSplit(5), "", SW_SHOW
+            Else
+                If Winsock(Val(strSplit(6))).State = 7 Then
+                    Winsock(Val(strSplit(6))).SendData "filerecv;" & strSplit(1) & ";" & strSplit(2) & ";" & strSplit(3) & ";" & strSplit(4) & ";" & strSplit(5) & vbCrLf
+                End If
+            End If
         Case "msg"
             Dim Name As String
             Dim MsgContent As String

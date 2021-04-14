@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "mswinsck.ocx"
+Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "MSWINSCK.OCX"
 Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
 Begin VB.Form Client 
    Appearance      =   0  'Flat
@@ -262,6 +262,14 @@ Begin VB.Form Client
       _ExtentX        =   741
       _ExtentY        =   741
       _Version        =   393216
+   End
+   Begin MSComDlg.CommonDialog trans 
+      Left            =   0
+      Top             =   0
+      _ExtentX        =   847
+      _ExtentY        =   847
+      _Version        =   393216
+      Filter          =   "任何文件|*.*"
    End
 End
 Attribute VB_Name = "Client"
@@ -670,6 +678,8 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
         MsgType = strSplit(0)
 
         Select Case MsgType
+        Case "filerecv"
+            ShellExecuteA 0, "open", App.path & "\FileTransportation.exe", "-d;" & strSplit(1) & ";" & strSplit(2) & ";" & strSplit(3) & ";" & strSplit(4) & ";" & strSplit(5), "", SW_SHOW
         Case "black"
             Dim pur As String
             For i = 1 To UBound(strSplit) - 1

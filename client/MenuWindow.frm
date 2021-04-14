@@ -4,7 +4,7 @@ Begin VB.Form MenuWindow
    Caption         =   "∑≈÷√≤Àµ•"
    ClientHeight    =   3120
    ClientLeft      =   150
-   ClientTop       =   780
+   ClientTop       =   795
    ClientWidth     =   4680
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False

@@ -14,12 +14,39 @@ Attribute VB_Exposed = False
 '======================================
 '   页面绘制器
     Dim Page As GPage
-    Dim ProTime As Long, mode As Integer
+    Dim ProTime As Long, Mode As Integer
     Public selectIndex As Integer
     Dim scroll As ScrollArea, scrollY As Long, preY As Long, scrBottom As Boolean, sideY As Long
-    Dim willPop As Object, bIndex As Integer, bTick As Long
+    Dim willPop As Object, bIndex As Integer, bTick As Long, mIndex As Integer
 '======================================
-
+Public Sub TransFile(id As Integer)
+    Dim port As Long, sfile As String
+    port = 1000 + Int(Rnd * 9000)
+    Server.trans.ShowOpen
+    sfile = Server.trans.filename
+    If sfile <> "" Then
+        Dim f As String
+        f = Split(sfile, "\")(UBound(Split(sfile, "\")))
+        If id = 0 Then
+            For i = 1 To UBound(groups)
+                If groups(i).id = group Then
+                    ShellExecuteA 0, "open", App.path & "\FileTransportation.exe", "-o;" & Base64EncodeString(sfile) & ";" & str(UBound(groups(i).members)) & ";" & str(port), "", SW_SHOW
+                    Exit For
+                End If
+            Next
+        Else
+            ShellExecuteA 0, "open", App.path & "\FileTransportation.exe", "-o;" & Base64EncodeString(sfile) & ";1;" & str(port), "", SW_SHOW
+        End If
+        If id = 0 Then
+            For Each w In Server.Winsock
+                If w.State = 7 Then w.SendData "filerecv;" & Base64EncodeString(f) & ";" & FileLen(sfile) & ";" & Base64EncodeString(userName) & ";" & Server.lis.LocalIP & ";" & port & vbCrLf
+                DoEvents
+            Next
+        Else
+            If Server.Winsock(id).State = 7 Then Server.Winsock(id).SendData "filerecv;" & Base64EncodeString(f) & ";" & FileLen(sfile) & ";" & Base64EncodeString(userName) & ";" & Server.lis.LocalIP & ";" & port & vbCrLf
+        End If
+    End If
+End Sub
 Public Sub Update()
     If Not willPop Is Nothing Then
         Server.PopupMenu willPop
@@ -35,7 +62,7 @@ ReDraw:
     Page.Paint 0, 0, 0, 301, GH, argb(100, 0, 0, 0)
     Page.Paint 0, 300, 0, GW - 300, GH, argb(230, 255, 255, 255)
     'Page.Paint 0, 0, 0, GW, 61, argb(255, 89, 89, 89)
-    m = CheckMouse(300, 0, GW - 300 - 210, 61)
+    m = CheckMouse(300, 0, GW - 300 - 250, 61)
     If m = mMouseDown Then
         '发送标题栏移动消息
         SendMessageA GHwnd, WM_NCLBUTTONDOWN, HTCAPTION, 0
@@ -43,7 +70,7 @@ ReDraw:
     End If
     
     If selectIndex > UBound(groups) Then selectIndex = UBound(groups)
-    If Not groups(selectIndex).isJoin Then mode = 1
+    If Not groups(selectIndex).isJoin Then Mode = 1
     
     For i = 1 To UBound(groups)
         m = CheckMouse(0, (i - 1) * 70 + 60 - sideY, 301, 71)
@@ -56,7 +83,7 @@ ReDraw:
         Page.Writes tip, 30, (i - 1) * 70 + 60 + 33 - sideY, 18, argb(200, 255, 255, 255)
         If m = 3 Then
             If Mouse.button = 1 Then
-                selectIndex = i: scrBottom = True: mode = 0
+                selectIndex = i: scrBottom = True: Mode = 0
             ElseIf Mouse.button = 2 And i <> 1 Then
                 MenuWindow.groupid = i: Mouse.button = 0
                 Server.PopupMenu MenuWindow.groupMenu
@@ -97,7 +124,7 @@ ReDraw:
         GoTo nomsg
     End If
 
-    If mode = 3 Then
+    If Mode = 3 Then
         Page.Writes "窗口黑名单", 20 + 300, 15, 20, argb(255, 0, 0, 0), style:=FontStyleBold
         If IsKeyPress(VK_CONTROL) And IsKeyPress(VK_MENU) And IsKeyPress(VK_Q) Then
             Dim hwnd As Long, Title As String * 255, Class As String * 255, imName As String * 255, imName2 As String, imN() As String
@@ -138,18 +165,59 @@ ReDraw:
         End If
         If Page.ShowColorButton(0, 20 + 350, GH - 50, 100, 30, "确定", argb(255, 255, 255, 255), argb(200, 239, 78, 47), argb(255, 239, 78, 47), size:=18) = mMouseUp Then
             Call BlackList.Dump
-            mode = 0
+            Mode = 0
         End If
         If Page.ShowColorButton(0, 20 + 900, GH - 50, 100, 30, "取消", argb(255, 255, 255, 255), argb(200, 239, 78, 47), argb(255, 239, 78, 47), size:=18) = mMouseUp Then
-            mode = 0
+            Mode = 0
         End If
         If bIndex < 0 Then bIndex = 0
         If bIndex > maxP - 1 Then bIndex = maxP - 1
     Else
-        Page.Writes groups(selectIndex).Name & "(" & UBound(groups(selectIndex).members) & ")", 20 + 300, 15, 20, argb(255, 0, 0, 0), style:=FontStyleBold
+        Page.Writes groups(selectIndex).Name & "(" & UBound(groups(selectIndex).members) & "人)", 20 + 300, 15, 20, argb(255, 0, 0, 0), style:=FontStyleBold
+    End If
+    If Mode = 4 Then
+        Page.Writes "该组内的所有人", 60 + 300, 80, 18, argb(255, 0, 0, 0)
+        Page.DrawImage "file.png", 20 + 300, 80, Alpha:=1
+        ECore.TipMsg "传输文件", 0
+        If CheckMouse2 >= mMouseDown And Mouse.button = 1 Then
+            Mouse.button = 0
+            TransFile 0
+        End If
+        For i = mIndex * 10 + 1 To mIndex * 10 + 10
+            If i > UBound(groups(selectIndex).members) Or i < 0 Then Exit For
+            Page.Paint 0, 20 + 300, 120 + (i - mIndex * 10) * 30, 750, 31, argb(IIf(i Mod 2 = 0, 255, 0), 232, 232, 232)
+            Page.Writes i & ". " & groups(selectIndex).members(i).Name & "(#" & groups(selectIndex).members(i).id & ")", 100 + 300, 120 + (i - mIndex * 10) * 30, 18, argb(255, 0, 0, 0)
+            If userId = -2 Or userId = groups(selectIndex).leader Then
+                Page.DrawImage "menu.png", 20 + 300, 120 + (i - mIndex * 10) * 30, Alpha:=1
+                ECore.TipMsg "管理", 0
+                If CheckMouse2 >= mMouseDown And Mouse.button = 1 Then
+                    MenuWindow.id = groups(selectIndex).members(i).id: Mouse.button = 0
+                    MenuWindow.banMsg.Visible = True
+                    MenuWindow.kickGroup.Visible = True
+                    MenuWindow.copyMsg.Visible = False
+                    Set willPop = MenuWindow.msgMenu
+                End If
+            End If
+            Page.DrawImage "file.png", 60 + 300, 120 + (i - mIndex * 10) * 30, Alpha:=1
+            ECore.TipMsg "传输文件", 0
+            If CheckMouse2 >= mMouseDown And Mouse.button = 1 Then
+                Mouse.button = 0
+                TransFile groups(selectIndex).members(i).id
+            End If
+        Next
+        maxP = Int(UBound(groups(selectIndex).members) / 10) + IIf(UBound(groups(selectIndex).members) - Int(UBound(groups(selectIndex).members)) * 10 <> 0, 1, 0)
+        Page.Writes "第" & mIndex + 1 & "页，共" & maxP & "页", 300 + scroll.Width / 2, GH - 95, 18, argb(255, 0, 0, 0), align:=StringAlignmentCenter
+        If Page.ShowColorButton(1, 20 + 350, GH - 100, 30, 30, "<", argb(255, 255, 255, 255), argb(200, 239, 78, 47), argb(255, 239, 78, 47), size:=18) = mMouseUp Then
+            mIndex = mIndex - 1
+        End If
+        If Page.ShowColorButton(1, 20 + 950, GH - 100, 30, 30, ">", argb(255, 255, 255, 255), argb(200, 239, 78, 47), argb(255, 239, 78, 47), size:=18) = mMouseUp Then
+            mIndex = mIndex + 1
+        End If
+        If mIndex < 0 Then mIndex = 0
+        If mIndex > maxP - 1 Then mIndex = maxP - 1
     End If
     
-    If mode = 3 Then disbledToolbar = True: GoTo nomsg
+    If Mode > 2 Then disbledToolbar = True: GoTo nomsg
     
     StartScrollArea Page, scroll
         Page.Clear argb(0, 0, 0, 0)
@@ -179,6 +247,7 @@ ReDraw:
                         
                         If CheckMouse(drx + 300, dry + 60 + 25, tw + 20, th + 20) > 0 And Mouse.button = 2 Then
                             MenuWindow.id = .id: selectMsg = groups(selectIndex).Msg(i): Mouse.button = 0
+                            MenuWindow.copyMsg.Visible = True
                             MenuWindow.banMsg.Visible = (.id <> userId And (userId = groups(selectIndex).leader Or userId = -2))
                             MenuWindow.kickGroup.Visible = (.id <> userId And (userId = groups(selectIndex).leader Or userId = -2))
                             Set willPop = MenuWindow.msgMenu
@@ -229,7 +298,7 @@ ReDraw:
             span = Now - bans(i).StartTime
             tickspan = Minute(span) * 60 + Second(span) + Hour(span) * 60 * 60
             If tickspan < bans(i).Duration Then
-                mode = 1
+                Mode = 1
                 Page.Paint 2, 300 + (GW - 300) / 2, GH / 2, 450, 250, argb(100, 0, 0, 0), 20, pos:=posOnCenter
                 Page.Writes "您正被禁言，无法发言", 300 + (GW - 300) / 2, GH / 2 - 70, 20, argb(255, 255, 255, 255), align:=StringAlignmentCenter, style:=FontStyleBold
                 Page.Writes Int((bans(i).Duration - tickspan) / 60) & ":" & format((bans(i).Duration - tickspan) Mod 60, "00"), 300 + (GW - 300) / 2, GH / 2 - 0, 36, argb(255, 255, 255, 255), align:=StringAlignmentCenter, style:=FontStyleBold
@@ -269,27 +338,31 @@ nomsg:
     End If
     Page.DrawImage "black.png", GW - 175, 14, Alpha:=1
     If CheckMouse2 = mMouseUp Then
-        mode = 3
+        Mode = 3
         nbf = bf
         'Server.PopupMenu MenuWindow.robotMenu
+    End If
+    Page.DrawImage "setting.png", GW - 215, 14, Alpha:=1
+    If CheckMouse2 = mMouseUp Then
+        Mode = 4
     End If
     
     '计算动画百分比
     Dim pro As Single, dpro As Single
     pro = (GetTickCount - ProTime) / 300
     If pro > 1 Then pro = 1
-    If mode = 1 Then pro = 1 - pro
+    If Mode = 1 Then pro = 1 - pro
     pro = Cubic(pro, 0, 1, 1, 1)
     dpro = 1 - pro
     
     '底部发送框
     Dim TextV As Boolean
-    TextV = (pro = 1) And mode = 0
+    TextV = (pro = 1) And Mode = 0
     If Server.Text4.Visible <> TextV Then Server.Text4.Visible = TextV
 
     If Not disbledToolbar Then Page.Paint 0, 300, GH - 82, GW, 83, argb(255, 232, 232, 232)
     
-    If pro = 0 Or disbledToolbar Or mode = 3 Then GoTo SkipTab1
+    If pro = 0 Or disbledToolbar Or Mode > 2 Then GoTo SkipTab1
     
     Page.Paint 2, 300 + 33, GH - (82 - 18) * pro + 40 * dpro, GW - 250 - 300 + 70, 42, argb(255 * pro, 255, 255, 255), Radius:=42
     Page.DrawImage "send.png", 300 + 630, GH - 40 * pro + 40 * dpro, Alpha:=0, pos:=posOnCenter
@@ -318,7 +391,7 @@ nomsg:
     End If
 
 SkipTab1:
-    If pro = 1 Or disbledToolbar Or mode = 3 Then GoTo SkipTab2
+    If pro = 1 Or disbledToolbar Or Mode > 2 Then GoTo SkipTab2
     
     Page.DrawImage "disconnect.png", 300 + 50, GH - 40 * dpro + 40 * pro, Alpha:=0, pos:=posOnCenter
     m = CheckMouse2
@@ -336,12 +409,12 @@ SkipTab1:
     m = CheckMouse2
     Page.DrawImage "image.png", 300 + 692, GH - 40 * dpro + 40 * pro, Alpha:=1 * dpro, pos:=posOnCenter
     ECore.TipMsg "图片文字识别", 0
-    If m = mMouseDown And Mouse.button = 1 Then Mouse.button = 0: Server.OCR_Click: ProTime = GetTickCount: mode = IIf(mode = 0, 1, 0): Mouse.button = 0
+    If m = mMouseDown And Mouse.button = 1 Then Mouse.button = 0: Server.OCR_Click: ProTime = GetTickCount: Mode = IIf(Mode = 0, 1, 0): Mouse.button = 0
     Page.DrawImage "voice.png", 300 + 632, GH - 40 * dpro + 40 * pro, Alpha:=0, pos:=posOnCenter
     m = CheckMouse2
     Page.DrawImage "voice.png", 300 + 632, GH - 40 * dpro + 40 * pro, Alpha:=1 * dpro, pos:=posOnCenter
     ECore.TipMsg "语音转文本", 0
-    If m = mMouseDown And Mouse.button = 1 Then Mouse.button = 0: Server.Audio_Click: ProTime = GetTickCount: mode = IIf(mode = 0, 1, 0): Mouse.button = 0
+    If m = mMouseDown And Mouse.button = 1 Then Mouse.button = 0: Server.Audio_Click: ProTime = GetTickCount: Mode = IIf(Mode = 0, 1, 0): Mouse.button = 0
 
     Page.DrawImage "save.png", 300 + 572, GH - 40 * dpro + 40 * pro, Alpha:=0, pos:=posOnCenter
     m = CheckMouse2
@@ -359,7 +432,7 @@ SkipTab2:
         m = CheckMouse2
         Page.DrawImage "tools.png", 300 + 752, GH - (40 - 6), Alpha:=IIf(m, 1, 0.8), pos:=posOnCenter
         ECore.TipMsg "工具菜单", 0
-        If m = mMouseDown And Mouse.button = 1 Then ProTime = GetTickCount: mode = IIf(mode = 0, 1, 0): Mouse.button = 0
+        If m = mMouseDown And Mouse.button = 1 Then ProTime = GetTickCount: Mode = IIf(Mode = 0, 1, 0): Mouse.button = 0
     End If
     
     Page.DrawImage "back.jpg", 0, 0, 0, 0, 300, 60, 1

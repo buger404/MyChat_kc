@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "MSWINSCK.OCX"
+Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "mswinsck.ocx"
 Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
 Begin VB.Form MainWindow 
    Appearance      =   0  'Flat
@@ -19,12 +19,19 @@ Begin VB.Form MainWindow
    ScaleMode       =   3  'Pixel
    ScaleWidth      =   424
    StartUpPosition =   2  '屏幕中心
+   Begin VB.Timer SpeedTimer 
+      Enabled         =   0   'False
+      Interval        =   1000
+      Left            =   5760
+      Top             =   1560
+   End
    Begin MSComDlg.CommonDialog dialog 
       Left            =   5640
-      Top             =   1080
+      Top             =   840
       _ExtentX        =   847
       _ExtentY        =   847
       _Version        =   393216
+      Filter          =   "任何文件|*.*"
    End
    Begin MSWinsockLib.Winsock sock 
       Index           =   0
@@ -156,6 +163,7 @@ Attribute VB_Exposed = False
 Dim temple As String
 Dim diCount As Long, dCount As Long, pCount As Long, file As String
 Dim data() As Byte, Fsize As Long, ip As String, port As Long, Dsize As Long
+Dim sByte As Long, dataR As Boolean
 Public Sub SetPro(num As Single)
     ProB.Visible = True
     ProF.Visible = True
@@ -164,7 +172,10 @@ End Sub
 
 Private Sub Form_Load()
     Dim t() As String, f() As String
-    t = Split(Command, " ")
+    t = Split(Command, ";")
+    Open App.Path & "\cmd.txt" For Output As #1
+    Print #1, Command
+    Close #1
     '-o filepath downloadpersoncount port
     Me.Show
     If t(0) = "-o" Then
@@ -172,6 +183,11 @@ Private Sub Form_Load()
         Title.Caption = "正在准备文件传输"
         Content.Caption = "请稍等片刻。"
         OKBtn.Visible = False
+        DoEvents
+        pCount = Val(t(2))
+        port = Val(t(3))
+        sock(0).LocalPort = port
+        sock(0).Listen
         DoEvents
         Dim b(1023) As Byte
         ReDim data(FileLen(file) - 1)
@@ -186,17 +202,17 @@ Private Sub Form_Load()
         Next
         Close #1
         DoEvents
+        dataR = True
         Title.Caption = "文件传输已开放"
         ProB.Visible = False: ProF.Visible = False
         f = Split(file, "\")
-        pCount = Val(t(2))
-        port = Val(t(3))
         temple = "文件 '" & f(UBound(f)) & "' " & vbCrLf & "正在下载：{diCount}/" & pCount & vbCrLf & "下载完毕：{dCount}/" & pCount
         Content.Caption = Replace(Replace(temple, "{diCount}", diCount), "{dCount}", dCount)
         DoEvents
-        sock(0).LocalPort = port
-        sock(0).Listen
-        DoEvents
+        For i = 1 To sock.UBound
+            If sock(i).state = 7 Then sock(i).SendData data
+            DoEvents
+        Next
     End If
     '-d filename filesize user ip port
     If t(0) = "-d" Then
@@ -229,7 +245,7 @@ Private Sub sock_ConnectionRequest(Index As Integer, ByVal requestID As Long)
     sock(0).Listen
     diCount = diCount + 1
     Content.Caption = Replace(Replace(temple, "{diCount}", diCount), "{dCount}", dCount)
-    sock(sock.UBound).SendData data
+    If dataR Then sock(sock.UBound).SendData data
     DoEvents
 End Sub
 
@@ -238,8 +254,9 @@ Private Sub sock_DataArrival(Index As Integer, ByVal bytesTotal As Long)
     sock(Index).GetData b
     Put #1, , b
     Dsize = Dsize + UBound(b) + 1
+    sByte = sByte + UBound(b) + 1
     SetPro Dsize / Fsize
-    DoEvents
+    'DoEvents
     If Dsize >= Fsize Then
         Close #1
         Content.Caption = "传输已完成。"
@@ -254,4 +271,12 @@ End Sub
 Private Sub sock_SendComplete(Index As Integer)
     dCount = dCount + 1
     Content.Caption = Replace(Replace(temple, "{diCount}", diCount), "{dCount}", dCount)
+    If dCount >= pCount Then
+        Content.Caption = "所有对象都已收到文件。"
+    End If
+End Sub
+
+Private Sub SpeedTimer_Timer()
+    Me.Caption = "MyChat - 下载速度：" & Int(sByte / 1024 / 1024 * 1000) / 1000 & "MB/S"
+    sByte = 0
 End Sub

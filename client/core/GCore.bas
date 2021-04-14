@@ -164,18 +164,18 @@ Attribute VB_Name = "GCore"
         strBuf = Left(strBuf, InStr(strBuf, Chr(0)))
         ReadINI = strBuf
     End Function
-    Public Sub OutPutDebug(Str As String)
+    Public Sub OutPutDebug(str As String)
         Open App.path & "\debug.txt" For Append As #1
-        Print #1, Now & "    " & Str
+        Print #1, Now & "    " & str
         Close #1
     End Sub
 '================================================================================
 '   Init
-    Public Function StrArray(ParamArray Members()) As String()
+    Public Function StrArray(ParamArray members()) As String()
         Dim i As Integer, R() As String
-        ReDim R(UBound(Members))
-        For i = 0 To UBound(Members)
-            R(i) = Members(i)
+        ReDim R(UBound(members))
+        For i = 0 To UBound(members)
+            R(i) = members(i)
         Next
         StrArray = R
     End Function
@@ -183,8 +183,8 @@ Attribute VB_Name = "GCore"
         If UBound(SGS) = 0 Then
             MsgBox "没有任何建议。", 48, "Emerald 建议中心"
         Else
-            Dim Ret As String, sRet As String
-            Ret = "共 " & UBound(SGS) & " 项建议。" & vbCrLf & vbCrLf
+            Dim ret As String, sRet As String
+            ret = "共 " & UBound(SGS) & " 项建议。" & vbCrLf & vbCrLf
             For i = 1 To UBound(SGS)
                 Select Case SGS(i).Deepth
                     Case 0: sRet = "(无关紧要)"
@@ -192,9 +192,9 @@ Attribute VB_Name = "GCore"
                     Case 2: sRet = "(*紧急)"
                     Case 3: sRet = "(*非常紧急*)"
                 End Select
-                Ret = Ret & sRet & "    " & SGS(i).Content & vbCrLf
+                ret = ret & sRet & "    " & SGS(i).Content & vbCrLf
             Next
-            MsgBox Ret, 48, "Emerald 建议中心"
+            MsgBox ret, 48, "Emerald 建议中心"
         End If
     End Sub
     Public Sub SaveSettings(Data As GSaving)
@@ -421,7 +421,7 @@ sth:
         BitBlt buffWin.hdc, 0, 0, GW, GH, srcDC, 0, 0, vbSrcCopy: buffWin.Refresh
         
         '创建Bitmap
-        GdipCreateBitmapFromHBITMAP buffWin.Image.Handle, buffWin.Image.hpal, i
+        GdipCreateBitmapFromHBITMAP buffWin.image.Handle, buffWin.image.hpal, i
         
         '模糊操作
         PoolCreateEffect2 GdipEffectType.Blur, e: B.Radius = Radius: GdipSetEffectParameters e, B, LenB(B)
@@ -551,9 +551,9 @@ sth:
                 EF.Writes Mouse.State + 1, DrawF.x - 10, DrawF.y - 7, ECore.UPage.GG, argb(255, 255, 255, 255), 14, 20, 0, StringAlignmentCenter, FontStyleBold
             End If
             CheckMouse2 = Mouse.State + 1
-            If DrawF.CrashIndex <> 0 Then
-                If ColorLists(DrawF.CrashIndex).IsAlpha((Mouse.x - DrawF.x) * DrawF.WSc, (Mouse.y - DrawF.y) * DrawF.HSc) = False Then CheckMouse2 = mMouseOut: Exit Function
-            End If
+            'If DrawF.CrashIndex <> 0 Then
+             '   If ColorLists(DrawF.CrashIndex).IsAlpha((Mouse.x - DrawF.x) * DrawF.WSc, (Mouse.y - DrawF.y) * DrawF.HSc) = False Then CheckMouse2 = mMouseOut: Exit Function
+          '  End If
             If Mouse.State = 2 Then Mouse.State = 0
         End If
     End Function
