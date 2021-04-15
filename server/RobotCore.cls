@@ -15,17 +15,17 @@ Public currentRobot As String
 
 Private Sub Class_Initialize()
     ReDim machine(0)
-    Dim r As String
-    r = Dir(App.path & "\robots\")
-    Do While r <> ""
-        ImportRobot r
-        r = Dir()
+    Dim R As String
+    R = Dir(App.path & "\robots\")
+    Do While R <> ""
+        ImportRobot R
+        R = Dir()
     Loop
 End Sub
 
-Public Sub ImportRobot(file As String)
+Public Sub ImportRobot(File As String)
     Dim code As String, t As String
-    Open App.path & "\robots\" & file For Input As #1
+    Open App.path & "\robots\" & File For Input As #1
     Do While Not EOF(1)
         Line Input #1, t
         code = code & t & vbCrLf
@@ -89,9 +89,9 @@ Public Function GetMemberIndex(group, id)
         End If
     Next
 End Function
-Public Sub SendMessage(group, content)
-    AddMessage Val(group), -4, currentRobot, content
+Public Sub SendMessage(group, Content)
+    AddMessage Val(group), -4, currentRobot, Content
     For Each w In Server.Winsock
-        If w.State = 7 Then w.SendData "msg;" & group & ";" & Base64EncodeString(currentRobot) & ";" & -4 & ";" & Base64EncodeString(content) & vbCrLf
+        If w.State = 7 Then w.SendData "msg;" & group & ";" & Base64EncodeString(currentRobot) & ";" & -4 & ";" & Base64EncodeString(Content) & vbCrLf
     Next
 End Sub

@@ -45,31 +45,28 @@ Dim FreezeTime As Long
         MsgBtnFocus = -1: MsgBtnFocusTime = 0
         MsgContent = Content: MsgTitle = Title
         ReDim MsgButtons(UBound(buttons))
-        For I = 0 To UBound(buttons)
-            MsgButtons(I) = buttons(I)
+        For i = 0 To UBound(buttons)
+            MsgButtons(i) = buttons(i)
         Next
         SysPage.MsgButton = -1
         Dim lState As Boolean
         lState = ECore.FreezeMode
         ECore.FreezeMode = False
-        
         MsgEnterTime = GetTickCount
         ECore.NewTransform transFadeIn, 500
         
         If UseBlur Then
             Dim frm As Form
             For Each frm In VB.Forms
-                If frm.Hwnd = GHwnd Then Exit For
+                If frm.hwnd = GHwnd Then Exit For
             Next frm
             BlurTo SysPage.BDC, ECore.CDC, frm, Radius
         Else
-            PaintDC ECore.CDC, SysPage.BDC, alpha:=1
+            PaintDC ECore.CDC, SysPage.BDC, Alpha:=1
         End If
-        
         Do While SysPage.MsgButton = -1
             ECore.Display: DoEvents
         Loop
-        
         SimpleMsg = SysPage.MsgButton
         ECore.NewTransform transFadeIn, 500
         ECore.FreezeMode = lState
@@ -88,11 +85,11 @@ Dim FreezeTime As Long
         If UseBlur Then
             Dim frm As Form
             For Each frm In VB.Forms
-                If frm.Hwnd = GHwnd Then Exit For
+                If frm.hwnd = GHwnd Then Exit For
             Next frm
             BlurTo SysPage.BDC, ECore.CDC, frm, Radius
         Else
-            PaintDC ECore.CDC, SysPage.BDC, alpha:=1
+            PaintDC ECore.CDC, SysPage.BDC, Alpha:=1
         End If
         
         MsgEnterTime = GetTickCount
@@ -110,7 +107,7 @@ Dim FreezeTime As Long
         If MsgTipTime = -2 Then Exit Function
         
         If CheckMouse2 >= mMouseIn Then
-            If MsgBoundRect.X <> DrawF.X Or MsgBoundRect.y <> DrawF.y Or MsgBoundRect.Width <> DrawF.Width Or MsgBoundRect.Height <> DrawF.Height Then
+            If MsgBoundRect.x <> DrawF.x Or MsgBoundRect.y <> DrawF.y Or MsgBoundRect.Width <> DrawF.Width Or MsgBoundRect.Height <> DrawF.Height Then
                 MsgBoundRect = DrawF: MsgTipTime = GetTickCount: Exit Function
             Else
                 If IsKeyPress(VK_LCONTROL) = True Or IsKeyPress(VK_RCONTROL) = True Then MsgTipTime = GetTickCount - Delay
@@ -124,7 +121,7 @@ Dim FreezeTime As Long
         w = EF.GetWidth(GG, Content, 18, StringAlignmentNear, FontStyleBold)
         h = EF.GetHeight(GG, Content, 18, StringAlignmentNear, FontStyleBold)
         MsgW = w + 20 * 2: MsgH = h + 5 * 2
-        MsgX = DrawF.X + DrawF.Width / 2 - MsgW / 2: MsgY = DrawF.y - MsgH - 10
+        MsgX = DrawF.x + DrawF.Width / 2 - MsgW / 2: MsgY = DrawF.y - MsgH - 10
         MsgTipDirection = 0
         If MsgY < 0 Then MsgY = DrawF.y + DrawF.Height: MsgTipDirection = 1
         If MsgX < 0 Then MsgX = 0
@@ -134,8 +131,8 @@ Dim FreezeTime As Long
         Dim temp(3) As Byte, Color As Long, total As Long
         Color = GetPixel(NDC, 1, 1)
         CopyMemory temp(0), Color, 4
-        For I = 0 To 3
-            total = total + temp(I)
+        For i = 0 To 3
+            total = total + temp(i)
         Next
         If total / 3 <= 128 Then MsgTipColor = 0
         
@@ -147,7 +144,7 @@ Dim FreezeTime As Long
         
         Dim frm As Form
         For Each frm In VB.Forms
-            If frm.Hwnd = GHwnd Then Exit For
+            If frm.hwnd = GHwnd Then Exit For
         Next frm
         BlurTo SysPage.BDC, ECore.CDC, frm, 255
         
@@ -186,7 +183,7 @@ Dim FreezeTime As Long
         FancyMode = FMode
     End Property
     Public Property Let FancyMode(nV As Boolean)
-        If nV Then PaintDC CDC, FDC, 0, 0, alpha:=1
+        If nV Then PaintDC CDC, FDC, 0, 0, Alpha:=1
         FMode = nV
     End Property
     Private Sub Class_Initialize()
@@ -220,8 +217,8 @@ Dim FreezeTime As Long
         PoolDeleteGraphics GG
         PoolDeleteBrush pB
         PoolDeletePen Pen
-        For I = 1 To UBound(Pages)
-            Pages(I).p.Dispose
+        For i = 1 To UBound(Pages)
+            Pages(i).p.Dispose
         Next
         'DeleteObject CDC
         'DeleteObject ODC
@@ -240,14 +237,14 @@ Dim FreezeTime As Long
     End Property
     Public Property Let ActivePage(nPage As String)
         LastPage = mPage
-        For I = 1 To UBound(Pages)
-            If mPage = Pages(I).Name Then CallByName Pages(I).p.SrcClass, "Leave", VbMethod: Exit For
+        For i = 1 To UBound(Pages)
+            If mPage = Pages(i).Name Then CallByName Pages(i).p.SrcClass, "Leave", VbMethod: Exit For
         Next
         mPage = nPage
-        For I = 1 To UBound(Pages)
-            If nPage = Pages(I).Name Then
-                CallByName Pages(I).p.SrcClass, "Enter", VbMethod
-                Set aPage = Pages(I).p.SrcClass
+        For i = 1 To UBound(Pages)
+            If nPage = Pages(i).Name Then
+                CallByName Pages(i).p.SrcClass, "Enter", VbMethod
+                Set aPage = Pages(i).p.SrcClass
                 Exit For
             End If
         Next
@@ -316,22 +313,22 @@ DrawMessage:
         
         If SysPage.DoneMark = False Then played = True: GoTo skipPage
         
-        For I = 1 To UBound(Pages)
-            CurrentPage = I
-            If ActivePage = Pages(I).Name Or (Pages(I).p.TopPage And (Not ErrorMark)) Then
-                UpdatingPage = Pages(I).Name
-                Set UPage = Pages(I).p
-                Pages(I).p.Update
-                Pages(I).p.Display (CDC)
-                If Pages(I).Name = "ErrorScreen" Then ErrorMark2 = True
+        For i = 1 To UBound(Pages)
+            CurrentPage = i
+            If ActivePage = Pages(i).Name Or (Pages(i).p.TopPage And (Not ErrorMark)) Then
+                UpdatingPage = Pages(i).Name
+                Set UPage = Pages(i).p
+                Pages(i).p.Update
+                Pages(i).p.Display (CDC)
+                If Pages(i).Name = "ErrorScreen" Then ErrorMark2 = True
                 played = True
                 o = (GetActiveWindow = 0)
                 If o <> OutOfWindow Then
                     OutOfWindow = o
                     If OutOfWindow Then
-                        CallByName Pages(I).p.SrcClass, "Lostfocus", VbMethod
+                        CallByName Pages(i).p.SrcClass, "Lostfocus", VbMethod
                     Else
-                        CallByName Pages(I).p.SrcClass, "Gotfocus", VbMethod
+                        CallByName Pages(i).p.SrcClass, "Gotfocus", VbMethod
                     End If
                 End If
             End If
@@ -344,7 +341,7 @@ skipPage:
         End If
         
         If NDCMark Then
-            PaintDC NDC, CDC, 0, 0, alpha:=1
+            PaintDC NDC, CDC, 0, 0, Alpha:=1
         End If
         
         If GetTickCount - Transform.time <= Transform.during Then Call Translation
@@ -370,13 +367,13 @@ skipPage:
                 SysPage.Page.Display (CDC)
                 SysPage.index = SOrIndex
             End If
-            For I = 1 To UBound(SGS)
-                If I > UBound(SGS) Then Exit For
-                If SGS(I).ClearTime = ClearOnUpdate Then GoTo ClearSGS
-                If SGS(I).ClearTime = ClearOnOnce And GetTickCount - SGS(I).time >= 1000 Then GoTo ClearSGS
+            For i = 1 To UBound(SGS)
+                If i > UBound(SGS) Then Exit For
+                If SGS(i).ClearTime = ClearOnUpdate Then GoTo ClearSGS
+                If SGS(i).ClearTime = ClearOnOnce And GetTickCount - SGS(i).time >= 1000 Then GoTo ClearSGS
                 GoTo NoClear
 ClearSGS:
-                SGS(I) = SGS(UBound(SGS)): ReDim Preserve SGS(UBound(SGS) - 1): I = I - 1
+                SGS(i) = SGS(UBound(SGS)): ReDim Preserve SGS(UBound(SGS) - 1): i = i - 1
 NoClear:
             Next
             
@@ -386,14 +383,14 @@ NoClear:
                     Suggest "FPS¹ýµÍ¡£", ClearOnOnce, 2
                 End If
                 FPSct = FPSctt: FPSctt = 0
-                For I = 0 To 19
-                    FPSRecord(I) = FPSRecord(I + 1)
+                For i = 0 To 19
+                    FPSRecord(i) = FPSRecord(i + 1)
                 Next
                 FPSRecord(20) = FPS
             End If
         End If
         
-        If FMode Then PaintDC CDC, FDC, 0, 0, alpha:=FancyDeepth
+        If FMode Then PaintDC CDC, FDC, 0, 0, Alpha:=FancyDeepth
         If IsLayered Then
             Dim bs As BLENDFUNCTION, sz As size
             Dim SrcPoint As POINTAPI
@@ -436,34 +433,34 @@ NoClear:
         Select Case Transform.Kind
             Case 0 'FadeIn
                 pro = Cubic((GetTickCount - Transform.time) / Transform.during, 0, 1, 1, 1)
-                PaintDC ODC, CDC, alpha:=1 - pro
+                PaintDC ODC, CDC, Alpha:=1 - pro
             Case 1 'FadeOut
                 pro = Cubic((GetTickCount - Transform.time) / Transform.during, 0, 0, 0, 1)
-                PaintDC ODC, CDC, alpha:=1 - pro
+                PaintDC ODC, CDC, Alpha:=1 - pro
             Case 2 'ToRight
                 pro = Cubic((GetTickCount - Transform.time) / Transform.during, 0, 1, 1, 1)
-                PaintDC ODC, CDC, (pro * RGW), alpha:=1
+                PaintDC ODC, CDC, (pro * RGW), Alpha:=1
             Case 3 'ToLeft
                 pro = Cubic((GetTickCount - Transform.time) / Transform.during, 0, 1, 1, 1)
-                PaintDC ODC, CDC, -(pro * RGW), alpha:=1
+                PaintDC ODC, CDC, -(pro * RGW), Alpha:=1
             Case 4 'ToUp
                 pro = Cubic((GetTickCount - Transform.time) / Transform.during, 0, 1, 1, 1)
-                PaintDC ODC, CDC, 0, -(pro * RGW), alpha:=1
+                PaintDC ODC, CDC, 0, -(pro * RGW), Alpha:=1
             Case 5 'ToDown
                 pro = Cubic((GetTickCount - Transform.time) / Transform.during, 0, 1, 1, 1)
-                PaintDC ODC, CDC, 0, (pro * RGW), alpha:=1
+                PaintDC ODC, CDC, 0, (pro * RGW), Alpha:=1
             Case 6 'ToRight(Fade)
                 pro = Cubic((GetTickCount - Transform.time) / Transform.during, 0, 1, 1, 1)
-                PaintDC ODC, CDC, (pro * RGW), alpha:=1 - pro
+                PaintDC ODC, CDC, (pro * RGW), Alpha:=1 - pro
             Case 7 'ToLeft(Fade)
                 pro = Cubic((GetTickCount - Transform.time) / Transform.during, 0, 1, 1, 1)
-                PaintDC ODC, CDC, -(pro * RGW), alpha:=1 - pro
+                PaintDC ODC, CDC, -(pro * RGW), Alpha:=1 - pro
             Case 8 'ToUp(Fade)
                 pro = Cubic((GetTickCount - Transform.time) / Transform.during, 0, 1, 1, 1)
-                PaintDC ODC, CDC, 0, -(pro * RGW), alpha:=1 - pro
+                PaintDC ODC, CDC, 0, -(pro * RGW), Alpha:=1 - pro
             Case 9 'ToDown(Fade)
                 pro = Cubic((GetTickCount - Transform.time) / Transform.during, 0, 1, 1, 1)
-                PaintDC ODC, CDC, 0, (pro * RGW), alpha:=1 - pro
+                PaintDC ODC, CDC, 0, (pro * RGW), Alpha:=1 - pro
             Case 10 'HighLight
                 pro = (GetTickCount - Transform.time) / Transform.during
                 Select Case pro
@@ -499,7 +496,7 @@ NoClear:
                 BitBlt CDC, GW - (pro * RGW), 0, RGW, RGH, CDC, 0, 0, vbSrcCopy
                 GdipSetSolidFillColor pB, argb((1 - pro) * 255, 0, 0, 0)
                 GdipFillRectangle GG, pB, GW - (pro * RGW), 0, RGW + 1, RGH + 1
-                PaintDC ODC, CDC, -(pro * RGW), 0, alpha:=1
+                PaintDC ODC, CDC, -(pro * RGW), 0, Alpha:=1
                 GdipSetSolidFillColor pB, argb(pro * 255, 0, 0, 0)
                 GdipFillRectangle GG, pB, -(pro * RGW), 0, RGW + 1, RGH + 1
             Case 13
@@ -507,7 +504,7 @@ NoClear:
                 BitBlt CDC, -RGW + (pro * RGW), 0, RGW, RGH, CDC, 0, 0, vbSrcCopy
                 GdipSetSolidFillColor pB, argb((1 - pro) * 255, 0, 0, 0)
                 GdipFillRectangle GG, pB, -RGW + (pro * RGW), 0, RGW + 1, RGH + 1
-                PaintDC ODC, CDC, (pro * RGW), 0, alpha:=1
+                PaintDC ODC, CDC, (pro * RGW), 0, Alpha:=1
                 GdipSetSolidFillColor pB, argb(pro * 255, 0, 0, 0)
                 GdipFillRectangle GG, pB, (pro * RGW), 0, RGW + 1, RGH + 1
         End Select

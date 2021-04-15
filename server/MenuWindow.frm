@@ -5,7 +5,7 @@ Begin VB.Form MenuWindow
    Caption         =   "放置菜单"
    ClientHeight    =   3120
    ClientLeft      =   150
-   ClientTop       =   780
+   ClientTop       =   795
    ClientWidth     =   4680
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
@@ -50,8 +50,15 @@ Begin VB.Form MenuWindow
             Caption         =   "自定义时长..."
          End
       End
+      Begin VB.Menu undoBan 
+         Caption         =   "解除禁言"
+         Visible         =   0   'False
+      End
       Begin VB.Menu kickGroup 
          Caption         =   "移出群聊"
+      End
+      Begin VB.Menu nonono 
+         Caption         =   "   "
       End
    End
    Begin VB.Menu groupMenu 
@@ -75,6 +82,10 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Public id As Integer, groupid As Integer
 
+Private Sub closeConnect_Click()
+
+End Sub
+
 Private Sub copyMsg_Click()
     On Error Resume Next
     Clipboard.Clear
@@ -94,6 +105,14 @@ reinput:
     Server.ProcessBan groups(MainPage.selectIndex).id, id, du
 End Sub
 
+Private Sub kickGroup_Click()
+    For Each w In Server.Winsock
+        If w.State = 7 Then w.SendData "deletemember;" & groups(MainPage.selectIndex).id & ";" & id & vbCrLf
+        DoEvents
+    Next
+    DeleteMember id, groups(MainPage.selectIndex).id
+End Sub
+
 Private Sub min10ban_Click()
     Server.ProcessBan groups(MainPage.selectIndex).id, id, 600
 End Sub
@@ -107,12 +126,12 @@ Private Sub min5ban_Click()
 End Sub
 
 Private Sub quitGroup_Click()
-    If ECore.SimpleMsg("您确定要执行此操作？此操作不可逆。", quitGroup.Caption & "组“" & groups(groupid).Name & "”", StrArray("确定", "取消"), UseBlur:=False) <> 0 Then Exit Sub
-    DeleteGroup groups(groupid).id
+    If ECore.SimpleMsg("您确定要执行此操作？此操作不可逆。", quitGroup.Caption & "组“" & groups(groupid).Name & "”", GCore.StrArray("确定", "取消"), UseBlur:=False) <> 0 Then Exit Sub
     For Each w In Server.Winsock
         If w.State = 7 Then w.SendData "deletegroup;" & groups(groupid).id & vbCrLf
         DoEvents
     Next
+    DeleteGroup groups(groupid).id
 End Sub
 
 Private Sub robotBtn_Click(index As Integer)
@@ -129,4 +148,8 @@ Private Sub robotBtn_Click(index As Integer)
     Else
         MsgBox "使用帮助：" & vbCrLf & vbCrLf & machine(index).Eval("Guidence"), 64, robotBtn(index).Caption
     End If
+End Sub
+
+Private Sub undoBan_Click()
+    Server.ProcessBan groups(MainPage.selectIndex).id, id, 0
 End Sub

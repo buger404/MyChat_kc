@@ -2,7 +2,7 @@ Attribute VB_Name = "GroupCore"
 Public Type Messages
     id As Integer
     Name As String
-    content As String
+    Content As String
     time As Date
 End Type
 Public Type Member
@@ -14,7 +14,7 @@ Public Type group
     leader As Integer
     isJoin As Boolean
     Name As String
-    Msg() As Messages
+    msg() As Messages
     unreadTick As Integer
     members() As Member
     LeaderName As String
@@ -25,7 +25,7 @@ Public Type MsgBan
     StartTime As Date
     Duration As Long
 End Type
-Public Type dump
+Public Type Dump
     groups() As group
     bans() As MsgBan
 End Type
@@ -33,12 +33,8 @@ Public userId As Integer, userName As String, realSize As Long
 Public MainPage As MainPage, selectMsg As Messages
 Public groups() As group, bans() As MsgBan
 Public Sub DumpFile()
-    Dim dump As dump
-    dump.groups = groups
-    dump.bans = bans
-    Open App.path & "\groups.bin" For Binary As #1
-    Put #1, , dump
-    Close #1
+    Dim Dump As Dump
+
 End Sub
 Public Sub AddGroup(id As Integer, leader As Integer, isJoin As Boolean, Name As String, LeaderName As String)
     ReDim Preserve groups(UBound(groups) + 1)
@@ -48,7 +44,7 @@ Public Sub AddGroup(id As Integer, leader As Integer, isJoin As Boolean, Name As
         .Name = Name
         .leader = leader
         .LeaderName = LeaderName
-        ReDim .Msg(0)
+        ReDim .msg(0)
         ReDim .members(0)
     End With
     Call DumpFile
@@ -62,15 +58,19 @@ Public Sub DeleteGroup(id As Integer)
             Exit For
         End If
     Next
+    On Error GoTo sth
+    ReDim Preserve groups(UBound(groups) - 1)
+sth:
+    If Err.Number = 0 Then Exit Sub
     realSize = UBound(groups) - 1
     Call DumpFile
 End Sub
-Public Sub AddMessage(id As Integer, memberid As Integer, Name As String, ByVal content As String)
+Public Sub AddMessage(id As Integer, memberid As Integer, Name As String, ByVal Content As String)
     For i = 1 To UBound(groups)
         If groups(i).id = id Then
-            ReDim Preserve groups(i).Msg(UBound(groups(i).Msg) + 1)
-            With groups(i).Msg(UBound(groups(i).Msg))
-                .content = content
+            ReDim Preserve groups(i).msg(UBound(groups(i).msg) + 1)
+            With groups(i).msg(UBound(groups(i).msg))
+                .Content = Content
                 .id = memberid
                 .Name = Name
                 .time = Now
@@ -85,7 +85,7 @@ Public Sub AddMessage(id As Integer, memberid As Integer, Name As String, ByVal 
         For i = 1 To UBound(machine)
             Robots.currentRobot = MenuWindow.robotBtn(i).Caption
             On Error GoTo sth
-            machine(i).Run "Process", content, id, memberid
+            machine(i).Run "Process", Content, id, memberid
 sth:
             If Err.Number <> 0 Then
                 Robots.SendMessage id, "机器人“" & Robots.currentRobot & "”发生问题，请联系机器人制作者：" & vbCrLf & "第" & machine(i).Error.Line & "行：" & machine(i).Error.Description & vbCrLf & "错误码：" & machine(i).Error.Number
@@ -132,15 +132,31 @@ Public Sub DeleteMember(id As Integer, group As Integer)
     Call DumpFile
 End Sub
 Public Sub AddBan(id As Integer, group As Integer, Duration As Long)
-    ReDim Preserve bans(UBound(bans) + 1)
-    With bans(UBound(bans))
-        .id = id
-        .groupid = group
-        .StartTime = Now
-        .Duration = Duration
-    End With
-    Call DumpFile
+    If Duration = 0 Then
+        For i = 1 To UBound(bans)
+            If bans(i).id = id And bans(i).groupid = group Then
+                bans(i) = bans(UBound(bans))
+                ReDim Preserve bans(UBound(bans) - 1)
+                Exit For
+            End If
+        Next
+    Else
+        ReDim Preserve bans(UBound(bans) + 1)
+        With bans(UBound(bans))
+            .id = id
+            .groupid = group
+            .StartTime = Now
+            .Duration = Duration
+        End With
+        Call DumpFile
+    End If
 End Sub
-Public Sub DeleteBan(id As Integer, group As Integer)
-
-End Sub
+Public Function IsBan(id As Integer, group As Integer)
+    IsBan = False
+    For i = 1 To UBound(bans)
+        If bans(i).id = id And bans(i).groupid = group Then
+            IsBan = True
+            Exit For
+        End If
+    Next
+End Function

@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "mswinsck.ocx"
+Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "MSWINSCK.OCX"
 Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
 Begin VB.Form MainWindow 
    Appearance      =   0  'Flat
@@ -189,18 +189,31 @@ Private Sub Form_Load()
         sock(0).LocalPort = port
         sock(0).Listen
         DoEvents
-        Dim b(1023) As Byte
+        Dim b(1023) As Byte, bb() As Byte
+        On Error GoTo sth
         ReDim data(FileLen(file) - 1)
         Open file For Binary As #1
         For i = 0 To UBound(data) Step 1024
-            Get #1, , b
-            CopyMemory data(i), b(0), 1024
+            If i + 1024 > UBound(data) Then
+                ReDim bb(UBound(data) - i)
+                Get #1, , bb
+                CopyMemory data(i), bb(0), UBound(bb) + 1
+            Else
+                Get #1, , b
+                CopyMemory data(i), b(0), 1024
+            End If
             If i Mod 102400 = 0 Then
                 SetPro i / UBound(data)
                 DoEvents
             End If
         Next
         Close #1
+sth:
+        If Err.Number <> 0 Then
+            Err.Clear
+            MsgBox "指定的储存位置是不可用的，可能没有读写权限。", 48
+            End
+        End If
         DoEvents
         dataR = True
         Title.Caption = "文件传输已开放"
@@ -233,9 +246,16 @@ Private Sub OKBtn_Click()
     dialog.FileName = file
     dialog.ShowSave
     If dialog.FileName = "" Then Exit Sub
+    On Error GoTo sth
+    If Dir(dialog.FileName) <> "" Then Kill dialog.FileName
     Open dialog.FileName For Binary As #1
     OKBtn.Visible = False
     sock(0).Connect ip, port
+sth:
+    If Err.Number <> 0 Then
+        Err.Clear
+        MsgBox "指定的储存位置是不可用的，可能没有读写权限。", 48
+    End If
 End Sub
 
 Private Sub sock_ConnectionRequest(Index As Integer, ByVal requestID As Long)

@@ -112,6 +112,6 @@ Public Function BlackPurse(pur As String)
     t = Split(pur, ";")
     For i = 0 To UBound(t) Step 3
         If t(i) = "" Then Exit For
-        AddBlack Base64DecodeString(t(i)), Base64DecodeString(t(i + 1)), Base64DecodeString(t(i + 2)), True
+        AddBlack Base64DecodeString(t(i)), Base64DecodeString(t(i + 1)), Base64DecodeString(t(i + 2))
     Next
 End Function

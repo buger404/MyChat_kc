@@ -164,27 +164,27 @@ Attribute VB_Name = "GCore"
         strBuf = Left(strBuf, InStr(strBuf, Chr(0)))
         ReadINI = strBuf
     End Function
-    Public Sub OutPutDebug(str As String)
+    Public Sub OutPutDebug(Str As String)
         Open App.path & "\debug.txt" For Append As #1
-        Print #1, Now & "    " & str
+        Print #1, Now & "    " & Str
         Close #1
     End Sub
 '================================================================================
 '   Init
     Public Function StrArray(ParamArray members()) As String()
-        Dim i As Integer, r() As String
-        ReDim r(UBound(members))
+        Dim i As Integer, R() As String
+        ReDim R(UBound(members))
         For i = 0 To UBound(members)
-            r(i) = members(i)
+            R(i) = members(i)
         Next
-        StrArray = r
+        StrArray = R
     End Function
     Public Sub ShowSuggestion()
         If UBound(SGS) = 0 Then
             MsgBox "没有任何建议。", 48, "Emerald 建议中心"
         Else
-            Dim ret As String, sRet As String
-            ret = "共 " & UBound(SGS) & " 项建议。" & vbCrLf & vbCrLf
+            Dim Ret As String, sRet As String
+            Ret = "共 " & UBound(SGS) & " 项建议。" & vbCrLf & vbCrLf
             For i = 1 To UBound(SGS)
                 Select Case SGS(i).Deepth
                     Case 0: sRet = "(无关紧要)"
@@ -192,9 +192,9 @@ Attribute VB_Name = "GCore"
                     Case 2: sRet = "(*紧急)"
                     Case 3: sRet = "(*非常紧急*)"
                 End Select
-                ret = ret & sRet & "    " & SGS(i).Content & vbCrLf
+                Ret = Ret & sRet & "    " & SGS(i).Content & vbCrLf
             Next
-            MsgBox ret, 48, "Emerald 建议中心"
+            MsgBox Ret, 48, "Emerald 建议中心"
         End If
     End Sub
     Public Sub SaveSettings(Data As GSaving)
@@ -421,7 +421,7 @@ sth:
         BitBlt buffWin.hdc, 0, 0, GW, GH, srcDC, 0, 0, vbSrcCopy: buffWin.Refresh
         
         '创建Bitmap
-        GdipCreateBitmapFromHBITMAP buffWin.image.Handle, buffWin.image.hpal, i
+        GdipCreateBitmapFromHBITMAP buffWin.Image.Handle, buffWin.Image.hpal, i
         
         '模糊操作
         PoolCreateEffect2 GdipEffectType.Blur, e: B.Radius = Radius: GdipSetEffectParameters e, B, LenB(B)

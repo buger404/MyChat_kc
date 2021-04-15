@@ -40,8 +40,15 @@ Begin VB.Form MenuWindow
             Caption         =   "自定义时长..."
          End
       End
+      Begin VB.Menu undoBan 
+         Caption         =   "解除禁言"
+         Visible         =   0   'False
+      End
       Begin VB.Menu kickGroup 
          Caption         =   "移出群聊"
+      End
+      Begin VB.Menu nonono 
+         Caption         =   "  "
       End
    End
    Begin VB.Menu groupMenu 
@@ -78,6 +85,10 @@ reinput:
 End Sub
 
 
+Private Sub kickGroup_Click()
+    Client.Winsock1.SendData "deletemember;" & groups(MainPage.selectIndex).id & ";" & id & vbCrLf
+End Sub
+
 Private Sub min10ban_Click()
     Client.Winsock1.SendData "addban;" & groups(MainPage.selectIndex).id & ";600;" & id & vbCrLf
 End Sub
@@ -94,4 +105,8 @@ Private Sub quitGroup_Click()
     If ECore.SimpleMsg("您确定要执行此操作？此操作不可逆。", quitGroup.Caption & "组“" & groups(groupId).Name & "”", StrArray("确定", "取消"), UseBlur:=False) = 0 Then
         Client.Winsock1.SendData "quitgroup;" & groups(groupId).id & vbCrLf
     End If
+End Sub
+
+Private Sub undoBan_Click()
+    Client.Winsock1.SendData "addban;" & groups(MainPage.selectIndex).id & ";0;" & id & vbCrLf
 End Sub

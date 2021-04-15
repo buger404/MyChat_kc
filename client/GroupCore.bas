@@ -25,7 +25,7 @@ Public Type MsgBan
     StartTime As Date
     Duration As Long
 End Type
-Public Type dump
+Public Type Dump
     groups() As group
     bans() As MsgBan
 End Type
@@ -33,12 +33,8 @@ Public userId As Integer, userName As String
 Public MainPage As MainPage, selectMsg As Messages
 Public groups() As group, bans() As MsgBan
 Public Sub DumpFile()
-    Dim dump As dump
-    dump.groups = groups
-    dump.bans = bans
-    Open App.path & "\groups.bin" For Binary As #1
-    Put #1, , dump
-    Close #1
+    Dim Dump As Dump
+
 End Sub
 
 Public Sub AddGroup(id As Integer, leader As Integer, isJoin As Boolean, Name As String, LeaderName As String)
@@ -120,15 +116,32 @@ Public Sub DeleteMember(id As Integer, group As Integer)
     Call DumpFile
 End Sub
 Public Sub AddBan(id As Integer, group As Integer, Duration As Long)
-    ReDim Preserve bans(UBound(bans) + 1)
-    With bans(UBound(bans))
-        .id = id
-        .groupId = group
-        .StartTime = Now
-        .Duration = Duration
-    End With
-    Call DumpFile
+    If Duration = 0 Then
+        For i = 1 To UBound(bans)
+            If bans(i).id = id And bans(i).groupId = group Then
+                bans(i) = bans(UBound(bans))
+                ReDim Preserve bans(UBound(bans) - 1)
+                Exit For
+            End If
+        Next
+    Else
+        ReDim Preserve bans(UBound(bans) + 1)
+        With bans(UBound(bans))
+            .id = id
+            .groupId = group
+            .StartTime = Now
+            .Duration = Duration
+        End With
+        Call DumpFile
+    End If
 End Sub
-Public Sub DeleteBan(id As Integer, group As Integer)
+Public Function IsBan(id As Integer, group As Integer)
+    IsBan = False
+    For i = 1 To UBound(bans)
+        If bans(i).id = id And bans(i).groupId = group Then
+            IsBan = True
+            Exit For
+        End If
+    Next
+End Function
 
-End Sub

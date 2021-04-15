@@ -21,7 +21,7 @@ Begin VB.Form Client
    StartUpPosition =   2  '屏幕中心
    Begin VB.Timer BlockTimer 
       Interval        =   100
-      Left            =   360
+      Left            =   240
       Top             =   1560
    End
    Begin MSComDlg.CommonDialog ColorPad 
@@ -271,6 +271,22 @@ Begin VB.Form Client
       _Version        =   393216
       Filter          =   "任何文件|*.*"
    End
+   Begin MSComDlg.CommonDialog imgOpen 
+      Left            =   0
+      Top             =   0
+      _ExtentX        =   847
+      _ExtentY        =   847
+      _Version        =   393216
+      Filter          =   "图像文件|*.jpg;*.png;*.bmp;*.gif;*.jpeg"
+   End
+   Begin MSComDlg.CommonDialog CommonDialog1 
+      Left            =   0
+      Top             =   0
+      _ExtentX        =   847
+      _ExtentY        =   847
+      _Version        =   393216
+      Filter          =   "图像文件|*.jpg;*.png;*.bmp;*.gif;*.jpeg"
+   End
 End
 Attribute VB_Name = "Client"
 Attribute VB_GlobalNameSpace = False
@@ -286,6 +302,8 @@ Public DotMode As Boolean
 Dim DrawX As Single, DrawY As Single
 Dim Shadow As aShadow
 Dim lHwnd As Long, lText As String
+Dim buffData As String
+Dim SafeToQuit As Boolean
 Public Sub createGrp()
     Dim id As Integer, leader As Integer, isJoin As Boolean, Name As String
     'id = InputBox("id")
@@ -349,11 +367,11 @@ End Sub
 
 
 Private Sub logIn()
-    'If Dir("id_info.txt") <> "" Then Kill "id_info.txt"
-    'If Dir("face.png") <> "" Then Kill "face.png"
-    
-    If Dir("id_info.txt") = "" Then ShellEx "python """ & App.path & "\" & "client.py"" -l " & Winsock1.RemoteHost
+    If Dir("id_info.txt") <> "" Then Kill "id_info.txt"
+    If Dir("face.png") <> "" Then Kill "face.png"
+    If Dir("id_info.txt") = "" Then ShellEx "python """ & "client.py"" -l " & Winsock1.RemoteHost
     If Dir("id_info.txt") = "" Then MsgBox "查无此人，考虑注册？", 16, "登陆失败": End
+    
     Open "id_info.txt" For Input As 1
     A = StrConv(InputB(FileLen("id_info.txt"), 1), vbUnicode)
     S = Split(A, ",")
@@ -361,9 +379,9 @@ Private Sub logIn()
     If S(0) = "404" Then MsgBox "ip地址有误，请检查ip地址", 16, "ip地址错误": End
     userName = S(0)
     Me.Caption = userName
-    
-    'If Dir("id_info.txt") <> "" Then Kill "id_info.txt"
-    'If Dir("face.png") <> "" Then Kill "face.png"
+
+    If Dir("id_info.txt") <> "" Then Kill "id_info.txt"
+    If Dir("face.png") <> "" Then Kill "face.png"
     
     Winsock1.RemotePort = 2001
     If Winsock1.State = sckClosed Then
@@ -431,6 +449,7 @@ End Sub
 '===============================================================================================================
 
 Private Sub Form_Load()
+    'Base64_Init
     LoadBlackList
     ReDim groups(0): ReDim bans(0)
     
@@ -440,7 +459,7 @@ Private Sub Form_Load()
         If .Shadow(Me) Then
             .Color = RGB(0, 0, 0)
             .Depth = 8
-            .Transparency = 20
+            .Transparency = 80
         End If
     End With
     
@@ -490,12 +509,19 @@ Private Sub Form_Load()
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
+    Set Shadow = Nothing
     On Error Resume Next
+    Me.Hide
     For i = 2 To UBound(groups)
         Winsock1.SendData "quitgroup;" & groups(i).id & vbCrLf
+        DoEvents
     Next
-    Client.save3_Click
-    Set Shadow = Nothing
+    Winsock1.SendData "quitrequire" & vbCrLf
+    DoEvents
+    Do While Not SafeToQuit
+        DoEvents
+    Loop
+    'Client.save3_Click
     Call UnloadEmeraldFramework
     End
 End Sub
@@ -529,7 +555,7 @@ Public Sub Option3_Click()
     Command4.Visible = False
     
     Picture1.Visible = False
-    Text1.Visible = False
+    Text1.Visible = True
     Text5.Visible = False
     Picture2.Visible = False
 End Sub
@@ -603,13 +629,19 @@ Private Sub Text2_Change()
         Text2.Top = Me.ScaleHeight - 80 + 25 - Height + 30
     End If
 End Sub
-Public Sub SendMsg()
+Public Sub SendMsg(Optional Msg As String = "")
     If Winsock1.State <> 7 Then Exit Sub
-    If Text2.Text = "" Then
+    If Text2.Text = "" And Msg = "" Then
         VBA.Beep
     Else
-        Call AddMessage(groups(MainPage.selectIndex).id, userId, "我", Text2.Text)
-        Winsock1.SendData "msg;" + str(groups(MainPage.selectIndex).id) + ";" + Base64EncodeString(userName) + ";" + str(userId) + ";" + Base64EncodeString(Text2.Text) & vbCrLf
+        Dim txt As String
+        If Msg = "" Then
+            txt = Base64EncodeString(Text2.Text)
+            Call AddMessage(groups(MainPage.selectIndex).id, userId, "我", Text2.Text)
+        Else
+            txt = Base64EncodeString(Msg)
+        End If
+        Winsock1.SendData "msg;" + str(groups(MainPage.selectIndex).id) + ";" + Base64EncodeString(userName) + ";" + str(userId) + ";" + txt & vbCrLf
         'Winsock1.SendData Text2.Text
         Text2.Text = ""
     End If
@@ -648,6 +680,7 @@ End Sub
 Private Sub Winsock1_Close()
     MsgBox ("已断开与主机的连接")
     Unload Me
+    End
 End Sub
 
 Private Sub Winsock1_Connect()
@@ -669,6 +702,13 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
     Dim grpName As String
     Dim LeaderName As String
     Winsock1.GetData strdata
+    If Right(strdata, 2) <> Chr(13) & Chr(10) Then
+        buffData = buffData & strdata
+        Exit Sub
+    Else
+        strdata = buffData & strdata
+        buffData = ""
+    End If
     
     Dim cmds() As String
     cmds = Split(strdata, vbCrLf)
@@ -695,7 +735,19 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
             MsgContent = strSplit(4)
             MsgContent = Base64DecodeString(MsgContent)
             'Text1.Text = Name + ":" + MsgContent + vbCrLf + Text1.Text
-            Call AddMessage(grpId, id, Name, MsgContent)
+            If InStr(MsgContent, "_image;") = 1 Then
+                Dim imgdata() As Byte, tt() As String
+                tt = Split(MsgContent, ";")
+                imgdata = Base64Decode(tt(2))
+                Open App.path & "\imgrecv\" & tt(1) For Binary As #1
+                Put #1, , imgdata
+                Close #1
+                Call AddMessage(grpId, id, Name, "_image;" & tt(1))
+                MainPage.Page.Res.newImage App.path & "\imgrecv\" & tt(1), arg2:=200
+            Else
+                Call AddMessage(grpId, id, Name, MsgContent)
+            End If
+            
         Case "newgroup"
             'newgroup;groupid;groupname(base64);LeaderName(base64);leaderid
             Call AddGroup(Int(strSplit(1)), Int(strSplit(4)), False, Base64DecodeString(strSplit(2)), Base64DecodeString(strSplit(3)))
@@ -704,7 +756,13 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
             Winsock1.SendData "addgrouprequest;" & Base64EncodeString(userName) & ";" & userId & ";" & 1 & vbCrLf
         Case "grouprequest"
             Me.SetFocus
-            If MsgBox(Base64DecodeString(strSplit(1)) & "(#" & Val(strSplit(2)) & ") 申请加入组“" & groups(Val(strSplit(3))).Name & "”，是否同意？", 48 + vbYesNo) = vbYes Then
+            Dim gidi As Integer
+            For i = 1 To UBound(groups)
+                If groups(i).id = Val(strSplit(3)) Then
+                    gidi = i: Exit For
+                End If
+            Next
+            If MsgBox(Base64DecodeString(strSplit(1)) & "(#" & Val(strSplit(2)) & ") 申请加入组“" & groups(gidi).Name & "”，是否同意？", 48 + vbYesNo) = vbYes Then
                 AddMember Base64DecodeString(strSplit(1)), Val(strSplit(2)), Val(strSplit(3))
                 Winsock1.SendData "broadcast;addmember;" & strSplit(1) & ";" & strSplit(2) & ";" & strSplit(3) & vbCrLf
             End If
@@ -717,9 +775,12 @@ Private Sub Winsock1_DataArrival(ByVal bytesTotal As Long)
         Case "deletegroup"
             DeleteGroup Val(strSplit(1))
         Case "deletemember"
-            DeleteMember Val(strSplit(1)), Val(strSplit(2))
+            DeleteMember Val(strSplit(2)), Val(strSplit(1))
+            If Val(strSplit(2)) = userId Then SetJoinState Val(strSplit(1)), False
         Case "addban"
-            AddBan userId, Val(strSplit(1)), Val(strSplit(2))
+            AddBan Val(strSplit(3)), Val(strSplit(1)), Val(strSplit(2))
+        Case "safequit"
+            SafeToQuit = True
         End Select
     Next
 

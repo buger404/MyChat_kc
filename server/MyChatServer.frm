@@ -37,8 +37,8 @@ Begin VB.Form Server
    Begin VB.Timer DrawTimer 
       Enabled         =   0   'False
       Interval        =   16
-      Left            =   0
-      Top             =   0
+      Left            =   360
+      Top             =   -120
    End
    Begin VB.TextBox Text4 
       Appearance      =   0  'Flat
@@ -191,6 +191,14 @@ Begin VB.Form Server
       Visible         =   0   'False
       Width           =   2895
    End
+   Begin MSComDlg.CommonDialog imgOpen 
+      Left            =   0
+      Top             =   0
+      _ExtentX        =   847
+      _ExtentY        =   847
+      _Version        =   393216
+      Filter          =   "图像文件|*.jpg;*.png;*.bmp;*.gif;*.jpeg"
+   End
    Begin VB.Label Label4 
       BackColor       =   &H00FFFFFF&
       Caption         =   "号客户机的连接"
@@ -222,7 +230,11 @@ Dim pypid
 Dim grpid As Integer
 Dim g As String, q As Single, m As Single
 Dim IPPage As IPPage
-
+Private Type buffBag
+    buffData As String
+End Type
+Dim buffW(10000) As buffBag
+Dim Shadow As aShadow
 Public Sub Command1_Click()
     Dim C As Single
     C = Val(Text2.Text)
@@ -290,22 +302,28 @@ Private Sub Form_KeyPress(KeyAscii As Integer)
 End Sub
 '===============================================================================================================
 
-Public Sub SendMsg()
+Public Sub SendMsg(Optional Msg As String = "")
 
-    If Text4.Text = "" Then VBA.Beep: Exit Sub
+    If Text4.Text = "" And Msg = "" Then VBA.Beep: Exit Sub
     
-    Dim S As Single
+    Dim S As Single, cont As String
     S = 1
+    If Msg <> "" Then
+        cont = Base64EncodeString(Msg)
+    Else
+        cont = Base64EncodeString(Text4.Text)
+    End If
+    
     Do While (S <= Winsock.UBound)
         If Winsock(S).State = 7 Then
             'MsgBox Str(MainPage.selectIndex)
-            Winsock(S).SendData "msg;" + str(groups(MainPage.selectIndex).id) + ";" + Base64EncodeString(userName) + ";" + str(userId) + ";" + Base64EncodeString(Text4.Text) + ";" + vbCrLf
+            Winsock(S).SendData "msg;" + Str(groups(MainPage.selectIndex).id) + ";" + Base64EncodeString(userName) + ";" + Str(userId) + ";" + cont + ";" + vbCrLf
             DoEvents
         End If
         S = S + 1
     Loop
     
-    Call AddMessage(groups(MainPage.selectIndex).id, userId, userName, Text4.Text)
+    If Msg = "" Then Call AddMessage(groups(MainPage.selectIndex).id, userId, userName, Text4.Text)
     
     Text4.Text = ""
 
@@ -319,7 +337,7 @@ Public Sub Command3_Click()
 End Sub
 
 Public Sub Command4_Click()
-    Open App.path & "\" & "服务端消息记录" & str(q) & ".txt" For Output As #1
+    Open App.path & "\" & "服务端消息记录" & Str(q) & ".txt" For Output As #1
     Print #1, Text3.Text
     Close #1
     q = q + 1
@@ -385,6 +403,7 @@ Public Sub OCR_Click()
 End Sub
 
 Private Sub Form_Load()
+    'Base64_Init
     LoadBlackList
     ReDim groups(0): ReDim bans(0)
     Set Robots = New RobotCore
@@ -397,7 +416,7 @@ Private Sub Form_Load()
         If .Shadow(Me) Then
             .Color = RGB(0, 0, 0)
             .Depth = 8
-            .Transparency = 20
+            .Transparency = 80
         End If
     End With
     
@@ -498,6 +517,13 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
     Dim MsgType As String
     Dim strData As String
     Winsock(index).GetData strData
+    If Right(strData, 2) <> Chr(13) & Chr(10) Then
+        buffW(index).buffData = buffW(index).buffData & strData
+        Exit Sub
+    Else
+        strData = buffW(index).buffData & strData
+        buffW(index).buffData = ""
+    End If
     
     Dim S As Single
   '  S = 1
@@ -519,7 +545,7 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
     
         Select Case MsgType
         Case "getId"
-            Winsock(id).SendData "getId;" + str(id) + ";" + vbCrLf
+            Winsock(id).SendData "getId;" + Str(id) + ";" + vbCrLf
         Case "filerecv"
             ShellExecuteA 0, "open", App.path & "\FileTransportation.exe", "-d;" & strSplit(1) & ";" & strSplit(2) & ";" & strSplit(3) & ";" & strSplit(4) & ";" & strSplit(5), "", SW_SHOW
         Case "filesend"
@@ -549,9 +575,20 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
             grpid = strSplit(1)
             MsgContent = strSplit(4)
             MsgContent = Base64DecodeString(MsgContent)
-            Call AddMessage(Int(grpid), Val(strSplit(3)), Name, MsgContent)
+            If InStr(MsgContent, "_image;") = 1 Then
+                Dim imgdata() As Byte, tt() As String
+                tt = Split(MsgContent, ";")
+                imgdata = Base64Decode(tt(2))
+                Open App.path & "\imgrecv\" & tt(1) For Binary As #1
+                Put #1, , imgdata
+                Close #1
+                Call AddMessage(Int(grpid), Val(strSplit(3)), Name, "_image;" & tt(1))
+                MainPage.Page.Res.newImage App.path & "\imgrecv\" & tt(1), arg2:=200
+            Else
+                Call AddMessage(Int(grpid), Val(strSplit(3)), Name, MsgContent)
+            End If
             
-            strData = MsgType + ";" + str(grpid) + ";" + Base64EncodeString(Name) + ";" + strSplit(3) + ";" + Base64EncodeString(MsgContent) & vbCrLf
+            strData = MsgType + ";" + Str(grpid) + ";" + Base64EncodeString(Name) + ";" + strSplit(3) + ";" + strSplit(4) & vbCrLf
     
             S = 1
             Do While (S <= Winsock.UBound)
@@ -564,10 +601,16 @@ Private Sub Winsock_DataArrival(index As Integer, ByVal bytesTotal As Long)
         Case "picmsg"
         
         Case "addgrouprequest"
-            If groups(Val(strSplit(3))).leader = -2 Then
+            Dim gidi As Integer
+            For i = 1 To UBound(groups)
+                If groups(i).id = Val(strSplit(3)) Then
+                    gidi = i: Exit For
+                End If
+            Next
+            If groups(gidi).leader = -2 Then
                 If Val(strSplit(3)) = 1 Then GoTo skipNotify
                 Me.SetFocus
-                If MsgBox(Base64DecodeString(strSplit(1)) & "(#" & Val(strSplit(2)) & ") 申请加入组“" & groups(Val(strSplit(3))).Name & "”，是否同意？", 48 + vbYesNo) = vbYes Then
+                If MsgBox(Base64DecodeString(strSplit(1)) & "(#" & Val(strSplit(2)) & ") 申请加入组“" & groups(gidi).Name & "”，是否同意？", 48 + vbYesNo) = vbYes Then
 skipNotify:
                     AddMember Base64DecodeString(strSplit(1)), Val(strSplit(2)), Val(strSplit(3))
                     For Each w In Winsock
@@ -576,7 +619,7 @@ skipNotify:
                     Next
                 End If
             Else
-                Winsock(groups(Val(strSplit(3))).leader).SendData "grouprequest;" & strSplit(1) & ";" & strSplit(2) & ";" & strSplit(3) & vbCrLf
+                Winsock(groups(gidi).leader).SendData "grouprequest;" & strSplit(1) & ";" & strSplit(2) & ";" & strSplit(3) & vbCrLf
             End If
         Case "broadcast"
             Dim newcmd As String
@@ -590,10 +633,21 @@ skipNotify:
         Case "addmember"
             AddMember Base64DecodeString(strSplit(1)), Val(strSplit(2)), Val(strSplit(3))
             AddMessage Val(strSplit(3)), -1, "系统消息", Base64DecodeString(strSplit(1)) & "加入了本讨论组"
+        Case "deletemember"
+            DeleteMember Val(strSplit(2)), Val(strSplit(1))
+            For Each w In Winsock
+                If w.State = 7 Then w.SendData "deletemember;" & strSplit(1) & ";" & strSplit(2) & vbCrLf
+                DoEvents
+            Next
         Case "creategroup"
             ProcessCreateGroup strSplit, id
         Case "quitgroup"
-            If index = groups(Val(strSplit(1))).leader Then
+            For i = 1 To UBound(groups)
+                If groups(i).id = Val(strSplit(1)) Then
+                    gidi = i: Exit For
+                End If
+            Next
+            If index = groups(gidi).leader Then
                 '解散处理
                 DeleteGroup Val(strSplit(1))
                 For Each w In Winsock
@@ -610,6 +664,8 @@ skipNotify:
             End If
         Case "addban"
             ProcessBan Val(strSplit(1)), Val(strSplit(3)), Val(strSplit(2))
+        Case "quitrequire"
+            Winsock(index).SendData "safequit" & vbCrLf
         End Select
     Next
 End Sub
@@ -617,10 +673,14 @@ Public Sub ProcessCreateGroup(arg() As String, id As Integer)
     Dim gid As Integer
     Call AddGroup(groups(UBound(groups)).id + 1, id, True, Base64DecodeString(arg(1)), Base64DecodeString(arg(2)))
     gid = groups(UBound(groups)).id
-    AddMember groups(UBound(groups)).LeaderName, groups(UBound(groups)).id, UBound(groups)
+    If id <> -2 Then AddMember groups(UBound(groups)).LeaderName, id, gid
     Dim w As Winsock
     For Each w In Winsock
-        If w.State = 7 Then w.SendData "addgroup;" & id & ";" & arg(1) & ";" & arg(2) & ";" & gid & vbCrLf & "addmember;" & arg(2) & ";" & id & ";" & gid & vbCrLf
+        If id <> -2 Then
+            If w.State = 7 Then w.SendData "addgroup;" & id & ";" & arg(1) & ";" & arg(2) & ";" & gid & vbCrLf & "addmember;" & arg(2) & ";" & id & ";" & gid & vbCrLf
+        Else
+            If w.State = 7 Then w.SendData "addgroup;" & id & ";" & arg(1) & ";" & arg(2) & ";" & gid & vbCrLf
+        End If
         DoEvents
     Next
 End Sub
@@ -628,11 +688,21 @@ Public Sub ProcessBan(group As Integer, id As Integer, Duration As Long)
     Dim bname As String
     bname = Robots.GetMemberName(group, Robots.GetMemberIndex(group, id))
     bname = bname & "(#" & id & ")"
-    AddMessage group, -1, "系统消息", bname & "被禁言" & Round(Duration / 60) & "分钟"
+    
+    If Duration <> 0 Then
+        AddMessage group, -1, "系统消息", bname & "被禁言" & Round(Duration / 60) & "分钟"
+    Else
+        AddMessage group, -1, "系统消息", bname & "的禁言被解除了"
+    End If
+    AddBan id, group, Duration
     For Each w In Winsock
         If w.State = 7 Then
-            If w.index = id Then w.SendData "addban;" & group & ";" & Duration & vbCrLf
-            w.SendData "msg;" & group & ";" & Base64EncodeString("系统消息") & ";-1;" & Base64EncodeString(bname & "被禁言" & Round(Duration / 60) & "分钟") & vbCrLf
+            w.SendData "addban;" & group & ";" & Duration & ";" & id & vbCrLf
+            If Duration <> 0 Then
+                w.SendData "msg;" & group & ";" & Base64EncodeString("系统消息") & ";-1;" & Base64EncodeString(bname & "被禁言" & Int(Duration / 60) + IIf(Duration - Int(Duration / 60) * 60 <> 0, 1, 0) & "分钟") & vbCrLf
+            Else
+                w.SendData "msg;" & group & ";" & Base64EncodeString("系统消息") & ";-1;" & Base64EncodeString(bname & "的禁言被解除了") & vbCrLf
+            End If
         End If
         DoEvents
     Next
